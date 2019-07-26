@@ -143,7 +143,7 @@ func (w *Wallet) pipeHandshake(conn *service.JsonConn, target string) error {
 		return fmt.Errorf("write hand shake data err:%v", err)
 
 	}
-	ack := &service.SofaACK{}
+	ack := &service.ProtonACK{}
 	if err := conn.ReadJsonMsg(ack); err != nil {
 		return fmt.Errorf("failed to read miner's response :->%v", err)
 	}
