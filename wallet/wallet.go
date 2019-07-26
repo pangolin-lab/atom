@@ -2,8 +2,8 @@ package wallet
 
 import (
 	"fmt"
-	"github.com/proton-lab/proton/account"
-	"github.com/proton-lab/proton/service"
+	"github.com/proton-lab/proton-node/account"
+	"github.com/proton-lab/proton-node/service"
 	"golang.org/x/crypto/ed25519"
 	"log"
 	"net"

@@ -3,7 +3,7 @@ package wallet
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/proton-lab/proton/service"
+	"github.com/proton-lab/proton-node/service"
 	"io"
 	"net"
 	"time"

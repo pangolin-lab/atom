@@ -2,9 +2,9 @@ package wallet
 
 import (
 	"fmt"
-	"github.com/proton-lab/proton/account"
-	"github.com/proton-lab/proton/network"
-	"github.com/proton-lab/proton/service"
+	"github.com/proton-lab/proton-node/account"
+	"github.com/proton-lab/proton-node/network"
+	"github.com/proton-lab/proton-node/service"
 	"net"
 	"strings"
 	"syscall"

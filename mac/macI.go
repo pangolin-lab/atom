@@ -7,7 +7,7 @@ import (
 	eth "github.com/proton-lab/autom/ethereum"
 	"github.com/proton-lab/autom/pipeProxy"
 	"github.com/proton-lab/autom/wallet"
-	"github.com/proton-lab/proton/account"
+	"github.com/proton-lab/proton-node/account"
 )
 
 var proxyConf *pipeProxy.ProxyConfig = nil
