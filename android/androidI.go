@@ -86,7 +86,6 @@ func StopVpn() {
 		_instance = nil
 	}
 }
-
 func InputPacket(data []byte) error {
 
 	if _instance == nil {
