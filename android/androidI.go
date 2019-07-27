@@ -4,6 +4,8 @@ import "C"
 import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/proton-lab/autom/ethereum"
+	"github.com/proton-lab/autom/ethereum/mobile"
 	"github.com/proton-lab/autom/pipeProxy"
 	"github.com/proton-lab/autom/tun2Pipe"
 	"github.com/proton-lab/autom/wallet"
@@ -44,6 +46,7 @@ func InitVPN(addr, cipher, url, boot, IPs string, d VpnDelegate) error {
 	}
 
 	proxyConf.ServerId = mis[0]
+	println(proxyConf.String())
 	return nil
 }
 
@@ -54,7 +57,7 @@ func SetupVpn(password, locAddr string) error {
 		return err
 	}
 
-	fmt.Println(proxyConf.ToString())
+	fmt.Println(proxyConf.String())
 
 	w, err := wallet.NewWallet(proxyConf.WConfig, password)
 	if err != nil {
@@ -120,48 +123,42 @@ func IsProtonAddress(address string) bool {
 }
 
 func LoadEthAddrByProtonAddr(protonAddr string) string {
-	//return eth.CheckProtonAddr(protonAddr)
-	return ""
+	return ethereum.CheckProtonAddr(protonAddr)
 }
 
 func EthBindings(ETHAddr string) string {
-	//ethB, protonB, no := eth.BalanceOfEthAddr(ETHAddr)
-	//if ethB == nil {
-	//	return ""
-	//}
-	//
-	//return fmt.Sprintf("%f"+Separator+"%f"+Separator+"%d",
-	//	eth.ConvertByDecimal(ethB),
-	//	eth.ConvertByDecimal(protonB),
-	//	no)
-	return ""
+	ethB, protonB, no := ethereum.BalanceOfEthAddr(ETHAddr)
+	if ethB == nil {
+		return ""
+	}
+
+	return fmt.Sprintf("%f"+Separator+"%f"+Separator+"%d",
+		ethereum.ConvertByDecimal(ethB),
+		ethereum.ConvertByDecimal(protonB),
+		no)
 }
 
 func CreateEthAccount(password, directory string) string {
-	//return eth.CreateEthAccount2(password, directory)
-	return ""
+	return mobile.CreateEthAccount(password, directory)
 }
 
 func VerifyEthAccount(cipherTxt, pwd string) bool {
-	//return eth.VerifyEthAccount(cipherTxt, pwd)
-	return true
+	return ethereum.VerifyEthAccount(cipherTxt, pwd)
 }
 
 func BindProtonAddress(protonAddr, cipherKey, password string) string {
-	//tx, err := eth.BindProtonAddr(protonAddr, cipherKey, password)
-	//if err != nil {
-	//	fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
-	//	return err.Error()
-	//}
-	//return tx
-	return ""
+	tx, err := ethereum.BindProtonAddr(protonAddr, cipherKey, password)
+	if err != nil {
+		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
+		return err.Error()
+	}
+	return tx
 }
 func UnbindProtonAddress(protonAddr, cipherKey, password string) string {
-	//tx, err := eth.UnbindProtonAddr(protonAddr, cipherKey, password)
-	//if err != nil {
-	//	fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
-	//	return err.Error()
-	//}
-	//return tx
-	return ""
+	tx, err := ethereum.UnbindProtonAddr(protonAddr, cipherKey, password)
+	if err != nil {
+		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
+		return err.Error()
+	}
+	return tx
 }

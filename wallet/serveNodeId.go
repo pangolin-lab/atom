@@ -34,6 +34,7 @@ func (m *ServeNodeId) TestTTL(saver func(fd uintptr)) bool {
 	}
 	conn, err := d.Dial("tcp", addr)
 	if err != nil {
+		fmt.Printf("TestTTL(%s) err:%s", addr, err)
 		return false
 	}
 
@@ -43,9 +44,9 @@ func (m *ServeNodeId) TestTTL(saver func(fd uintptr)) bool {
 
 	jsonConn := network.JsonConn{Conn: conn}
 	if err := jsonConn.Syn(hs); err != nil {
+		fmt.Printf("TestTTL(%s) err:%s", addr, err)
 		return false
 	}
-
 	return true
 }
 
@@ -54,7 +55,7 @@ func (m *ServeNodeId) TONetAddr() string {
 	return network.JoinHostPort(m.IP, port)
 }
 
-func (m *ServeNodeId) ToString() string {
+func (m *ServeNodeId) String() string {
 	return strings.Join([]string{m.ID.String(), m.IP}, ServeNodeSep)
 }
 

@@ -26,7 +26,7 @@ const MaxLocalConn = 1 << 10
 const PipeDialTimeOut = time.Second * 2
 const RechargeTimeInterval = time.Minute * 5
 
-func (c *WConfig) ToString() string {
+func (c *WConfig) String() string {
 	return fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++\n"+
 		"+\t BCAddr:%s\n"+
 		"+\t Ciphere:%s\n"+
@@ -36,7 +36,7 @@ func (c *WConfig) ToString() string {
 		c.BCAddr,
 		c.Cipher,
 		c.SettingUrl,
-		c.ServerId.ToString())
+		c.ServerId.String())
 }
 
 type PacketBucket struct {
@@ -64,7 +64,7 @@ func NewWallet(conf *WConfig, password string) (*Wallet, error) {
 		return nil, err
 	}
 	fmt.Printf("\n Unlock client success:%s Selected miner id:%s",
-		conf.BCAddr, conf.ServerId.ToString())
+		conf.BCAddr, conf.ServerId.String())
 
 	w := &Wallet{
 		acc:          acc,

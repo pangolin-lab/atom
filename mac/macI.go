@@ -84,7 +84,7 @@ func LibCreateProxy(password, locSer string) bool {
 		return true
 	}
 
-	fmt.Println(proxyConf.ToString())
+	fmt.Println(proxyConf.String())
 
 	w, err := wallet.NewWallet(proxyConf.WConfig, password)
 	if err != nil {

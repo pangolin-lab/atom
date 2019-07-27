@@ -25,12 +25,12 @@ type ProxyConfig struct {
 	BootNodes string
 }
 
-func (c *ProxyConfig) ToString() string {
+func (c *ProxyConfig) String() string {
 	return fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++\n"+
 		"+\tWallet:%s\n"+
 		"+\tbootnodes:%s\n"+
 		"++++++++++++++++++++++++++++++++++++++++++++++++++++\n",
-		c.WConfig.ToString(),
+		c.WConfig.String(),
 		c.BootNodes,
 	)
 }
@@ -40,28 +40,22 @@ func (c *ProxyConfig) FindBootServers(path string) []*wallet.ServeNodeId {
 
 	var nodes []string
 	if len(c.BootNodes) == 0 {
+		println(c.SettingUrl)
 		nodes = LoadFromServer(c.SettingUrl)
 		if e := ioutil.WriteFile(path, []byte(strings.Join(nodes, "\n")), 0644); e != nil {
 			println("create boot nodes file failed:", path, e)
 		}
-
 	} else {
 		nodes = strings.Split(c.BootNodes, "\n")
 	}
-
 	IDs := ProbeAllNodes(nodes, c.Saver)
-
 	if len(IDs) == 0 && len(c.BootNodes) != 0 {
-
 		nodes = LoadFromServer(c.SettingUrl)
-
 		if e := ioutil.WriteFile(path, []byte(strings.Join(nodes, "\n")), 0644); e != nil {
 			println("replace boot nodes failed:", path, e)
 		}
-
 		return ProbeAllNodes(nodes, c.Saver)
 	}
-
 	return IDs
 }
 
@@ -74,11 +68,8 @@ func LoadFromServer(url string) []string {
 		fmt.Println(err)
 		return nil
 	}
-
 	servers := make([]string, 0)
-
 	defer resp.Body.Close()
-
 	reader := bufio.NewReader(resp.Body)
 	for {
 		nodeStr, _, err := reader.ReadLine()
@@ -90,7 +81,6 @@ func LoadFromServer(url string) []string {
 				continue
 			}
 		}
-
 		nodeId := base58.Decode(string(nodeStr))
 		servers = append(servers, string(nodeId))
 		fmt.Printf("LoadFromServer:\n%s\n", nodeId)
@@ -105,14 +95,12 @@ func ProbeAllNodes(paths []string, saver func(fd uintptr)) []*wallet.ServeNodeId
 
 	var waiter sync.WaitGroup
 	for _, path := range paths {
-
 		mi := wallet.ParseService(path)
 		if mi == nil {
 			continue
 		}
-
+		println(path)
 		waiter.Add(1)
-
 		go func() {
 			defer waiter.Done()
 			now := time.Now()
