@@ -1,4 +1,4 @@
-package eth
+package ethereum
 
 import "C"
 import (
@@ -9,22 +9,21 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/proton-lab/proton-node/account"
-	"github.com/proton-lab/proton-node/service"
+	"github.com/proton-lab/proton-node/service/ethInterface"
 	"io/ioutil"
 	"math"
 	"math/big"
-	"os"
 	"strings"
 )
 
-func freeManager() (*ethclient.Client, *service.ProtonManager, error) {
-	conn, err := ethclient.Dial(service.EthereNetworkAPI)
+func freeManager() (*ethclient.Client, *ethInterface.ProtonManager, error) {
+	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
 	if err != nil {
 		fmt.Printf("\nDial up infura failed:%s", err)
 		return nil, nil, err
 	}
 
-	manager, err := service.NewProtonManager(common.HexToAddress(service.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -34,15 +33,15 @@ func freeManager() (*ethclient.Client, *service.ProtonManager, error) {
 	return conn, manager, nil
 }
 
-func payableManager(cipherKey, password string) (*ethclient.Client, *service.ProtonManager, *bind.TransactOpts, error) {
+func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterface.ProtonManager, *bind.TransactOpts, error) {
 
-	conn, err := ethclient.Dial(service.EthereNetworkAPI)
+	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
 	if err != nil {
 		fmt.Printf("\nDial up infura failed:%s", err)
 		return nil, nil, nil, err
 	}
 
-	manager, err := service.NewProtonManager(common.HexToAddress(service.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -115,38 +114,6 @@ func CreateEthAccount(password, directory string) string {
 	fmt.Println(account.Address.Hex())
 	fmt.Println(account.URL.Path)
 	return account.Address.Hex()
-}
-
-func CreateEthAccount2(password, directory string) string {
-
-	ks := keystore.NewKeyStore(directory, keystore.StandardScryptN, keystore.StandardScryptP)
-	account, err := ks.NewAccount(password)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	fmt.Println(account.Address.Hex())
-	fmt.Println(account.URL.Path)
-
-	path := account.URL.Path
-	file, err := os.Open(path)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	buffer := make([]byte, 10240)
-	n, err := file.Read(buffer)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	file.Close()
-	os.Remove(path)
-
-	return string(buffer[:n])
 }
 
 func ImportEthAccount(file, dir, password string) string {

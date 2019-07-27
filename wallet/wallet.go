@@ -1,9 +1,11 @@
 package wallet
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/proton-lab/proton-node/account"
-	"github.com/proton-lab/proton-node/service"
+	"github.com/proton-lab/proton-node/network"
+	"github.com/proton-lab/proton-node/service/rpcMsg"
 	"golang.org/x/crypto/ed25519"
 	"log"
 	"net"
@@ -48,7 +50,7 @@ type Wallet struct {
 	*PacketBucket
 	acc          *account.Account
 	sysSaver     func(fd uintptr)
-	payConn      *service.JsonConn
+	payConn      *network.JsonConn
 	aesKey       account.PipeCryptKey
 	minerID      account.ID
 	minerAddr    []byte
@@ -98,13 +100,13 @@ func (w *Wallet) createRechargeChannel() error {
 	}
 
 	sig := ed25519.Sign(w.acc.Key.PriKey, []byte(w.acc.Address))
-	hs := &service.YPHandShake{
-		CmdType:  service.CmdRecharge,
+	hs := &rpcMsg.YPHandShake{
+		CmdType:  rpcMsg.CmdRecharge,
 		Sig:      sig,
 		UserAddr: w.acc.Address.String(),
 	}
 
-	jsonConn := &service.JsonConn{Conn: conn}
+	jsonConn := &network.JsonConn{Conn: conn}
 	if err := jsonConn.Syn(hs); err != nil {
 		return err
 	}
@@ -169,7 +171,7 @@ func (w *Wallet) timerRecharge() error {
 	defer w.Unlock()
 
 	fmt.Printf("\n  time to recharge report unpaid:%d", w.unpaid)
-	if w.unpaid < service.MinRechargeSize {
+	if w.unpaid < rpcMsg.MinRechargeSize {
 		return nil
 	}
 
@@ -188,7 +190,7 @@ func (w *Wallet) chargeUP(no int) error {
 
 	fmt.Printf("\n  usage report unpaid:%d, this time:%d", w.unpaid, no)
 
-	if w.unpaid < service.RechargeUnit {
+	if w.unpaid < rpcMsg.RechargeUnit {
 		return nil
 	}
 
@@ -200,10 +202,30 @@ func (w *Wallet) chargeUP(no int) error {
 	return nil
 }
 
+func CreatePayBill(user, miner string, usage int, priKey ed25519.PrivateKey) (*rpcMsg.UserCreditPay, error) {
+	pay := &rpcMsg.CreditPayment{
+		UserAddr:    user,
+		MinerAddr:   miner,
+		PacketUsage: usage,
+		PayTime:     time.Now(),
+	}
+
+	data, err := json.Marshal(pay)
+	if err != nil {
+		return nil, err
+	}
+	sig := ed25519.Sign(priKey, data)
+
+	return &rpcMsg.UserCreditPay{
+		UserSig:       sig,
+		CreditPayment: pay,
+	}, nil
+}
+
 func (w *Wallet) recharge(no int) error {
 
 	minerAddr := string(w.minerAddr)
-	bill, err := service.CreatePayBill(string(w.acc.Address), minerAddr, no, w.acc.Key.PriKey)
+	bill, err := CreatePayBill(string(w.acc.Address), minerAddr, no, w.acc.Key.PriKey)
 	if err != nil {
 		return err
 	}

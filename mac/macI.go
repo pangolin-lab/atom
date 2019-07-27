@@ -4,7 +4,7 @@ import "C"
 import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
-	eth "github.com/proton-lab/autom/ethereum"
+	"github.com/proton-lab/autom/ethereum"
 	"github.com/proton-lab/autom/pipeProxy"
 	"github.com/proton-lab/autom/wallet"
 	"github.com/proton-lab/proton-node/account"
@@ -28,7 +28,7 @@ func LibCreateAccount(password string) (*C.char, *C.char) {
 
 //export LibCreateEthAccount
 func LibCreateEthAccount(password, directory string) *C.char {
-	return C.CString(eth.CreateEthAccount(password, directory))
+	return C.CString(ethereum.CreateEthAccount(password, directory))
 }
 
 //export LibIsInit
@@ -127,30 +127,30 @@ func LibStopClient() {
 
 //export LibLoadEthAddrByProtonAddr
 func LibLoadEthAddrByProtonAddr(protonAddr string) *C.char {
-	return C.CString(eth.CheckProtonAddr(protonAddr))
+	return C.CString(ethereum.CheckProtonAddr(protonAddr))
 }
 
 //export LibEthBindings
 func LibEthBindings(ETHAddr string) (float64, float64, int) {
 
-	ethB, protonB, no := eth.BalanceOfEthAddr(ETHAddr)
+	ethB, protonB, no := ethereum.BalanceOfEthAddr(ETHAddr)
 	if ethB == nil {
 		return 0, 0, 0
 	}
 
-	return eth.ConvertByDecimal(ethB), eth.ConvertByDecimal(protonB), no
+	return ethereum.ConvertByDecimal(ethB), ethereum.ConvertByDecimal(protonB), no
 }
 
 //export LibImportEthAccount
 func LibImportEthAccount(file, dir, pwd string) *C.char {
-	addr := eth.ImportEthAccount(file, dir, pwd)
+	addr := ethereum.ImportEthAccount(file, dir, pwd)
 	return C.CString(addr)
 }
 
 //export LibBindProtonAddr
 func LibBindProtonAddr(protonAddr, cipherKey, password string) (*C.char, *C.char) {
 
-	tx, err := eth.BindProtonAddr(protonAddr, cipherKey, password)
+	tx, err := ethereum.BindProtonAddr(protonAddr, cipherKey, password)
 	if err != nil {
 		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
 		return C.CString(""), C.CString(err.Error())
@@ -162,7 +162,7 @@ func LibBindProtonAddr(protonAddr, cipherKey, password string) (*C.char, *C.char
 //export LibUnbindProtonAddr
 func LibUnbindProtonAddr(protonAddr, cipherKey, password string) (*C.char, *C.char) {
 
-	tx, err := eth.UnbindProtonAddr(protonAddr, cipherKey, password)
+	tx, err := ethereum.UnbindProtonAddr(protonAddr, cipherKey, password)
 	if err != nil {
 		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
 		return C.CString(""), C.CString(err.Error())

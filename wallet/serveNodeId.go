@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/proton-lab/proton-node/account"
 	"github.com/proton-lab/proton-node/network"
-	"github.com/proton-lab/proton-node/service"
+	"github.com/proton-lab/proton-node/service/rpcMsg"
 	"net"
 	"strings"
 	"syscall"
@@ -37,11 +37,11 @@ func (m *ServeNodeId) TestTTL(saver func(fd uintptr)) bool {
 		return false
 	}
 
-	hs := &service.YPHandShake{
-		CmdType: service.CmdCheck,
+	hs := &rpcMsg.YPHandShake{
+		CmdType: rpcMsg.CmdCheck,
 	}
 
-	jsonConn := service.JsonConn{Conn: conn}
+	jsonConn := network.JsonConn{Conn: conn}
 	if err := jsonConn.Syn(hs); err != nil {
 		return false
 	}

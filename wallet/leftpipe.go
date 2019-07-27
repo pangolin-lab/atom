@@ -3,7 +3,8 @@ package wallet
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/proton-lab/proton-node/service"
+	"github.com/proton-lab/proton-node/network"
+	"github.com/proton-lab/proton-node/service/rpcMsg"
 	"io"
 	"net"
 	"time"
@@ -15,14 +16,14 @@ type LeftPipe struct {
 	requestBuf  []byte
 	responseBuf []byte
 	proxyConn   net.Conn
-	consume     *service.PipeConn
+	consume     *network.PipeConn
 }
 
-func NewPipe(l net.Conn, r *service.PipeConn, rc chan int, tgt string) *LeftPipe {
+func NewPipe(l net.Conn, r *network.PipeConn, rc chan int, tgt string) *LeftPipe {
 	return &LeftPipe{
 		target:      tgt,
-		requestBuf:  make([]byte, service.BuffSize),
-		responseBuf: make([]byte, service.BuffSize),
+		requestBuf:  make([]byte, network.BuffSize),
+		responseBuf: make([]byte, network.BuffSize),
 		proxyConn:   l,
 		consume:     r,
 		reportChan:  rc,
@@ -95,7 +96,7 @@ func (w *Wallet) SetupPipe(lConn net.Conn, tgtAddr string) *LeftPipe {
 		return nil
 	}
 
-	consumeConn := service.NewConsumerConn(jsonConn.Conn, w.aesKey)
+	consumeConn := network.NewConsumerConn(jsonConn.Conn, w.aesKey)
 	if consumeConn == nil {
 		return nil
 	}
@@ -109,19 +110,19 @@ func (w *Wallet) SetupPipe(lConn net.Conn, tgtAddr string) *LeftPipe {
 	return pipe
 }
 
-func (w *Wallet) connectSockServer() (*service.JsonConn, error) {
+func (w *Wallet) connectSockServer() (*network.JsonConn, error) {
 
 	conn, err := w.getOuterConn(w.minerNetAddr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to (%s) access point server (%s):->", w.minerNetAddr, err)
 	}
 	conn.(*net.TCPConn).SetKeepAlive(true)
-	return &service.JsonConn{Conn: conn}, nil
+	return &network.JsonConn{Conn: conn}, nil
 }
 
-func (w *Wallet) pipeHandshake(conn *service.JsonConn, target string) error {
+func (w *Wallet) pipeHandshake(conn *network.JsonConn, target string) error {
 
-	reqData := &service.PipeReqData{
+	reqData := &rpcMsg.PipeReqData{
 		Addr:   w.acc.Address.String(),
 		Target: target,
 	}
@@ -133,8 +134,8 @@ func (w *Wallet) pipeHandshake(conn *service.JsonConn, target string) error {
 
 	sig := w.acc.Sign(data)
 
-	hs := &service.YPHandShake{
-		CmdType: service.CmdPipe,
+	hs := &rpcMsg.YPHandShake{
+		CmdType: rpcMsg.CmdPipe,
 		Sig:     sig,
 		Pipe:    reqData,
 	}
@@ -143,7 +144,7 @@ func (w *Wallet) pipeHandshake(conn *service.JsonConn, target string) error {
 		return fmt.Errorf("write hand shake data err:%v", err)
 
 	}
-	ack := &service.ProtonACK{}
+	ack := &network.ProtonACK{}
 	if err := conn.ReadJsonMsg(ack); err != nil {
 		return fmt.Errorf("failed to read miner's response :->%v", err)
 	}
