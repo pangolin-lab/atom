@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/proton-lab/proton-node/account"
 	"github.com/proton-lab/proton-node/service/ethInterface"
+	"github.com/proton-lab/proton-node/service/rpcMsg"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -17,13 +18,13 @@ import (
 )
 
 func freeManager() (*ethclient.Client, *ethInterface.ProtonManager, error) {
-	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
+	conn, err := ethclient.Dial(rpcMsg.EthereNetworkAPI)
 	if err != nil {
 		fmt.Printf("\nDial up infura failed:%s", err)
 		return nil, nil, err
 	}
 
-	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewProtonManager(common.HexToAddress(rpcMsg.ProtonManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -35,13 +36,13 @@ func freeManager() (*ethclient.Client, *ethInterface.ProtonManager, error) {
 
 func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterface.ProtonManager, *bind.TransactOpts, error) {
 
-	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
+	conn, err := ethclient.Dial(rpcMsg.EthereNetworkAPI)
 	if err != nil {
 		fmt.Printf("\nDial up infura failed:%s", err)
 		return nil, nil, nil, err
 	}
 
-	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewProtonManager(common.HexToAddress(rpcMsg.ProtonManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()

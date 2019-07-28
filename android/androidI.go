@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/proton-lab/autom/ethereum"
-	"github.com/proton-lab/autom/ethereum/mobile"
 	"github.com/proton-lab/autom/pipeProxy"
 	"github.com/proton-lab/autom/tun2Pipe"
 	"github.com/proton-lab/autom/wallet"
@@ -138,7 +137,7 @@ func EthBindings(ETHAddr string) string {
 }
 
 func CreateEthAccount(password, directory string) string {
-	return mobile.CreateEthAccount(password, directory)
+	return ethereum.CreateEthAccount(password, directory)
 }
 
 func VerifyEthAccount(cipherTxt, pwd string) bool {
