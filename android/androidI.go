@@ -137,7 +137,7 @@ func EthBindings(ETHAddr string) string {
 }
 
 func CreateEthAccount(password, directory string) string {
-	return ethereum.CreateEthAccount(password, directory)
+	return ethereum.CreateEthAccount2(password, directory)
 }
 
 func VerifyEthAccount(cipherTxt, pwd string) bool {

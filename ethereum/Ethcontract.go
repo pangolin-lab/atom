@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/big"
+	"os"
 	"strings"
 )
 
@@ -115,6 +116,37 @@ func CreateEthAccount(password, directory string) string {
 	fmt.Println(account.Address.Hex())
 	fmt.Println(account.URL.Path)
 	return account.Address.Hex()
+}
+
+func CreateEthAccount2(password, directory string) string {
+	ks := keystore.NewKeyStore(directory, keystore.StandardScryptN, keystore.StandardScryptP)
+	account, err := ks.NewAccount(password)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	fmt.Println(account.Address.Hex())
+	fmt.Println(account.URL.Path)
+
+	path := account.URL.Path
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	buffer := make([]byte, 10240)
+	n, err := file.Read(buffer)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	file.Close()
+	os.Remove(path)
+
+	return string(buffer[:n])
 }
 
 func ImportEthAccount(file, dir, password string) string {
