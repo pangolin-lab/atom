@@ -5,16 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/proton-lab/proton-node/account"
 	"github.com/proton-lab/proton-node/service/ethInterface"
 	"github.com/proton-lab/proton-node/service/rpcMsg"
-	"io/ioutil"
-	"math"
 	"math/big"
-	"os"
 	"strings"
 )
 
@@ -25,7 +21,7 @@ func freeManager() (*ethclient.Client, *ethInterface.ProtonManager, error) {
 		return nil, nil, err
 	}
 
-	manager, err := ethInterface.NewProtonManager(common.HexToAddress(rpcMsg.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -43,7 +39,7 @@ func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterfac
 		return nil, nil, nil, err
 	}
 
-	manager, err := ethInterface.NewProtonManager(common.HexToAddress(rpcMsg.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -94,95 +90,6 @@ func BalanceOfEthAddr(ethAddr string) (*big.Int, *big.Int, int) {
 
 	fmt.Printf("ETH=%d Proton=%d NO=%d", ethBalance, protonBalance, protonNo)
 	return ethBalance, protonBalance, int(protonNo.Int64())
-}
-
-func ConvertByDecimal(val *big.Int) float64 {
-	fVal := new(big.Float)
-	fVal.SetString(val.String())
-	ethValue := new(big.Float).Quo(fVal, big.NewFloat(math.Pow10(18)))
-	ret, _ := ethValue.Float64()
-	return ret
-}
-
-func CreateEthAccount(password, directory string) string {
-
-	ks := keystore.NewKeyStore(directory, keystore.StandardScryptN, keystore.StandardScryptP)
-	account, err := ks.NewAccount(password)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	fmt.Println(account.Address.Hex())
-	fmt.Println(account.URL.Path)
-	return account.Address.Hex()
-}
-
-func CreateEthAccount2(password, directory string) string {
-	ks := keystore.NewKeyStore(directory, keystore.StandardScryptN, keystore.StandardScryptP)
-	account, err := ks.NewAccount(password)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	fmt.Println(account.Address.Hex())
-	fmt.Println(account.URL.Path)
-
-	path := account.URL.Path
-	file, err := os.Open(path)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	buffer := make([]byte, 10240)
-	n, err := file.Read(buffer)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	file.Close()
-	os.Remove(path)
-
-	return string(buffer[:n])
-}
-
-func ImportEthAccount(file, dir, password string) string {
-
-	ks := keystore.NewKeyStore(dir, keystore.StandardScryptN, keystore.StandardScryptP)
-	jsonBytes, err := ioutil.ReadFile(file)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	account, err := ks.Import(jsonBytes, password, password)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	fmt.Println(account.Address.Hex())
-	return account.Address.Hex()
-}
-
-func VerifyEthAccount(cipherTxt, passphrase string) bool {
-
-	keyin := strings.NewReader(cipherTxt)
-	json, err := ioutil.ReadAll(keyin)
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-
-	if _, err := keystore.DecryptKey(json, passphrase); err != nil {
-		fmt.Println(err)
-		return false
-	}
-
-	return true
 }
 
 func BindProtonAddr(protonAddr, cipherKey, password string) (string, error) {
