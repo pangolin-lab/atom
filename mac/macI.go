@@ -97,7 +97,6 @@ func LibCreateProxy(password, locSer string) bool {
 		fmt.Println(e)
 		return false
 	}
-
 	curProxy = proxy
 	return true
 }
@@ -120,25 +119,22 @@ func LibStopClient() {
 	if curProxy == nil {
 		return
 	}
-
 	curProxy.Finish()
 	return
 }
 
 //export LibLoadEthAddrByProtonAddr
 func LibLoadEthAddrByProtonAddr(protonAddr string) *C.char {
-	return C.CString(ethereum.CheckProtonAddr(protonAddr))
+	return C.CString(ethereum.BoundEth(protonAddr))
 }
 
 //export LibEthBindings
-func LibEthBindings(ETHAddr string) (float64, float64, int) {
-
-	ethB, protonB, no := ethereum.BalanceOfEthAddr(ETHAddr)
+func LibEthBindings(ETHAddr string) (float64, int) {
+	ethB, no := ethereum.BasicBalance(ETHAddr)
 	if ethB == nil {
-		return 0, 0, 0
+		return 0, 0
 	}
-
-	return ethereum.ConvertByDecimal(ethB), ethereum.ConvertByDecimal(protonB), no
+	return ethereum.ConvertByDecimal(ethB), no
 }
 
 //export LibImportEthAccount
@@ -150,7 +146,7 @@ func LibImportEthAccount(file, dir, pwd string) *C.char {
 //export LibBindProtonAddr
 func LibBindProtonAddr(protonAddr, cipherKey, password string) (*C.char, *C.char) {
 
-	tx, err := ethereum.BindProtonAddr(protonAddr, cipherKey, password)
+	tx, err := ethereum.Bind(protonAddr, cipherKey, password)
 	if err != nil {
 		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
 		return C.CString(""), C.CString(err.Error())
@@ -162,7 +158,7 @@ func LibBindProtonAddr(protonAddr, cipherKey, password string) (*C.char, *C.char
 //export LibUnbindProtonAddr
 func LibUnbindProtonAddr(protonAddr, cipherKey, password string) (*C.char, *C.char) {
 
-	tx, err := ethereum.UnbindProtonAddr(protonAddr, cipherKey, password)
+	tx, err := ethereum.Unbind(protonAddr, cipherKey, password)
 	if err != nil {
 		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
 		return C.CString(""), C.CString(err.Error())

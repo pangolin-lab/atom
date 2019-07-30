@@ -1,13 +1,16 @@
 package ethereum
 
 import (
+	"encoding/hex"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/proton-lab/proton-node/account"
 	"github.com/proton-lab/proton-node/service/ethInterface"
 	"github.com/proton-lab/proton-node/service/rpcMsg"
 	"math/big"
+	"strings"
 )
 
 func freeSimpleManager() (*ethInterface.SimpleProtonManager, error) {
@@ -21,6 +24,25 @@ func freeSimpleManager() (*ethInterface.SimpleProtonManager, error) {
 		return nil, err
 	}
 	return manager, nil
+}
+
+func freePayableSimpleManager(cipherKey, password string) (*ethInterface.SimpleProtonManager, *bind.TransactOpts, error) {
+	conn, err := ethclient.Dial(rpcMsg.EthereNetworkAPI)
+	if err != nil {
+		fmt.Printf("\nDial up infura failed:%s", err)
+		return nil, nil, err
+	}
+	manager, err := ethInterface.NewSimpleProtonManager(common.HexToAddress(ethInterface.SimpleManagerContractAddress), conn)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	auth, err := bind.NewTransactor(strings.NewReader(cipherKey), password)
+	if err != nil {
+		conn.Close()
+		return nil, nil, err
+	}
+	return manager, auth, nil
 }
 
 func BasicBalance(ethAddr string) (*big.Int, int) {
@@ -89,4 +111,34 @@ func UnderMyAddresses(ethAddr string, start, end int) []string {
 		addrArr = append(addrArr, str)
 	}
 	return addrArr
+}
+
+func Bind(protonAddr, cipherKey, password string) (string, error) {
+	manager, auth, err := freePayableSimpleManager(cipherKey, password)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	arr := account.ID(protonAddr).ToArray()
+	tx, err := manager.Bind(auth, arr)
+	if err != nil {
+		return "", err
+	}
+	fmt.Printf("\nTransfer pending: 0x%x for proton addr:%s \n", tx.Hash(), hex.EncodeToString(arr[:]))
+	return tx.Hash().String(), err
+}
+
+func Unbind(protonAddr, cipherKey, password string) (string, error) {
+	manager, auth, err := freePayableSimpleManager(cipherKey, password)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	arr := account.ID(protonAddr).ToArray()
+	tx, err := manager.Unbind(auth, arr)
+	if err != nil {
+		return "", err
+	}
+	fmt.Printf("\nTransfer pending: 0x%x for proton addr:%s \n", tx.Hash(), hex.EncodeToString(arr[:]))
+	return tx.Hash().String(), err
 }

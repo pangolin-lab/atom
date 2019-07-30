@@ -1,6 +1,7 @@
 package ethereum
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"io/ioutil"
 	"math"
