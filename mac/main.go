@@ -61,7 +61,7 @@ func importKs() {
 		panic(err)
 	}
 }
-func main() {
+func test12() {
 	acc, err := account.AccFromString("YPDV86j2ZTnFivpC44FtpocyYgtqPJ5R5NC5EcRcyhprTs",
 		"3U1V26zuBSgW6mudv7aZACkK8q75XEf936qWfhRRvKEHqTrQmmk726464tRnSLXYPUgqyvWADG4DPtqE3Y2Va4qo9ivvRTbz2jnikpdhj6Feuz", "123")
 	if err != nil {
@@ -72,7 +72,7 @@ func main() {
 	//importKs()
 }
 
-func test11() {
+func main() {
 
 	//failed:
 	//YPCr9KRE3tRXaKMb388A5gEjFqK3u4sAo9EBLK7tc94xwh
@@ -81,16 +81,16 @@ func test11() {
 	//YPDsDm5RBqhA14dgRUGMjE4SVq7A3AzZ4MqEFFL3eZkhjZ
 	//GffT4JanGFefAj4isFLYbodKmxzkJt9HYTQTKquueV8mypm3oSicBZ37paYPnDscQ7XoPa4Qgse6q4yv5D2bLPureawFWhicvZC5WqmFp9CGE
 	var conf = &wallet.WConfig{
-		BCAddr:     "YPDsDm5RBqhA14dgRUGMjE4SVq7A3AzZ4MqEFFL3eZkhjZ",
-		Cipher:     "GffT4JanGFefAj4isFLYbodKmxzkJt9HYTQTKquueV8mypm3oSicBZ37paYPnDscQ7XoPa4Qgse6q4yv5D2bLPureawFWhicvZC5WqmFp9CGE",
+		BCAddr:     "YPEMHxUrqCfZSrBHBye918gqLKcuPJrKhd5RcTCpaUBZoA",
+		Cipher:     "2JQuMmjKxU72551kh6gTn9j7omz9YNcV8pnrrPXfzWqUGnhUZKzD4uHgLgkiLG2Ry46TK84EhkLvKXzf81D88QV9yr3AuF1CutQQu7NiP4H2fX",
 		SettingUrl: "",
 		Saver:      nil,
 		ServerId: &wallet.ServeNodeId{
-			ID: account.ID("YP9K8VVHqLzi75tvDs3xLPm3FJ8mN623EKd7XpyNCuJW9D"),
-			IP: "192.168.30.13",
+			ID: account.ID("YP4xVdXD91ywvLHDmovaZYorW5KovJwxgjPCKvmrzHDB8Q"),
+			IP: "192.168.1.108", //192.168.1.108//192.168.30.13
 		},
 	}
-	w, err := wallet.NewWallet(conf, "12345678")
+	w, err := wallet.NewWallet(conf, "123")
 	if err != nil {
 		panic(err)
 	}
