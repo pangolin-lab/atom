@@ -121,18 +121,17 @@ func IsProtonAddress(address string) bool {
 }
 
 func LoadEthAddrByProtonAddr(protonAddr string) string {
-	return ethereum.CheckProtonAddr(protonAddr)
+	return ethereum.BoundEth(protonAddr)
 }
 
 func EthBindings(ETHAddr string) string {
-	ethB, protonB, no := ethereum.BalanceOfEthAddr(ETHAddr)
+	ethB, no := ethereum.BasicBalance(ETHAddr)
 	if ethB == nil {
 		return ""
 	}
 
-	return fmt.Sprintf("%f"+Separator+"%f"+Separator+"%d",
+	return fmt.Sprintf("%f"+Separator+"%d",
 		ethereum.ConvertByDecimal(ethB),
-		ethereum.ConvertByDecimal(protonB),
 		no)
 }
 
@@ -145,7 +144,7 @@ func VerifyEthAccount(cipherTxt, pwd string) bool {
 }
 
 func BindProtonAddress(protonAddr, cipherKey, password string) string {
-	tx, err := ethereum.BindProtonAddr(protonAddr, cipherKey, password)
+	tx, err := ethereum.Bind(protonAddr, cipherKey, password)
 	if err != nil {
 		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
 		return err.Error()
@@ -153,7 +152,7 @@ func BindProtonAddress(protonAddr, cipherKey, password string) string {
 	return tx
 }
 func UnbindProtonAddress(protonAddr, cipherKey, password string) string {
-	tx, err := ethereum.UnbindProtonAddr(protonAddr, cipherKey, password)
+	tx, err := ethereum.Unbind(protonAddr, cipherKey, password)
 	if err != nil {
 		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
 		return err.Error()
