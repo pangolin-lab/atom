@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	androidLib "github.com/proton-lab/autom/android"
 	"github.com/proton-lab/autom/pipeProxy"
 	"github.com/proton-lab/autom/wallet"
 	"github.com/proton-lab/proton-node/account"
@@ -26,6 +27,11 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 		Saver:      nil,
 	},
 	BootNodes: "YPBzFaBFv8ZjkPQxtozNQe1c9CvrGXYg4tytuWjo9jiaZx@192.168.30.12",
+}
+
+func main() {
+	ETHAddr := "0x9e117f79a1a7cba2545d31c8321efabab9841bed"
+	println(androidLib.EthBindings(ETHAddr))
 }
 
 func createKs() {
@@ -61,7 +67,7 @@ func importKs() {
 		panic(err)
 	}
 }
-func main() {
+func test12() {
 	acc, err := account.AccFromString("YPDV86j2ZTnFivpC44FtpocyYgtqPJ5R5NC5EcRcyhprTs",
 		"3U1V26zuBSgW6mudv7aZACkK8q75XEf936qWfhRRvKEHqTrQmmk726464tRnSLXYPUgqyvWADG4DPtqE3Y2Va4qo9ivvRTbz2jnikpdhj6Feuz", "123")
 	if err != nil {

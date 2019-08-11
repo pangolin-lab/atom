@@ -16,14 +16,14 @@ import (
 	"strings"
 )
 
-func freeManager() (*ethclient.Client, *ethInterface.ProtonManager, error) {
+func freeManager() (*ethclient.Client, *ethInterface.PangolinManager, error) {
 	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
 	if err != nil {
 		fmt.Printf("\nDial up infura failed:%s", err)
 		return nil, nil, err
 	}
 
-	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewPangolinManager(common.HexToAddress(ethInterface.ManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -33,7 +33,7 @@ func freeManager() (*ethclient.Client, *ethInterface.ProtonManager, error) {
 	return conn, manager, nil
 }
 
-func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterface.ProtonManager, *bind.TransactOpts, error) {
+func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterface.PangolinManager, *bind.TransactOpts, error) {
 
 	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
 	if err != nil {
@@ -41,7 +41,7 @@ func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterfac
 		return nil, nil, nil, err
 	}
 
-	manager, err := ethInterface.NewProtonManager(common.HexToAddress(ethInterface.ProtonManagerContractAddress), conn)
+	manager, err := ethInterface.NewPangolinManager(common.HexToAddress(ethInterface.ManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -67,7 +67,7 @@ func CheckProtonAddr(protonAddr string) string {
 
 	arr := account.ID(protonAddr).ToArray()
 	fmt.Printf("\nQuery proton [%s] ehtereum address (%s)", protonAddr, hex.EncodeToString(arr[:]))
-	ethAddr, _, _, err := manager.CheckProtonAddress(nil, arr)
+	ethAddr, _, _, err := manager.Check(nil, arr)
 	if err != nil {
 		fmt.Printf("\n CheckProtonAddress err:%s", err)
 		return ""
@@ -84,13 +84,13 @@ func BalanceOfEthAddr(ethAddr string) (*big.Int, *big.Int, int) {
 	}
 	defer conn.Close()
 
-	ethBalance, protonBalance, protonNo, err := manager.CheckBinder(nil, common.HexToAddress(ethAddr))
+	ethBalance, protonBalance, protonNo, err := manager.BindingInfo(nil, common.HexToAddress(ethAddr))
 	if err != nil {
 		fmt.Printf("\n CheckBinder err:%s", err)
 		return nil, nil, 0
 	}
 
-	fmt.Printf("ETH=%d Proton=%d NO=%d", ethBalance, protonBalance, protonNo)
+	fmt.Printf("\n ETH=%d Proton=%d NO=%d\n", ethBalance, protonBalance, protonNo)
 	return ethBalance, protonBalance, int(protonNo.Int64())
 }
 
@@ -105,15 +105,15 @@ func ConvertByDecimal(val *big.Int) float64 {
 func CreateEthAccount(password, directory string) string {
 
 	ks := keystore.NewKeyStore(directory, keystore.StandardScryptN, keystore.StandardScryptP)
-	account, err := ks.NewAccount(password)
+	acc, err := ks.NewAccount(password)
 	if err != nil {
 		fmt.Println(err)
 		return ""
 	}
 
-	fmt.Println(account.Address.Hex())
-	fmt.Println(account.URL.Path)
-	return account.Address.Hex()
+	fmt.Println(acc.Address.Hex())
+	fmt.Println(acc.URL.Path)
+	return acc.Address.Hex()
 }
 
 func ImportEthAccount(file, dir, password string) string {
@@ -125,14 +125,14 @@ func ImportEthAccount(file, dir, password string) string {
 		return ""
 	}
 
-	account, err := ks.Import(jsonBytes, password, password)
+	acc, err := ks.Import(jsonBytes, password, password)
 	if err != nil {
 		fmt.Println(err)
 		return ""
 	}
 
-	fmt.Println(account.Address.Hex())
-	return account.Address.Hex()
+	fmt.Println(acc.Address.Hex())
+	return acc.Address.Hex()
 }
 
 func VerifyEthAccount(cipherTxt, passphrase string) bool {
@@ -161,7 +161,7 @@ func BindProtonAddr(protonAddr, cipherKey, password string) (string, error) {
 	defer conn.Close()
 
 	arr := account.ID(protonAddr).ToArray()
-	tx, err := manager.BindProtonAddress(auth, arr)
+	tx, err := manager.Bind(auth, arr)
 	if err != nil {
 		return "", err
 	}
@@ -172,14 +172,14 @@ func BindProtonAddr(protonAddr, cipherKey, password string) (string, error) {
 
 func UnbindProtonAddr(protonAddr, cipherKey, password string) (string, error) {
 
-	conn, manager, auth, err := payableManager(cipherKey, password)
+	var conn, manager, auth, err = payableManager(cipherKey, password)
 	if err != nil {
 		return "", err
 	}
 	defer conn.Close()
 
 	arr := account.ID(protonAddr).ToArray()
-	tx, err := manager.UnbindProtonAddress(auth, arr)
+	tx, err := manager.Unbind(auth, arr)
 	if err != nil {
 		return "", err
 	}
