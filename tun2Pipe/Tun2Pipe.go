@@ -171,10 +171,10 @@ func (t2s *Tun2Pipe) tun2Proxy(ip4 *layers.IPv4, tcp *layers.TCP) {
 
 	tcpLen := len(tcp.Payload)
 	s.packetSent++
-	//if s.packetSent == 2 && tcpLen == 0 {
-	//	VpnInstance.Log(fmt.Sprintf("Discard the ack:%t\n syn:%t psh:%t", tcp.ACK, tcp.SYN, tcp.PSH))
-	//	return
-	//}
+	if s.packetSent == 2 && tcpLen == 0 {
+		VpnInstance.Log(fmt.Sprintf("Discard the ack:%t\n syn:%t psh:%t", tcp.ACK, tcp.SYN, tcp.PSH))
+		return
+	}
 
 	if s.byteSent == 0 && tcpLen > 10 && s.HostName == "" {
 		host := ParseHost(tcp.Payload)
