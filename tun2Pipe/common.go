@@ -83,27 +83,27 @@ func ChangePacket(ip4 *layers.IPv4, tcp *layers.TCP) []byte {
 }
 
 func PrintFlow(pre string, ip4 *layers.IPv4, tcp *layers.TCP) {
-	fmt.Printf("%s	TCP <%d:%d> (%s:%d)->(%s:%d)",
+	s := fmt.Sprintf("[%s	TCP <%d:%d> (%s:%d)->(%s:%d)",
 		pre, tcp.Seq, tcp.Ack,
 		ip4.SrcIP, tcp.SrcPort,
 		ip4.DstIP, tcp.DstPort)
-
 	if tcp.SYN {
-		VpnInstance.Log(fmt.Sprintln(" SYN"))
+		s += " SYN"
 	}
 	if tcp.ACK {
-		VpnInstance.Log(fmt.Sprintln(" ACK"))
+		s += " ACK"
 	}
 	if tcp.FIN {
-		VpnInstance.Log(fmt.Sprintln(" FIN"))
+		s += " FIN"
 	}
 	if tcp.PSH {
-		VpnInstance.Log(fmt.Sprintln(" PSH"))
+		s += " PSH"
 	}
 	if tcp.RST {
-		VpnInstance.Log(fmt.Sprintln(" RST"))
+		s += " RST"
 	}
-	fmt.Println()
+	s += "]"
+	fmt.Println(s)
 }
 
 func ParseHost(data []byte) string {

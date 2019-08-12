@@ -35,8 +35,6 @@ func newSession(ip4 *layers.IPv4, tcp *layers.TCP, srvPort int, bp bool) *Sessio
 		ServerPort: srvPort,
 		byPass:     bp,
 	}
-
-	VpnInstance.Log(fmt.Sprintln("New Tcp Session:", s.ToString()))
 	return s
 }
 

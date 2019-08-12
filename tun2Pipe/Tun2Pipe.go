@@ -118,7 +118,6 @@ func (t2s *Tun2Pipe) InputPacket(buf []byte) {
 	var tcp *layers.TCP = nil
 	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 		tcp = tcpLayer.(*layers.TCP)
-		PrintFlow("-=->Before process", ip4, tcp)
 		t2s.ProcessTcpPacket(ip4, tcp)
 		return
 	}
@@ -167,15 +166,14 @@ func (t2s *Tun2Pipe) tun2Proxy(ip4 *layers.IPv4, tcp *layers.TCP) {
 
 		s = newSession(ip4, tcp, srvPort, bypass)
 		t2s.AddSession(srcPort, s)
+		VpnInstance.Log(fmt.Sprintln("New Tcp Session:", s.ToString(), " for source port:", srcPort))
 	}
 
 	tcpLen := len(tcp.Payload)
-
-	//s.UPTime = time.Now()
 	s.packetSent++
 	//if s.packetSent == 2 && tcpLen == 0 {
-	//VpnInstance.Log(fmt.Sprintf("Discard the ack:%t\n syn:%t psh:%t", tcp.ACK, tcp.SYN, tcp.PSH))
-	//return
+	//	VpnInstance.Log(fmt.Sprintf("Discard the ack:%t\n syn:%t psh:%t", tcp.ACK, tcp.SYN, tcp.PSH))
+	//	return
 	//}
 
 	if s.byteSent == 0 && tcpLen > 10 && s.HostName == "" {

@@ -10,6 +10,7 @@ import (
 	"github.com/proton-lab/autom/tun2Pipe"
 	"github.com/proton-lab/autom/wallet"
 	"github.com/proton-lab/proton-node/account"
+	"net"
 )
 
 type VpnDelegate interface {
@@ -161,4 +162,19 @@ func UnbindProtonAddress(protonAddr, cipherKey, password string) string {
 		return err.Error()
 	}
 	return tx
+}
+
+func SetupTcpListner(address string) string {
+	conn, err := net.Listen("tcp", address)
+	if err != nil {
+		return err.Error()
+	}
+	fmt.Printf("\n-----TCP Listning at:%s----->\n", conn.Addr().String())
+	for {
+		cc, err := conn.Accept()
+		if err != nil {
+			return err.Error()
+		}
+		fmt.Printf("\n<--------[%s=%s]----------->", cc.LocalAddr().String(), cc.RemoteAddr().String())
+	}
 }
