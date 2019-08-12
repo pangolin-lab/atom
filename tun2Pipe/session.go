@@ -9,9 +9,9 @@ import (
 )
 
 type Session struct {
-	byPass     bool
-	Pipe       *directPipe
-	UPTime     time.Time
+	byPass bool
+	Pipe   *directPipe
+	//UPTime     time.Time
 	RemoteIP   net.IP
 	RemotePort int
 	ServerPort int
@@ -21,14 +21,15 @@ type Session struct {
 }
 
 func (s *Session) ToString() string {
-	return fmt.Sprintf("(srvPort=%d, bypass=%t) %s:%d t=%s", s.ServerPort, s.byPass,
+	return fmt.Sprintf("(srvPort=%d, bypass=%t) %s:%d ", s.ServerPort, s.byPass,
 		s.RemoteIP, s.RemotePort,
-		s.UPTime.Format("2006-01-02 15:04:05"))
+		//s.UPTime.Format("2006-01-02 15:04:05")
+	)
 }
 
 func newSession(ip4 *layers.IPv4, tcp *layers.TCP, srvPort int, bp bool) *Session {
 	s := &Session{
-		UPTime:     time.Now(),
+		//UPTime:     time.Now(),
 		RemoteIP:   ip4.DstIP,
 		RemotePort: int(tcp.DstPort),
 		ServerPort: srvPort,

@@ -153,7 +153,7 @@ func (t2s *Tun2Pipe) RemoveFromSession(keyPort int) {
 
 func (t2s *Tun2Pipe) tun2Proxy(ip4 *layers.IPv4, tcp *layers.TCP) {
 
-	PrintFlow("-=->tun2Proxy", ip4, tcp)
+	PrintFlow("-========->tun2Proxy", ip4, tcp)
 	srcPort := int(tcp.SrcPort)
 	s := t2s.GetSession(srcPort)
 
@@ -171,12 +171,12 @@ func (t2s *Tun2Pipe) tun2Proxy(ip4 *layers.IPv4, tcp *layers.TCP) {
 
 	tcpLen := len(tcp.Payload)
 
-	s.UPTime = time.Now()
+	//s.UPTime = time.Now()
 	s.packetSent++
-	if s.packetSent == 2 && tcpLen == 0 {
-		VpnInstance.Log(fmt.Sprintf("Discard the ack:%t\n syn:%t psh:%t", tcp.ACK, tcp.SYN, tcp.PSH))
-		//return
-	}
+	//if s.packetSent == 2 && tcpLen == 0 {
+	//VpnInstance.Log(fmt.Sprintf("Discard the ack:%t\n syn:%t psh:%t", tcp.ACK, tcp.SYN, tcp.PSH))
+	//return
+	//}
 
 	if s.byteSent == 0 && tcpLen > 10 && s.HostName == "" {
 		host := ParseHost(tcp.Payload)
@@ -191,7 +191,7 @@ func (t2s *Tun2Pipe) tun2Proxy(ip4 *layers.IPv4, tcp *layers.TCP) {
 	tcp.DstPort = layers.TCPPort(s.ServerPort)
 
 	data := ChangePacket(ip4, tcp)
-	PrintFlow("-=->tun2Proxy", ip4, tcp)
+	PrintFlow("-========->tun2Proxy", ip4, tcp)
 
 	if _, err := VpnInstance.Write(data); err != nil {
 		VpnInstance.Log(fmt.Sprintln("-=->tun2Proxy write to tun err:", err))
@@ -201,14 +201,14 @@ func (t2s *Tun2Pipe) tun2Proxy(ip4 *layers.IPv4, tcp *layers.TCP) {
 }
 
 func (t2s *Tun2Pipe) proxy2Tun(ip4 *layers.IPv4, tcp *layers.TCP, rPort int) {
-	PrintFlow("<-=-proxy2Tun", ip4, tcp)
+	PrintFlow("<-------=-proxy2Tun", ip4, tcp)
 
 	ip4.SrcIP = ip4.DstIP
 	ip4.DstIP = t2s.tunIP
 	tcp.SrcPort = layers.TCPPort(rPort)
 	data := ChangePacket(ip4, tcp)
 
-	PrintFlow("<-=-proxy2Tun", ip4, tcp)
+	PrintFlow("<-------=-proxy2Tun", ip4, tcp)
 	if _, err := VpnInstance.Write(data); err != nil {
 		VpnInstance.Log(fmt.Sprintln("<-=-proxy2Tun write to tun err:", err))
 		return
