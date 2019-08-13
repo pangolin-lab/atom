@@ -10,6 +10,8 @@ import (
 	"github.com/proton-lab/autom/tun2Pipe"
 	"github.com/proton-lab/autom/wallet"
 	"github.com/proton-lab/proton-node/account"
+	"io/ioutil"
+	"strings"
 )
 
 type VpnDelegate interface {
@@ -168,4 +170,13 @@ func SetGlobalModel(global bool) {
 }
 func IsGlobalMode() bool {
 	return tun2Pipe.ByPassInst().IsGlobalModel
+}
+
+func ReloadSeedNodes(url, path string) bool {
+	nodes := pipeProxy.LoadFromServer(url)
+	if e := ioutil.WriteFile(path, []byte(strings.Join(nodes, "\n")), 0644); e != nil {
+		println("create boot nodes file failed:", path, e)
+		return false
+	}
+	return true
 }
