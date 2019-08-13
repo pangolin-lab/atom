@@ -8,8 +8,9 @@ import (
 )
 
 type ByPassIPs struct {
-	Masks map[string]net.IPMask
-	IP    map[string]struct{}
+	Masks         map[string]net.IPMask
+	IP            map[string]struct{}
+	IsGlobalModel bool
 	sync.RWMutex
 }
 
@@ -19,8 +20,9 @@ var once sync.Once
 func ByPassInst() *ByPassIPs {
 	once.Do(func() {
 		_instance = &ByPassIPs{
-			Masks: make(map[string]net.IPMask),
-			IP:    make(map[string]struct{}),
+			Masks:         make(map[string]net.IPMask),
+			IP:            make(map[string]struct{}),
+			IsGlobalModel: false,
 		}
 	})
 	return _instance
@@ -37,11 +39,18 @@ func (bp *ByPassIPs) Load(IPS string) {
 
 	VpnInstance.Log(fmt.Sprintf("Total bypass ips:%d groups:%d \n", len(bp.IP), len(bp.Masks)))
 }
+func (bp *ByPassIPs) ChangeGlobalModel(global bool) {
+	bp.IsGlobalModel = global
+}
 
 func (bp *ByPassIPs) Hit(ip net.IP) bool {
 
 	bp.RLock()
 	defer bp.RUnlock()
+
+	if bp.IsGlobalModel {
+		return false
+	}
 
 	for _, mask := range bp.Masks {
 		maskIP := ip.Mask(mask)
