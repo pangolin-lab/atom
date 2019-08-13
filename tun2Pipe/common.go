@@ -8,6 +8,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"net"
 	"net/http"
+	"strings"
 	"syscall"
 )
 
@@ -113,8 +114,13 @@ func ParseHost(data []byte) string {
 		{
 			reader := bufio.NewReader(bytes.NewReader(data))
 			if r, _ := http.ReadRequest(reader); r != nil {
-				VpnInstance.Log(fmt.Sprintln("---===>>>Success host:", r.Host))
-				return r.Host
+				host := r.Host
+				if strings.Contains(r.Host, ":") {
+					addr := strings.Split(r.Host, ":")
+					host = addr[0]
+				}
+				VpnInstance.Log(fmt.Sprintln("---===>>>Success host:", host))
+				return host
 			}
 		}
 	case 0x16:
