@@ -11,6 +11,7 @@ type ByPassIPs struct {
 	Masks         map[string]net.IPMask
 	IP            map[string]struct{}
 	IsGlobalModel bool
+	IsReturnModel bool
 	sync.RWMutex
 }
 
@@ -23,6 +24,7 @@ func ByPassInst() *ByPassIPs {
 			Masks:         make(map[string]net.IPMask),
 			IP:            make(map[string]struct{}),
 			IsGlobalModel: false,
+			IsReturnModel: false,
 		}
 	})
 	return _instance
@@ -44,13 +46,22 @@ func (bp *ByPassIPs) ChangeGlobalModel(global bool) {
 }
 
 func (bp *ByPassIPs) Hit(ip net.IP) bool {
-
-	bp.RLock()
-	defer bp.RUnlock()
-
 	if bp.IsGlobalModel {
 		return false
 	}
+
+	ret := bp.localSearch(ip)
+
+	if bp.IsReturnModel {
+		ret = !ret
+	}
+
+	return ret
+}
+
+func (bp *ByPassIPs) localSearch(ip net.IP) bool {
+	bp.RLock()
+	defer bp.RUnlock()
 
 	for _, mask := range bp.Masks {
 		maskIP := ip.Mask(mask)
@@ -59,8 +70,5 @@ func (bp *ByPassIPs) Hit(ip net.IP) bool {
 			return true
 		}
 	}
-
-	//TODO:: pac domain list
-
 	return false
 }

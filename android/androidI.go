@@ -180,3 +180,10 @@ func ReloadSeedNodes(url, path string) bool {
 	}
 	return true
 }
+
+func SetReturnModel(ret bool) {
+	tun2Pipe.ByPassInst().IsReturnModel = ret
+}
+func IsReturnMode() bool {
+	return tun2Pipe.ByPassInst().IsReturnModel
+}
