@@ -14,9 +14,9 @@ m:
 	CGO_LDFLAGS=-mmacosx-version-min=10.11 \
 	GOARCH=amd64 GOOS=darwin go build  --buildmode=c-archive -o $(BINDIR)/dss.a mac/*.go
 a:
-	gomobile bind -v -o $(BINDIR)/dss.aar -target=android github.com/proton-lab/autom/android
+	gomobile bind -v -o $(BINDIR)/dss.aar -target=android github.com/pangolin-lab/atom/android
 i:
-	gomobile bind -v -o $(BINDIR)/iosLib.framework -target=ios github.com/proton-lab/autom/ios
+	gomobile bind -v -o $(BINDIR)/iosLib.framework -target=ios github.com/pangolin-lab/atom/ios
 
 clean:
 	gomobile clean
