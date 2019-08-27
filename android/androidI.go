@@ -9,6 +9,8 @@ import (
 	"github.com/pangolin-lab/atom/tun2Pipe"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolin-lab/go-node/account"
+	"io/ioutil"
+	"strings"
 )
 
 type VpnDelegate interface {
@@ -158,4 +160,13 @@ func UnbindProtonAddress(protonAddr, cipherKey, password string) string {
 		return err.Error()
 	}
 	return tx
+}
+
+func ReloadSeedNodes(url, path string) bool {
+	nodes := pipeProxy.LoadFromServer(url)
+	if e := ioutil.WriteFile(path, []byte(strings.Join(nodes, "\n")), 0644); e != nil {
+		println("create boot nodes file failed:", path, e)
+		return false
+	}
+	return true
 }
