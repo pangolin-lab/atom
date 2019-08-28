@@ -10,6 +10,7 @@ import (
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolin-lab/go-node/account"
+	wa "github.com/pangolink/miner-pool/account"
 	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
 	"net"
@@ -26,6 +27,16 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 		Saver:      nil,
 	},
 	BootNodes: "YPBzFaBFv8ZjkPQxtozNQe1c9CvrGXYg4tytuWjo9jiaZx@192.168.30.12",
+}
+
+func main() {
+	w := wa.NewWallet()
+	j, e := w.EncryptKey("123")
+	if e != nil {
+		panic(e)
+	}
+
+	fmt.Print(string(j))
 }
 
 func createKs() {
@@ -72,7 +83,7 @@ func test12() {
 	//importKs()
 }
 
-func main() {
+func test13() {
 
 	//failed:
 	//YPCr9KRE3tRXaKMb388A5gEjFqK3u4sAo9EBLK7tc94xwh
