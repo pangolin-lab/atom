@@ -3,12 +3,9 @@ package androidLib
 import "C"
 import (
 	"fmt"
-	"github.com/btcsuite/btcutil/base58"
-	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/tun2Pipe"
 	"github.com/pangolin-lab/atom/wallet"
-	"github.com/pangolin-lab/go-node/account"
 	"io/ioutil"
 	"strings"
 )
@@ -17,8 +14,6 @@ type VpnDelegate interface {
 	tun2Pipe.VpnDelegate
 	GetBootPath() string
 }
-
-const Separator = "@@@"
 
 var _instance *pipeProxy.PipeProxy = nil
 var proxyConf = &pipeProxy.ProxyConfig{}
@@ -87,6 +82,7 @@ func StopVpn() {
 		_instance = nil
 	}
 }
+
 func InputPacket(data []byte) error {
 
 	if _instance == nil {
@@ -96,70 +92,6 @@ func InputPacket(data []byte) error {
 	_instance.TunSrc.InputPacket(data)
 
 	return nil
-}
-
-func VerifyAccount(addr, cipher, password string) bool {
-	if _, err := account.AccFromString(addr, cipher, password); err != nil {
-		fmt.Println("Valid Account:", err)
-		return false
-	}
-	return true
-}
-
-func CreateAccount(password string) string {
-
-	key, err := account.GenerateKey(password)
-	if err != nil {
-		return ""
-	}
-	address := key.ToNodeId().String()
-	cipherTxt := base58.Encode(key.LockedKey)
-
-	return address + Separator + cipherTxt
-}
-
-func IsProtonAddress(address string) bool {
-	return account.ID(address).IsValid()
-}
-
-func LoadEthAddrByProtonAddr(protonAddr string) string {
-	return ethereum.BoundEth(protonAddr)
-}
-
-func EthBindings(ETHAddr string) string {
-	ethB, no := ethereum.BasicBalance(ETHAddr)
-	if ethB == nil {
-		return ""
-	}
-
-	return fmt.Sprintf("%f"+Separator+"%d",
-		ethereum.ConvertByDecimal(ethB),
-		no)
-}
-
-func CreateEthAccount(password, directory string) string {
-	return ethereum.CreateEthAccount2(password, directory)
-}
-
-func VerifyEthAccount(cipherTxt, pwd string) bool {
-	return ethereum.VerifyEthAccount(cipherTxt, pwd)
-}
-
-func BindProtonAddress(protonAddr, cipherKey, password string) string {
-	tx, err := ethereum.Bind(protonAddr, cipherKey, password)
-	if err != nil {
-		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
-		return err.Error()
-	}
-	return tx
-}
-func UnbindProtonAddress(protonAddr, cipherKey, password string) string {
-	tx, err := ethereum.Unbind(protonAddr, cipherKey, password)
-	if err != nil {
-		fmt.Printf("\nBind proton addr(%s) err:%s", protonAddr, err)
-		return err.Error()
-	}
-	return tx
 }
 
 func ReloadSeedNodes(url, path string) bool {
