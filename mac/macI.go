@@ -7,7 +7,6 @@ import (
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/miner-pool/account"
-	"github.com/pangolink/miner-pool/common"
 )
 
 var proxyConf *pipeProxy.ProxyConfig = nil
@@ -42,9 +41,6 @@ func LibIsInit() bool {
 
 //export LibInitProxy
 func LibInitProxy(addr, cipher, url, boot, path string) bool {
-
-	ethereum.Conf = common.TestNet
-
 	proxyConf = &pipeProxy.ProxyConfig{
 		WConfig: &wallet.WConfig{
 			BCAddr:     addr,

@@ -11,7 +11,7 @@ import (
 	"math/big"
 )
 
-var Conf *com.EthereumConfig
+var Conf *com.EthereumConfig = com.TestNet
 
 func ConvertByDecimal(val *big.Int) float64 {
 	fVal := new(big.Float)
@@ -54,11 +54,11 @@ func TokenBalance(address string) (float64, float64) {
 		return 0, 0
 	}
 
-	ethB, tokenB, err := conn.TokenBalance(nil, common.HexToAddress(address))
+	tokenB, ethB, err := conn.TokenBalance(nil, common.HexToAddress(address))
 	if err != nil {
 		fmt.Print(err)
 		return 0, 0
 	}
 
-	return ConvertByDecimal(ethB), ConvertByDecimal(tokenB)
+	return ConvertByDecimal(tokenB), ConvertByDecimal(ethB)
 }
