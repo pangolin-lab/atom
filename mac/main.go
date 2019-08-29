@@ -9,7 +9,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/proton-lab/autom/pipeProxy"
 	"github.com/proton-lab/autom/wallet"
-	"github.com/proton-lab/proton-node/account"
+	"github.com/pangolink/proton-node/account"
 	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
 	"net"

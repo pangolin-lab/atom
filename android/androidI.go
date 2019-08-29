@@ -8,7 +8,7 @@ import (
 	"github.com/proton-lab/autom/pipeProxy"
 	"github.com/proton-lab/autom/tun2Pipe"
 	"github.com/proton-lab/autom/wallet"
-	"github.com/proton-lab/proton-node/account"
+	"github.com/pangolink/proton-node/account"
 )
 
 type VpnDelegate interface {
