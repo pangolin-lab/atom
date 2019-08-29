@@ -31,7 +31,7 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 
 func main() {
 	w := wa.NewWallet()
-	j, e := w.EncryptKey("123")
+	j, e := w.EncryptWallet("123")
 	if e != nil {
 		panic(e)
 	}

@@ -20,7 +20,7 @@ func NewWallet(password string) *C.char {
 		return nil
 	}
 
-	wJson, err := w.EncryptKey(password)
+	wJson, err := w.EncryptWallet(password)
 	if err != nil {
 		fmt.Print(err)
 		return nil
@@ -32,6 +32,11 @@ func NewWallet(password string) *C.char {
 func WalletBalance(address string) (*C.char, *C.char) {
 	eth, token := ethereum.TokenBalance(address)
 	return C.CString(fmt.Sprintf("%.8f", eth)), C.CString(fmt.Sprintf("%.8f", token))
+}
+
+//export WalletVerify
+func WalletVerify(cipher, auth string) bool {
+	return account.VerifyWallet(([]byte)(cipher), auth)
 }
 
 //export LibIsInit
