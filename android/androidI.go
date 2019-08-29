@@ -3,9 +3,11 @@ package androidLib
 import "C"
 import (
 	"fmt"
+	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/tun2Pipe"
 	"github.com/pangolin-lab/atom/wallet"
+	"github.com/pangolink/miner-pool/common"
 	"io/ioutil"
 	"strings"
 )
@@ -19,7 +21,7 @@ var _instance *pipeProxy.PipeProxy = nil
 var proxyConf = &pipeProxy.ProxyConfig{}
 
 func InitVPN(addr, cipher, url, boot, IPs string, d VpnDelegate) error {
-
+	ethereum.Conf = common.TestNet
 	pt := func(fd uintptr) {
 		d.ByPass(int32(fd))
 	}

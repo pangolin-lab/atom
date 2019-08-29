@@ -3,9 +3,11 @@ package main
 import "C"
 import (
 	"fmt"
+	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/miner-pool/account"
+	"github.com/pangolink/miner-pool/common"
 )
 
 var proxyConf *pipeProxy.ProxyConfig = nil
@@ -13,7 +15,6 @@ var curProxy *pipeProxy.PipeProxy = nil
 
 //export NewWallet
 func NewWallet(password string) *C.char {
-
 	w := account.NewWallet()
 	if w == nil {
 		fmt.Print("Create new Wallet failed")
@@ -25,13 +26,13 @@ func NewWallet(password string) *C.char {
 		fmt.Print(err)
 		return nil
 	}
-
 	return C.CString(string(wJson))
 }
 
 //export WalletBalance
-func WalletBalance(address string) {
-
+func WalletBalance(address string) (*C.char, *C.char) {
+	eth, token := ethereum.TokenBalance(address)
+	return C.CString(fmt.Sprintf("%.8f", eth)), C.CString(fmt.Sprintf("%.8f", token))
 }
 
 //export LibIsInit
@@ -41,6 +42,9 @@ func LibIsInit() bool {
 
 //export LibInitProxy
 func LibInitProxy(addr, cipher, url, boot, path string) bool {
+
+	ethereum.Conf = common.TestNet
+
 	proxyConf = &pipeProxy.ProxyConfig{
 		WConfig: &wallet.WConfig{
 			BCAddr:     addr,
