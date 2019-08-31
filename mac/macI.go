@@ -12,6 +12,19 @@ import (
 var proxyConf *pipeProxy.ProxyConfig = nil
 var curProxy *pipeProxy.PipeProxy = nil
 
+//export InitBlockChain
+func InitBlockChain(tokenAddr, microPayAddr, apiUrl string) {
+	if tokenAddr != "" {
+		ethereum.Conf.Token = tokenAddr
+	}
+	if microPayAddr != "" {
+		ethereum.Conf.MicroPaySys = microPayAddr
+	}
+	if apiUrl != "" {
+		ethereum.Conf.EthApiUrl = apiUrl
+	}
+}
+
 //export NewWallet
 func NewWallet(password string) *C.char {
 	w := account.NewWallet()

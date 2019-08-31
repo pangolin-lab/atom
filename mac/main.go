@@ -9,7 +9,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
-	"github.com/pangolin-lab/go-node/account"
+	"github.com/pangolink/go-node/account"
 	wa "github.com/pangolink/miner-pool/account"
 	"golang.org/x/net/publicsuffix"
 	"io/ioutil"

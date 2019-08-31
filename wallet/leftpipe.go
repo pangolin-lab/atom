@@ -3,8 +3,8 @@ package wallet
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pangolin-lab/go-node/network"
-	"github.com/pangolin-lab/go-node/service/rpcMsg"
+	"github.com/pangolink/go-node/network"
+	"github.com/pangolink/go-node/service/rpcMsg"
 	"io"
 	"net"
 	"time"

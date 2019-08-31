@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/pangolin-lab/atom/pipeProxy"
-	"github.com/pangolin-lab/go-node/account"
+	"github.com/pangolink/go-node/account"
 	"io/ioutil"
 	"net/http"
 	"strings"

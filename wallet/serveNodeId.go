@@ -2,9 +2,9 @@ package wallet
 
 import (
 	"fmt"
-	"github.com/pangolin-lab/go-node/account"
-	"github.com/pangolin-lab/go-node/network"
-	"github.com/pangolin-lab/go-node/service/rpcMsg"
+	"github.com/pangolink/go-node/account"
+	"github.com/pangolink/go-node/network"
+	"github.com/pangolink/go-node/service/rpcMsg"
 	"net"
 	"strings"
 	"syscall"
