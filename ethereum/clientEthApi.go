@@ -2,6 +2,7 @@ package ethereum
 
 import (
 	"crypto/ecdsa"
+	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -61,4 +62,74 @@ func TokenBalance(address string) (float64, float64) {
 	}
 
 	return ConvertByDecimal(tokenB), ConvertByDecimal(ethB)
+}
+
+func PoolAddressList() []common.Address {
+	conn, err := connect()
+	if err != nil {
+		fmt.Print(err)
+		return nil
+	}
+
+	addArr, err := conn.GetPoolAddrees(nil)
+	if err != nil {
+		fmt.Print(err)
+		return nil
+	}
+
+	return addArr
+}
+
+func PoolDetails(addr string) string {
+
+	conn, err := connect()
+	if err != nil {
+		fmt.Print(err)
+		return ""
+	}
+
+	pool, err := conn.MinerPools(nil, common.HexToAddress(addr))
+	if err != nil {
+		fmt.Print(err)
+		return ""
+	}
+
+	buf, err := json.Marshal(pool)
+	if err != nil {
+		fmt.Print(err)
+		return ""
+	}
+
+	return string(buf)
+}
+
+func PoolListWithDetails() string {
+
+	conn, err := connect()
+	if err != nil {
+		fmt.Print(err)
+		return ""
+	}
+
+	addrList, err := conn.GetPoolAddrees(nil)
+	if err != nil {
+		fmt.Print(err)
+		return ""
+	}
+
+	arr := make([]interface{}, len(addrList))
+	for i := 0; i < len(addrList); i++ {
+		details, err := conn.MinerPools(nil, addrList[i])
+		if err != nil {
+			fmt.Print(err)
+			continue
+		}
+		arr = append(arr, details)
+	}
+	buf, err := json.Marshal(arr)
+	if err != nil {
+		fmt.Print(err)
+		return ""
+	}
+	return string(buf)
 }
