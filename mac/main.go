@@ -3,6 +3,7 @@ package main
 import "C"
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/google/gopacket"
@@ -30,6 +31,14 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
+	subAddr := account.ID("PGFFAr6qYPdmBJW73UQiVXvLc95Vq9Hn2karVBy6xqPaHe") ////
+
+	str := hex.EncodeToString(subAddr.ToPubKey())
+
+	fmt.Println(str)
+}
+
+func test14() {
 	w := wa.NewWallet()
 	j, e := w.EncryptWallet("123")
 	if e != nil {
