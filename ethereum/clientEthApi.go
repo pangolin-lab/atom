@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/pangolink/go-node/account"
 	com "github.com/pangolink/miner-pool/common"
 	"github.com/pangolink/miner-pool/eth/generated"
 	"math"
@@ -103,6 +104,17 @@ func PoolDetails(addr string) string {
 	return string(buf)
 }
 
+type PoolDetail struct {
+	MainAddr     string
+	Payer        string
+	SubAddr      string
+	GuaranteedNo float64
+	ID           int
+	PoolType     uint8
+	ShortName    string
+	DetailInfos  string
+}
+
 func PoolListWithDetails() string {
 
 	conn, err := connect()
@@ -117,13 +129,25 @@ func PoolListWithDetails() string {
 		return ""
 	}
 
-	arr := make([]interface{}, len(addrList))
+	arr := make([]PoolDetail, 0)
 	for i := 0; i < len(addrList); i++ {
-		details, err := conn.MinerPools(nil, addrList[i])
+		d, err := conn.MinerPools(nil, addrList[i])
 		if err != nil {
 			fmt.Print(err)
 			continue
 		}
+
+		details := PoolDetail{
+			MainAddr:     d.MainAddr.Hex(),
+			Payer:        d.Payer.Hex(),
+			SubAddr:      account.ConvertToID2(d.SubAddr).String(),
+			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
+			ID:           int(d.ID.Int64()),
+			PoolType:     d.PoolType,
+			ShortName:    d.ShortName,
+			DetailInfos:  d.DetailInfos,
+		}
+
 		arr = append(arr, details)
 	}
 	buf, err := json.Marshal(arr)

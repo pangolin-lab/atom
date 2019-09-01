@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/go-node/account"
@@ -31,6 +32,11 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
+	jsonStr := ethereum.PoolListWithDetails()
+	fmt.Println(jsonStr)
+}
+
+func test15() {
 	subAddr := account.ID("PGFFAr6qYPdmBJW73UQiVXvLc95Vq9Hn2karVBy6xqPaHe") ////
 
 	str := hex.EncodeToString(subAddr.ToPubKey())
