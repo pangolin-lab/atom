@@ -18,7 +18,7 @@ var Conf = com.TestNet
 func ConvertByDecimal(val *big.Int) float64 {
 	fVal := new(big.Float)
 	fVal.SetString(val.String())
-	ethValue := new(big.Float).Quo(fVal, big.NewFloat(math.Pow10(18)))
+	ethValue := new(big.Float).Quo(fVal, big.NewFloat(math.Pow10(com.TokenDecimal)))
 	ret, _ := ethValue.Float64()
 	return ret
 }
