@@ -32,6 +32,17 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
+	for {
+		acc := account.CreateAccount("12345678")
+		fmt.Println(acc)
+		fmt.Println(acc.Address.ToServerPort())
+		if acc.Address.ToServerPort() < 52000 {
+			account.SaveToDisk(acc)
+			return
+		}
+	}
+}
+func test16() {
 	jsonStr := ethereum.PoolListWithDetails()
 	fmt.Println(jsonStr)
 }

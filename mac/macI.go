@@ -24,6 +24,8 @@ func InitBlockChain(tokenAddr, microPayAddr, apiUrl string) {
 	if apiUrl != "" {
 		ethereum.Conf.EthApiUrl = apiUrl
 	}
+
+	fmt.Println(ethereum.Conf.String())
 }
 
 //export NewWallet

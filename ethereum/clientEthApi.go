@@ -13,7 +13,7 @@ import (
 	"math/big"
 )
 
-var Conf *com.EthereumConfig = com.TestNet
+var Conf = com.TestNet
 
 func ConvertByDecimal(val *big.Int) float64 {
 	fVal := new(big.Float)
@@ -72,7 +72,7 @@ func PoolAddressList() []common.Address {
 		return nil
 	}
 
-	addArr, err := conn.GetPoolAddrees(nil)
+	addArr, err := conn.GetPoolAddress(nil)
 	if err != nil {
 		fmt.Print(err)
 		return nil
@@ -117,23 +117,24 @@ type PoolDetail struct {
 
 func PoolListWithDetails() string {
 
+	fmt.Println(Conf.String())
+
 	conn, err := connect()
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println("[Atom]: connect err:", err.Error())
 		return ""
 	}
 
-	addrList, err := conn.GetPoolAddrees(nil)
+	addrList, err := conn.GetPoolAddress(nil)
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println("[Atom]: GetPoolAddress err:", err)
 		return ""
 	}
-
 	arr := make([]PoolDetail, 0)
 	for i := 0; i < len(addrList); i++ {
 		d, err := conn.MinerPools(nil, addrList[i])
 		if err != nil {
-			fmt.Print(err)
+			fmt.Println("[Atom]: MinerPools err:", err)
 			continue
 		}
 
@@ -150,9 +151,10 @@ func PoolListWithDetails() string {
 
 		arr = append(arr, details)
 	}
+
 	buf, err := json.Marshal(arr)
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println("[Atom]: Marshal miner pool detail array err:", err)
 		return ""
 	}
 	return string(buf)
