@@ -116,7 +116,6 @@ type PoolDetail struct {
 }
 
 func PoolListWithDetails() string {
-
 	fmt.Println(Conf.String())
 
 	conn, err := connect()
@@ -151,7 +150,10 @@ func PoolListWithDetails() string {
 
 		arr = append(arr, details)
 	}
-
+	if len(arr) == 0 {
+		fmt.Println("[Atom]: no valid pool items")
+		return ""
+	}
 	buf, err := json.Marshal(arr)
 	if err != nil {
 		fmt.Println("[Atom]: Marshal miner pool detail array err:", err)

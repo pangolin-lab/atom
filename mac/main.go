@@ -32,6 +32,15 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
+	test17()
+}
+
+func test17() {
+	jsonStr := ethereum.PoolListWithDetails()
+	fmt.Println(jsonStr)
+}
+
+func test16() {
 	for {
 		acc := account.CreateAccount("12345678")
 		fmt.Println(acc)
@@ -42,13 +51,9 @@ func main() {
 		}
 	}
 }
-func test16() {
-	jsonStr := ethereum.PoolListWithDetails()
-	fmt.Println(jsonStr)
-}
 
 func test15() {
-	subAddr := account.ID("PGFFAr6qYPdmBJW73UQiVXvLc95Vq9Hn2karVBy6xqPaHe") ////
+	subAddr := account.ID("PGA6yJUjQfdGS48fP9yqULzooo6ZTRq7iHSnUBfCgsgbQg") ////
 
 	str := hex.EncodeToString(subAddr.ToPubKey())
 

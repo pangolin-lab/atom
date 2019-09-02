@@ -16,13 +16,19 @@ var curProxy *pipeProxy.PipeProxy = nil
 //export InitBlockChain
 func InitBlockChain(tokenAddr, microPayAddr, apiUrl string) {
 	if tokenAddr != "" {
-		ethereum.Conf.Token = tokenAddr
+		var tmp = make([]byte, len(tokenAddr))
+		copy(tmp, ([]byte)(tokenAddr))
+		ethereum.Conf.Token = string(tmp)
 	}
 	if microPayAddr != "" {
-		ethereum.Conf.MicroPaySys = microPayAddr
+		var tmp = make([]byte, len(microPayAddr))
+		copy(tmp, ([]byte)(microPayAddr))
+		ethereum.Conf.MicroPaySys = string(tmp)
 	}
 	if apiUrl != "" {
-		ethereum.Conf.EthApiUrl = apiUrl
+		var tmp = make([]byte, len(apiUrl))
+		copy(tmp, ([]byte)(apiUrl))
+		ethereum.Conf.EthApiUrl = string(tmp)
 	}
 
 	fmt.Println(ethereum.Conf.String())
