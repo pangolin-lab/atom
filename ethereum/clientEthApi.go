@@ -142,7 +142,7 @@ func PoolListWithDetails() string {
 			Payer:        d.Payer.Hex(),
 			SubAddr:      account.ConvertToID2(d.SubAddr).String(),
 			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
-			ID:           int(d.ID.Int64()),
+			ID:           int(d.ID),
 			PoolType:     d.PoolType,
 			ShortName:    d.ShortName,
 			DetailInfos:  d.DetailInfos,
