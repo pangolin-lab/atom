@@ -53,7 +53,7 @@ func test16() {
 }
 
 func test15() {
-	subAddr := account.ID("PGEUTCjB8admeNbjwhHoSUKDorMuqNkLtoU541ZhGc7zCb") //PGA6yJUjQfdGS48fP9yqULzooo6ZTRq7iHSnUBfCgsgbQg//PGEUTCjB8admeNbjwhHoSUKDorMuqNkLtoU541ZhGc7zCb
+	subAddr := account.ID("PGFFAr6qYPdmBJW73UQiVXvLc95Vq9Hn2karVBy6xqPaHe") // PGFFAr6qYPdmBJW73UQiVXvLc95Vq9Hn2karVBy6xqPaHe//PGA6yJUjQfdGS48fP9yqULzooo6ZTRq7iHSnUBfCgsgbQg//PGEUTCjB8admeNbjwhHoSUKDorMuqNkLtoU541ZhGc7zCb
 
 	str := hex.EncodeToString(subAddr.ToPubKey())
 

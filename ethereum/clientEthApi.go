@@ -105,8 +105,8 @@ func PoolDetails(addr string) string {
 }
 
 type PoolDetail struct {
-	MainAddr     string
-	Payer        string
+	MainAddr     common.Address
+	Payer        common.Address
 	SubAddr      string
 	GuaranteedNo float64
 	ID           int
@@ -116,8 +116,6 @@ type PoolDetail struct {
 }
 
 func PoolListWithDetails() string {
-	fmt.Println(Conf.String())
-
 	conn, err := connect()
 	if err != nil {
 		fmt.Println("[Atom]: connect err:", err.Error())
@@ -138,8 +136,8 @@ func PoolListWithDetails() string {
 		}
 
 		details := PoolDetail{
-			MainAddr:     d.MainAddr.Hex(),
-			Payer:        d.Payer.Hex(),
+			MainAddr:     d.MainAddr,
+			Payer:        d.Payer,
 			SubAddr:      account.ConvertToID2(d.SubAddr).String(),
 			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
 			ID:           int(d.ID),
@@ -160,4 +158,76 @@ func PoolListWithDetails() string {
 		return ""
 	}
 	return string(buf)
+}
+
+func MySubPools(addr string) string {
+
+	conn, err := connect()
+	if err != nil {
+		fmt.Println("[Atom]: connect err:", err.Error())
+		return ""
+	}
+
+	arr, err := conn.AllMySubPools(nil, common.HexToAddress(addr))
+	if err != nil {
+		fmt.Println("[Atom]: AllMySubPools err:", err.Error())
+		return ""
+	}
+
+	bytes, err := json.Marshal(arr)
+	if err != nil {
+		fmt.Println("[Atom]: marshal pool addresses arrays err:", err.Error())
+		return ""
+	}
+
+	return string(bytes)
+}
+
+type PayChannel struct {
+	MainAddr      common.Address
+	PayerAddr     common.Address
+	RemindTokens  float64
+	RemindPackets int64
+	Expiration    int64
+}
+
+func MySubPoolsWithDetails(addr string) string {
+	conn, err := connect()
+	if err != nil {
+		fmt.Println("[Atom]: connect err:", err.Error())
+		return ""
+	}
+	myAddr := common.HexToAddress(addr)
+	arr, err := conn.AllMySubPools(nil, myAddr)
+	if err != nil {
+		fmt.Println("[Atom]: AllMySubPools err:", err.Error())
+		return ""
+	}
+
+	poolArr := make([]PayChannel, 0)
+	for i := 0; i < len(arr); i++ {
+		poolAddr := arr[i]
+		detail, err := conn.MicroPaymentChannels(nil, myAddr, poolAddr)
+		if err != nil {
+			fmt.Println("[Atom]: MicroPaymentChannels err:", err.Error())
+			continue
+		}
+
+		d := PayChannel{
+			MainAddr:      detail.MainAddr,
+			PayerAddr:     detail.PayerAddr,
+			RemindTokens:  ConvertByDecimal(detail.RemindTokens),
+			RemindPackets: detail.RemindPackets.Int64(),
+			Expiration:    detail.Expiration.Int64(),
+		}
+		poolArr = append(poolArr, d)
+	}
+
+	b, err := json.Marshal(poolArr)
+	if err != nil {
+		fmt.Println("[Atom]: marshal pool with details arrays err:", err.Error())
+		return ""
+	}
+
+	return string(b)
 }
