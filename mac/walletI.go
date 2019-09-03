@@ -1,9 +1,7 @@
 package main
 
 import "C"
-
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolink/miner-pool/account"
@@ -55,41 +53,4 @@ func WalletBalance(address string) (*C.char, *C.char) {
 //export WalletVerify
 func WalletVerify(cipher, auth string) bool {
 	return account.VerifyWallet(([]byte)(cipher), auth)
-}
-
-//export MinerPoolAddresses
-func MinerPoolAddresses() *C.char {
-
-	arr := ethereum.PoolAddressList()
-	addr := make([]string, len(arr))
-
-	for i := 0; i < len(arr); i++ {
-		addr = append(addr, arr[i].Hex())
-	}
-
-	buf, _ := json.Marshal(addr)
-	return C.CString(string(buf))
-}
-
-//export MinerDetails
-func MinerDetails(addr string) *C.char {
-	return C.CString(ethereum.PoolDetails(addr))
-}
-
-//export MinerPoolList
-func MinerPoolList() *C.char {
-	jsonStr := ethereum.PoolListWithDetails()
-	return C.CString(jsonStr)
-}
-
-//export MySubPools
-func MySubPools(addr string) *C.char {
-	jsonStr := ethereum.MySubPools(addr)
-	return C.CString(jsonStr)
-}
-
-//export MySubPoolsWithDetails
-func MySubPoolsWithDetails(addr string) *C.char {
-	jsonStr := ethereum.MySubPoolsWithDetails(addr)
-	return C.CString(jsonStr)
 }

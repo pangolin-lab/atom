@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pangolink/go-node/account"
@@ -32,21 +33,13 @@ func connect() (*generated.MicroPaySystem, error) {
 	return generated.NewMicroPaySystem(common.HexToAddress(Conf.MicroPaySys), conn)
 }
 
-func FlowDataBalance(userAddr, poolAddr string) int64 {
-	return 0
-}
+func tokenConn() (*generated.PPNToken, error) {
+	conn, err := ethclient.Dial(Conf.EthApiUrl)
+	if err != nil {
+		return nil, err
+	}
 
-func BuyFlowData(key *ecdsa.PrivateKey) (string, error) {
-
-	//conn, err := connect()
-	//if err != nil{
-	//	return "", err
-	//}
-	//transactOpts := bind.NewKeyedTransactor(key)
-	//
-	//tx, err := conn.BuyPacket(transactOpts, [32]byte, )
-
-	return "", nil
+	return generated.NewPPNToken(common.HexToAddress(Conf.Token), conn)
 }
 
 func TokenBalance(address string) (float64, float64) {
@@ -118,20 +111,20 @@ type PoolDetail struct {
 func PoolListWithDetails() string {
 	conn, err := connect()
 	if err != nil {
-		fmt.Println("[Atom]: connect err:", err.Error())
+		fmt.Println("[PoolListWithDetails]: connect err:", err.Error())
 		return ""
 	}
 
 	addrList, err := conn.GetPoolAddress(nil)
 	if err != nil {
-		fmt.Println("[Atom]: GetPoolAddress err:", err)
+		fmt.Println("[PoolListWithDetails]: GetPoolAddress err:", err)
 		return ""
 	}
 	arr := make([]PoolDetail, 0)
 	for i := 0; i < len(addrList); i++ {
 		d, err := conn.MinerPools(nil, addrList[i])
 		if err != nil {
-			fmt.Println("[Atom]: MinerPools err:", err)
+			fmt.Println("[PoolListWithDetails]: MinerPools err:", err)
 			continue
 		}
 
@@ -149,12 +142,12 @@ func PoolListWithDetails() string {
 		arr = append(arr, details)
 	}
 	if len(arr) == 0 {
-		fmt.Println("[Atom]: no valid pool items")
+		fmt.Println("[PoolListWithDetails]: no valid pool items")
 		return ""
 	}
 	buf, err := json.Marshal(arr)
 	if err != nil {
-		fmt.Println("[Atom]: Marshal miner pool detail array err:", err)
+		fmt.Println("[PoolListWithDetails]: Marshal miner pool detail array err:", err)
 		return ""
 	}
 	return string(buf)
@@ -164,19 +157,19 @@ func MySubPools(addr string) string {
 
 	conn, err := connect()
 	if err != nil {
-		fmt.Println("[Atom]: connect err:", err.Error())
+		fmt.Println("[MySubPools]: connect err:", err.Error())
 		return ""
 	}
 
 	arr, err := conn.AllMySubPools(nil, common.HexToAddress(addr))
 	if err != nil {
-		fmt.Println("[Atom]: AllMySubPools err:", err.Error())
+		fmt.Println("[MySubPools]: AllMySubPools err:", err.Error())
 		return ""
 	}
 
 	bytes, err := json.Marshal(arr)
 	if err != nil {
-		fmt.Println("[Atom]: marshal pool addresses arrays err:", err.Error())
+		fmt.Println("[MySubPools]: marshal pool addresses arrays err:", err.Error())
 		return ""
 	}
 
@@ -197,10 +190,11 @@ func MySubPoolsWithDetails(addr string) string {
 		fmt.Println("[Atom]: connect err:", err.Error())
 		return ""
 	}
+
 	myAddr := common.HexToAddress(addr)
 	arr, err := conn.AllMySubPools(nil, myAddr)
 	if err != nil {
-		fmt.Println("[Atom]: AllMySubPools err:", err.Error())
+		fmt.Println("[MySubPoolsWithDetails]: AllMySubPools err:", err.Error())
 		return ""
 	}
 
@@ -209,7 +203,7 @@ func MySubPoolsWithDetails(addr string) string {
 		poolAddr := arr[i]
 		detail, err := conn.MicroPaymentChannels(nil, myAddr, poolAddr)
 		if err != nil {
-			fmt.Println("[Atom]: MicroPaymentChannels err:", err.Error())
+			fmt.Println("[MySubPoolsWithDetails]: MicroPaymentChannels err:", err.Error())
 			continue
 		}
 
@@ -225,9 +219,61 @@ func MySubPoolsWithDetails(addr string) string {
 
 	b, err := json.Marshal(poolArr)
 	if err != nil {
-		fmt.Println("[Atom]: marshal pool with details arrays err:", err.Error())
+		fmt.Println("[MySubPoolsWithDetails]: marshal pool with details arrays err:", err.Error())
 		return ""
 	}
 
 	return string(b)
+}
+
+func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey) string {
+	conn, err := tokenConn()
+	if err != nil {
+		fmt.Println("[BuyPacket]: tokenConn err:", err.Error())
+		return ""
+	}
+	uAddr := common.HexToAddress(userAddr)
+	pAddr := common.HexToAddress(poolAddr)
+
+	tn := big.NewInt(int64(math.Pow10(com.TokenDecimal) * tokenNo))
+	a := QueryApproved(uAddr)
+
+	transactOpts := bind.NewKeyedTransactor(key)
+
+	if a == nil || tn.Cmp(a) < 0 {
+		tx, err := conn.Approve(transactOpts, pAddr, tn)
+		if err != nil {
+			fmt.Println("[BuyPacket]: Approve err:", err.Error())
+			return ""
+		}
+		fmt.Println("[BuyPacket]: Approve success:", tx.Hash().Hex())
+	}
+
+	mConn, err := connect()
+	if err != nil {
+		fmt.Println("[BuyPacket]: connect err:", err.Error())
+		return ""
+	}
+
+	tx, err := mConn.BuyPacket(transactOpts, uAddr, tn, pAddr)
+	if err != nil {
+		return ""
+	}
+	return tx.Hash().Hex()
+}
+
+func QueryApproved(address common.Address) *big.Int {
+
+	conn, err := tokenConn()
+	if err != nil {
+		fmt.Println("[BuyPacket]: tokenConn err:", err.Error())
+		return nil
+	}
+
+	a, e := conn.Allowance(nil, address, common.HexToAddress(Conf.MicroPaySys))
+	if e != nil {
+		return nil
+	}
+
+	return a
 }
