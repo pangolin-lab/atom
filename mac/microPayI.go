@@ -4,6 +4,7 @@ import "C"
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolink/miner-pool/account"
@@ -53,7 +54,11 @@ func BuyPacket(userAddr, poolAddr, passPhrase, cipherTxt string, tokenNo float64
 		return C.CString(""), C.CString(e.Error())
 	}
 
-	tx := ethereum.BuyPacket(userAddr, poolAddr, tokenNo, w.SignKey())
+	tx, e := ethereum.BuyPacket(userAddr, poolAddr, tokenNo, w.SignKey())
+	if e != nil {
+		return C.CString(""), C.CString(e.Error())
+	}
+	fmt.Println(tx)
 	return C.CString(tx), C.CString("")
 }
 

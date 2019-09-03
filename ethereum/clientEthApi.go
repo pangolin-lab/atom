@@ -24,6 +24,16 @@ func ConvertByDecimal(val *big.Int) float64 {
 	return ret
 }
 
+func ConvertByFloat(val float64) *big.Int {
+	valF := big.NewFloat(val)
+	dec := big.NewFloat(math.Pow10(com.TokenDecimal))
+
+	valF = valF.Mul(valF, dec)
+	tn := new(big.Int)
+	valF.Int(tn)
+	return tn
+}
+
 func connect() (*generated.MicroPaySystem, error) {
 	conn, err := ethclient.Dial(Conf.EthApiUrl)
 	if err != nil {
@@ -226,25 +236,25 @@ func MySubPoolsWithDetails(addr string) string {
 	return string(b)
 }
 
-func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey) string {
+func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey) (string, error) {
 	conn, err := tokenConn()
 	if err != nil {
 		fmt.Println("[BuyPacket]: tokenConn err:", err.Error())
-		return ""
+		return "", err
 	}
 	uAddr := common.HexToAddress(userAddr)
 	pAddr := common.HexToAddress(poolAddr)
 
-	tn := big.NewInt(int64(math.Pow10(com.TokenDecimal) * tokenNo))
+	tn := ConvertByFloat(tokenNo)
+
 	a := QueryApproved(uAddr)
 
 	transactOpts := bind.NewKeyedTransactor(key)
-
-	if a == nil || tn.Cmp(a) < 0 {
-		tx, err := conn.Approve(transactOpts, pAddr, tn)
+	if a == nil || a.Cmp(tn) < 0 {
+		tx, err := conn.Approve(transactOpts, common.HexToAddress(Conf.MicroPaySys), tn)
 		if err != nil {
 			fmt.Println("[BuyPacket]: Approve err:", err.Error())
-			return ""
+			return "", err
 		}
 		fmt.Println("[BuyPacket]: Approve success:", tx.Hash().Hex())
 	}
@@ -252,15 +262,15 @@ func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey
 	mConn, err := connect()
 	if err != nil {
 		fmt.Println("[BuyPacket]: connect err:", err.Error())
-		return ""
+		return "", err
 	}
 
 	tx, err := mConn.BuyPacket(transactOpts, uAddr, tn, pAddr)
 	if err != nil {
 		fmt.Println("[BuyPacket]: BuyPacket err:", err.Error())
-		return ""
+		return "", err
 	}
-	return tx.Hash().Hex()
+	return tx.Hash().Hex(), nil
 }
 
 func QueryApproved(address common.Address) *big.Int {
@@ -275,7 +285,7 @@ func QueryApproved(address common.Address) *big.Int {
 	if e != nil {
 		return nil
 	}
-
+	fmt.Println(a.String())
 	return a
 }
 

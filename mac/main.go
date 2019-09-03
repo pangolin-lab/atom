@@ -15,6 +15,8 @@ import (
 	wa "github.com/pangolink/miner-pool/account"
 	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
+	"math"
+	"math/big"
 	"net"
 	"net/http"
 	"os"
@@ -32,7 +34,16 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
-	test15()
+	valF := big.NewFloat(123)
+	dec := big.NewFloat(math.Pow10(18))
+
+	valF = valF.Mul(valF, dec)
+	fmt.Println(valF.Float64())
+
+	tn := new(big.Int)
+	valF.Int(tn)
+	fmt.Println(tn.String())
+	fmt.Println(ethereum.ConvertByDecimal(tn))
 }
 
 func test17() {
