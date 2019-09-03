@@ -257,6 +257,7 @@ func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey
 
 	tx, err := mConn.BuyPacket(transactOpts, uAddr, tn, pAddr)
 	if err != nil {
+		fmt.Println("[BuyPacket]: BuyPacket err:", err.Error())
 		return ""
 	}
 	return tx.Hash().Hex()
@@ -266,7 +267,7 @@ func QueryApproved(address common.Address) *big.Int {
 
 	conn, err := tokenConn()
 	if err != nil {
-		fmt.Println("[BuyPacket]: tokenConn err:", err.Error())
+		fmt.Println("[QueryApproved]: tokenConn err:", err.Error())
 		return nil
 	}
 
@@ -276,4 +277,20 @@ func QueryApproved(address common.Address) *big.Int {
 	}
 
 	return a
+}
+
+func QueryMicroPayPrice() *big.Int {
+	conn, err := connect()
+
+	if err != nil {
+		fmt.Println("[QueryMicroPayPrice]: connect err:", err.Error())
+		return nil
+	}
+
+	p, err := conn.PacketPrice(nil)
+	if err != nil {
+		fmt.Println("[QueryMicroPayPrice]: PacketPrice err:", err.Error())
+		return nil
+	}
+	return p
 }

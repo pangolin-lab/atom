@@ -45,9 +45,8 @@ func NewWallet(password string) *C.char {
 }
 
 //export WalletBalance
-func WalletBalance(address string) (*C.char, *C.char) {
-	eth, token := ethereum.TokenBalance(address)
-	return C.CString(fmt.Sprintf("%.8f", eth)), C.CString(fmt.Sprintf("%.8f", token))
+func WalletBalance(address string) (float64, float64) {
+	return ethereum.TokenBalance(address)
 }
 
 //export WalletVerify

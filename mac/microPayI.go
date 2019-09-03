@@ -67,3 +67,13 @@ func QueryApproved(address string) float64 {
 
 	return ethereum.ConvertByDecimal(no)
 }
+
+//export QueryMicroPayPrice
+func QueryMicroPayPrice() int64 {
+	p := ethereum.QueryMicroPayPrice()
+	if p == nil {
+		return -1
+	}
+
+	return p.Int64()
+}
