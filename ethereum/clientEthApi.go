@@ -1,15 +1,19 @@
 package ethereum
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pangolink/go-node/account"
 	com "github.com/pangolink/miner-pool/common"
 	"github.com/pangolink/miner-pool/eth/generated"
+	"log"
 	"math"
 	"math/big"
 )
@@ -43,13 +47,13 @@ func connect() (*generated.MicroPaySystem, error) {
 	return generated.NewMicroPaySystem(common.HexToAddress(Conf.MicroPaySys), conn)
 }
 
-func tokenConn() (*generated.PPNToken, error) {
+func tokenConn() (*ethclient.Client, *generated.PPNToken, error) {
 	conn, err := ethclient.Dial(Conf.EthApiUrl)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-
-	return generated.NewPPNToken(common.HexToAddress(Conf.Token), conn)
+	token, err := generated.NewPPNToken(common.HexToAddress(Conf.Token), conn)
+	return conn, token, err
 }
 
 func TokenBalance(address string) (float64, float64) {
@@ -237,16 +241,14 @@ func MySubPoolsWithDetails(addr string) string {
 }
 
 func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey) (string, error) {
-	conn, err := tokenConn()
+	client, conn, err := tokenConn()
 	if err != nil {
 		fmt.Println("[BuyPacket]: tokenConn err:", err.Error())
 		return "", err
 	}
 	uAddr := common.HexToAddress(userAddr)
 	pAddr := common.HexToAddress(poolAddr)
-
 	tn := ConvertByFloat(tokenNo)
-
 	a := QueryApproved(uAddr)
 
 	transactOpts := bind.NewKeyedTransactor(key)
@@ -257,6 +259,21 @@ func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey
 			return "", err
 		}
 		fmt.Println("[BuyPacket]: Approve success:", tx.Hash().Hex())
+
+		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("[BuyPacket]: receipt status:", receipt.Status)
+
+		//for{
+		//	select {
+		//	case <-time.After(time.Second):
+		//		if  == 1{
+		//			break
+		//		}
+		//	}
+		//}
 	}
 
 	mConn, err := connect()
@@ -275,7 +292,7 @@ func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey
 
 func QueryApproved(address common.Address) *big.Int {
 
-	conn, err := tokenConn()
+	_, conn, err := tokenConn()
 	if err != nil {
 		fmt.Println("[QueryApproved]: tokenConn err:", err.Error())
 		return nil
@@ -303,4 +320,75 @@ func QueryMicroPayPrice() *big.Int {
 		return nil
 	}
 	return p
+}
+
+func TransferEth(target string, tokenNo float64, privateKey *ecdsa.PrivateKey) (string, error) {
+
+	conn, err := ethclient.Dial(Conf.EthApiUrl)
+	if err != nil {
+		fmt.Println("[TransferEth]: Dial err:", err.Error())
+		return "", err
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		fmt.Println("[TransferEth]: cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		return "", err
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	nonce, err := conn.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		fmt.Println("[TransferEth]: PendingNonceAt err:", err.Error())
+		return "", err
+	}
+
+	value := ConvertByFloat(tokenNo) // in wei (1 eth)
+	gasLimit := uint64(21000)        // in units
+	gasPrice, err := conn.SuggestGasPrice(context.Background())
+	if err != nil {
+		fmt.Println("[TransferEth]: SuggestGasPrice err:", err.Error())
+		return "", err
+	}
+
+	var data []byte
+	tx := types.NewTransaction(nonce, common.HexToAddress(target), value, gasLimit, gasPrice, data)
+
+	chainID, err := conn.NetworkID(context.Background())
+	if err != nil {
+		fmt.Println("[TransferEth]: NetworkID err:", err.Error())
+		return "", err
+	}
+
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+	if err != nil {
+		fmt.Println("[TransferEth]: SignTx err:", err.Error())
+		return "", err
+	}
+
+	err = conn.SendTransaction(context.Background(), signedTx)
+	if err != nil {
+		fmt.Println("[TransferEth]: SendTransaction err:", err.Error())
+		return "", err
+	}
+	return signedTx.Hash().Hex(), nil
+}
+
+func TransferLinToken(target string, tokenNo float64, key *ecdsa.PrivateKey) (string, error) {
+	_, conn, err := tokenConn()
+	if err != nil {
+		fmt.Println("[TransferLinToken]: tokenConn err:", err.Error())
+		return "", err
+	}
+	opts := bind.NewKeyedTransactor(key)
+	val := ConvertByFloat(tokenNo)
+
+	tx, err := conn.Transfer(opts, common.HexToAddress(target), val)
+	if err != nil {
+		fmt.Println("[TransferLinToken]: Transfer err:", err.Error())
+		return "", err
+	}
+
+	return tx.Hash().Hex(), nil
 }

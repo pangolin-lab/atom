@@ -53,3 +53,32 @@ func WalletBalance(address string) (float64, float64) {
 func WalletVerify(cipher, auth string) bool {
 	return account.VerifyWallet(([]byte)(cipher), auth)
 }
+
+//export TransferEth
+func TransferEth(cipher, auth, target string, sum float64) (*C.char, *C.char) {
+	w, e := account.DecryptWallet([]byte(cipher), auth)
+	if e != nil {
+		return C.CString(""), C.CString(e.Error())
+	}
+	tx, e := ethereum.TransferEth(target, sum, w.SignKey())
+	if e != nil {
+		return C.CString(""), C.CString(e.Error())
+	}
+	fmt.Printf("tx sent: %s", tx)
+	return C.CString(tx), C.CString("")
+}
+
+//export TransferLinToken
+func TransferLinToken(cipher, auth, target string, sum float64) (*C.char, *C.char) {
+	w, e := account.DecryptWallet([]byte(cipher), auth)
+	if e != nil {
+		return C.CString(""), C.CString(e.Error())
+	}
+	tx, e := ethereum.TransferLinToken(target, sum, w.SignKey())
+	if e != nil {
+		return C.CString(""), C.CString(e.Error())
+	}
+
+	fmt.Printf("tx sent: %s", tx)
+	return C.CString(tx), C.CString("")
+}
