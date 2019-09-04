@@ -7,6 +7,10 @@ all: m a i test lnxap
 #pbs:
 #	cd pbs/ && $(MAKE)
 #
+
+LNXAPLIBSRC = $(shell find linuxAP/lib/ -type f -name '*.go')
+
+
 test:
 	go build  -ldflags '-w -s' -o $(BINDIR)/ctest mac/*.go
 m:
@@ -19,7 +23,7 @@ i:
 	gomobile bind -v -o $(BINDIR)/iosLib.framework -target=ios github.com/proton-lab/autom/ios
 
 lnxap:
-	GOARCH=amd64 GOOS=linux go build --buildmode=c-archive -o $(BINDIR)/linuxapdss.a linuxAP/lib/*.go
+	GOARCH=amd64 GOOS=linux go build --buildmode=c-archive -o $(BINDIR)/linuxapdss.a $(LNXAPLIBSRC)
 
 clean:
 	gomobile clean
