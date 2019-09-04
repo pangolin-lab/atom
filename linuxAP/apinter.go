@@ -1,4 +1,4 @@
-package linuxAP
+package main
 
 import "C"
 import (

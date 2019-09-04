@@ -19,7 +19,7 @@ i:
 	gomobile bind -v -o $(BINDIR)/iosLib.framework -target=ios github.com/proton-lab/autom/ios
 
 lnxap:
-	GOARCH=amd64 GOOS=linux go build --buildmode=c-archive -o $(BINDIR)/linuxapdss.a mac/*.go
+	GOARCH=amd64 GOOS=linux go build --buildmode=c-archive -o $(BINDIR)/linuxapdss.a linuxAP/*.go
 
 clean:
 	gomobile clean
