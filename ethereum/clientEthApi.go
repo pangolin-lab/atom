@@ -376,6 +376,7 @@ func TransferEth(target string, tokenNo float64, privateKey *ecdsa.PrivateKey) (
 }
 
 func TransferLinToken(target string, tokenNo float64, key *ecdsa.PrivateKey) (string, error) {
+
 	_, conn, err := tokenConn()
 	if err != nil {
 		fmt.Println("[TransferLinToken]: tokenConn err:", err.Error())
@@ -383,6 +384,8 @@ func TransferLinToken(target string, tokenNo float64, key *ecdsa.PrivateKey) (st
 	}
 	opts := bind.NewKeyedTransactor(key)
 	val := ConvertByFloat(tokenNo)
+
+	fmt.Printf("\n----->%.2f", ConvertByDecimal(val))
 
 	tx, err := conn.Transfer(opts, common.HexToAddress(target), val)
 	if err != nil {

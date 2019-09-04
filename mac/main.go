@@ -34,6 +34,55 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
+	str := `{
+	"version": 1,
+	"mainAddress": "d3e7ebf2e7ecc6101d5ef42551c650d0bcd4dccf",
+	"crypto": {
+		"cipher": "aes-128-ctr",
+		"ciphertext": "b25b9c2593aa12ecbf687b24bc60756778aa22501adb3c9f3fd33a4aa3409fde",
+		"cipherparams": {
+			"iv": "a710a230b8360d9db33795f99df759aa"
+		},
+		"kdf": "scrypt",
+		"kdfparams": {
+			"dklen": 32,
+			"n": 262144,
+			"p": 1,
+			"r": 8,
+			"salt": "8f664ee3fa2944f8999ef4f28c426f90771765fff2beb9a61d0219ef6642507f"
+		},
+		"mac": "74d91e045884e93291f8941137d89fb34263245f058549d1e8026f75e9dc4d1c"
+	},
+	"subAddress": "PGJ236Y2RVEwV9dBqDNw1JXShX9xpDZfGwGwXi8Hbyaqbe",
+	"subCipher": "2XKjomJbxE2BE7xnKcY4F9qjz6yqvccMrGuJskt7q9X99BgwHQ1BiQ6pYXKxSZ9trPAFjKPqXi2LToPSdaH2feYCT32tHKCgEfd8rudGKfD48A"
+}`
+
+	w2, e := wa.DecryptWallet([]byte(str), "123")
+	if e != nil {
+		panic(e)
+	}
+	println(w2.SignKey())
+}
+
+func test19() {
+	w := wa.NewWallet()
+	if w == nil {
+		panic("err new wallet")
+	}
+
+	j, e := w.EncryptWallet("123")
+	if e != nil {
+		panic(e)
+	}
+	println(string(j))
+	w2, e := wa.DecryptWallet(j, "123")
+	if e != nil {
+		panic(e)
+	}
+	println(w2.SignKey())
+}
+
+func test18() {
 	valF := big.NewFloat(123)
 	dec := big.NewFloat(math.Pow10(18))
 

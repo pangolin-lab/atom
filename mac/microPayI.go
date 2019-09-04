@@ -47,9 +47,8 @@ func MySubPoolsWithDetails(addr string) *C.char {
 }
 
 //export BuyPacket
-func BuyPacket(userAddr, poolAddr, passPhrase, cipherTxt string, tokenNo float64) (*C.char, *C.char) {
-
-	w, e := account.DecryptWallet([]byte(cipherTxt), passPhrase)
+func BuyPacket(userAddr, poolAddr, passPhrase, cipher string, tokenNo float64) (*C.char, *C.char) {
+	w, e := account.DecryptWallet([]byte(cipher), passPhrase)
 	if e != nil {
 		return C.CString(""), C.CString(e.Error())
 	}

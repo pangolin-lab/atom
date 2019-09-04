@@ -56,6 +56,7 @@ func WalletVerify(cipher, auth string) bool {
 
 //export TransferEth
 func TransferEth(cipher, auth, target string, sum float64) (*C.char, *C.char) {
+
 	w, e := account.DecryptWallet([]byte(cipher), auth)
 	if e != nil {
 		return C.CString(""), C.CString(e.Error())
@@ -70,10 +71,12 @@ func TransferEth(cipher, auth, target string, sum float64) (*C.char, *C.char) {
 
 //export TransferLinToken
 func TransferLinToken(cipher, auth, target string, sum float64) (*C.char, *C.char) {
+
 	w, e := account.DecryptWallet([]byte(cipher), auth)
 	if e != nil {
 		return C.CString(""), C.CString(e.Error())
 	}
+
 	tx, e := ethereum.TransferLinToken(target, sum, w.SignKey())
 	if e != nil {
 		return C.CString(""), C.CString(e.Error())
