@@ -114,8 +114,6 @@ type PoolDetail struct {
 	MainAddr     common.Address
 	Payer        common.Address
 	GuaranteedNo float64
-	ID           int
-	PoolType     uint8
 	ShortName    string
 	DetailInfos  string
 }
@@ -144,8 +142,6 @@ func PoolListWithDetails() string {
 			MainAddr:     d.MainAddr,
 			Payer:        d.Payer,
 			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
-			ID:           int(d.ID),
-			PoolType:     d.PoolType,
 			ShortName:    d.ShortName,
 			DetailInfos:  d.DetailInfos,
 		}
