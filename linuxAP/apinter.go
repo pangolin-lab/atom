@@ -31,12 +31,12 @@ func LibCreateEthAccount(password, directory string) *C.char {
 	return C.CString(ethereum.CreateEthAccount(password, directory))
 }
 
-//
+//Test have proxy exists?
 func LibIsInit() bool {
 	return curProxy != nil
 }
 
-//export LibVerifyAccount
+//Test Account is valid
 func LibVerifyAccount(cipherTxt, address, password string) bool {
 	if _, err := account.AccFromString(address, cipherTxt, password); err != nil {
 		return false
@@ -44,12 +44,12 @@ func LibVerifyAccount(cipherTxt, address, password string) bool {
 	return true
 }
 
-//export LibIsProtonAddress
+//Test proton address is valid
 func LibIsProtonAddress(address string) bool {
 	return account.ID(address).IsValid()
 }
 
-//export LibInitProxy
+//Init proxy
 func LibInitProxy(addr, cipher, url, boot, path string) bool {
 	proxyConf = &pipeProxy.ProxyConfig{
 		WConfig: &wallet.WConfig{
@@ -71,7 +71,7 @@ func LibInitProxy(addr, cipher, url, boot, path string) bool {
 	return true
 }
 
-//export LibCreateProxy
+//Create proxy
 func LibCreateProxy(password, locSer string) bool {
 
 	if proxyConf == nil {
@@ -102,7 +102,7 @@ func LibCreateProxy(password, locSer string) bool {
 }
 
 //TODO:: inner error call back
-//export LibProxyRun
+//Run proxy
 func LibProxyRun() {
 	if curProxy == nil {
 		return
@@ -114,7 +114,7 @@ func LibProxyRun() {
 	curProxy = nil
 }
 
-//export LibStopClient
+//stop client
 func LibStopClient() {
 	if curProxy == nil {
 		return
