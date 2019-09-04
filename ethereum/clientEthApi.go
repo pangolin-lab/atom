@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/pangolink/go-node/account"
 	com "github.com/pangolink/miner-pool/common"
 	"github.com/pangolink/miner-pool/eth/generated"
 	"math"
@@ -114,7 +113,6 @@ func PoolDetails(addr string) string {
 type PoolDetail struct {
 	MainAddr     common.Address
 	Payer        common.Address
-	SubAddr      string
 	GuaranteedNo float64
 	ID           int
 	PoolType     uint8
@@ -145,7 +143,6 @@ func PoolListWithDetails() string {
 		details := PoolDetail{
 			MainAddr:     d.MainAddr,
 			Payer:        d.Payer,
-			SubAddr:      account.ConvertToID2(d.SubAddr).String(),
 			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
 			ID:           int(d.ID),
 			PoolType:     d.PoolType,
