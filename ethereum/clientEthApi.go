@@ -189,7 +189,6 @@ func MySubPools(addr string) string {
 
 type PayChannel struct {
 	MainAddr      common.Address
-	PayerAddr     common.Address
 	RemindTokens  float64
 	RemindPackets int64
 	Expiration    int64
@@ -219,8 +218,7 @@ func MySubPoolsWithDetails(addr string) string {
 		}
 
 		d := PayChannel{
-			MainAddr:      detail.MainAddr,
-			PayerAddr:     detail.PayerAddr,
+			MainAddr:      poolAddr,
 			RemindTokens:  ConvertByDecimal(detail.RemindTokens),
 			RemindPackets: detail.RemindPackets.Int64(),
 			Expiration:    detail.Expiration.Int64(),
