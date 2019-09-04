@@ -4,7 +4,7 @@ import (
 	"github.com/proton-lab/autom/wallet"
 	"github.com/pangolink/proton-node/account"
 	"github.com/proton-lab/autom/pipeProxy"
-	"github.com/proton-lab/autom/linuxAP/lib"
+
 )
 
 func main()  {
@@ -23,7 +23,7 @@ func main()  {
 		panic(err)
 	}
 
-	proxy, e := pipeProxy.NewProxy(":51080", w, lib.NewTunReader())
+	proxy, e := pipeProxy.NewProxy(":51080", w, NewTunReader())
 	if e != nil {
 		panic(err)
 	}
