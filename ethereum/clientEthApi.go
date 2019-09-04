@@ -13,9 +13,9 @@ import (
 	"github.com/pangolink/go-node/account"
 	com "github.com/pangolink/miner-pool/common"
 	"github.com/pangolink/miner-pool/eth/generated"
-	"log"
 	"math"
 	"math/big"
+	"time"
 )
 
 var Conf = com.TestNet
@@ -252,28 +252,35 @@ func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey
 	a := QueryApproved(uAddr)
 
 	transactOpts := bind.NewKeyedTransactor(key)
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		fmt.Println("[BuyPacket]: SuggestGasPrice err:", err.Error())
+		return "", err
+	}
+	transactOpts.GasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
 	if a == nil || a.Cmp(tn) < 0 {
 		tx, err := conn.Approve(transactOpts, common.HexToAddress(Conf.MicroPaySys), tn)
 		if err != nil {
 			fmt.Println("[BuyPacket]: Approve err:", err.Error())
 			return "", err
 		}
+
 		fmt.Println("[BuyPacket]: Approve success:", tx.Hash().Hex())
 
-		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-		if err != nil {
-			log.Fatal(err)
+		for {
+			receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
+			if err != nil {
+				<-time.After(time.Second)
+				fmt.Println("[BuyPacket]: TransactionReceipt unfinished:", err.Error())
+				continue
+			}
+			if receipt.Status != 1 {
+				return "", fmt.Errorf("approve token balance failed")
+			} else {
+				fmt.Println("[BuyPacket]: approve success:", receipt.BlockHash.Hex())
+				break
+			}
 		}
-		fmt.Println("[BuyPacket]: receipt status:", receipt.Status)
-
-		//for{
-		//	select {
-		//	case <-time.After(time.Second):
-		//		if  == 1{
-		//			break
-		//		}
-		//	}
-		//}
 	}
 
 	mConn, err := connect()
