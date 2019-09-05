@@ -88,3 +88,11 @@ func LibStopClient() {
 	curProxy.Finish()
 	return
 }
+
+//export RunVpnService
+func RunVpnService(password, cipher, poolAddr, lNetAddr string) *C.char {
+	result := make(chan string, 1)
+
+	ret := <-result
+	return C.CString(ret)
+}
