@@ -190,7 +190,7 @@ type PayChannel struct {
 	Expiration    int64
 }
 
-func MySubPoolsWithDetails(addr string) string {
+func MyChannelWithDetails(addr string) string {
 	conn, err := connect()
 	if err != nil {
 		fmt.Println("[Atom]: connect err:", err.Error())
@@ -200,7 +200,7 @@ func MySubPoolsWithDetails(addr string) string {
 	myAddr := common.HexToAddress(addr)
 	arr, err := conn.AllMySubPools(nil, myAddr)
 	if err != nil {
-		fmt.Println("[MySubPoolsWithDetails]: AllMySubPools err:", err.Error())
+		fmt.Println("[MyChannelWithDetails]: AllMySubPools err:", err.Error())
 		return ""
 	}
 
@@ -209,7 +209,7 @@ func MySubPoolsWithDetails(addr string) string {
 		poolAddr := arr[i]
 		detail, err := conn.MicroPaymentChannels(nil, myAddr, poolAddr)
 		if err != nil {
-			fmt.Println("[MySubPoolsWithDetails]: MicroPaymentChannels err:", err.Error())
+			fmt.Println("[MyChannelWithDetails]: MicroPaymentChannels err:", err.Error())
 			continue
 		}
 
@@ -224,7 +224,7 @@ func MySubPoolsWithDetails(addr string) string {
 
 	b, err := json.Marshal(poolArr)
 	if err != nil {
-		fmt.Println("[MySubPoolsWithDetails]: marshal pool with details arrays err:", err.Error())
+		fmt.Println("[MyChannelWithDetails]: marshal pool with details arrays err:", err.Error())
 		return ""
 	}
 

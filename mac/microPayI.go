@@ -3,46 +3,26 @@ package main
 import "C"
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolink/miner-pool/account"
 )
 
-//export MinerPoolAddresses
-func MinerPoolAddresses() *C.char {
-	arr := ethereum.PoolAddressList()
-	addr := make([]string, len(arr))
-
-	for i := 0; i < len(arr); i++ {
-		addr = append(addr, arr[i].Hex())
-	}
-
-	buf, _ := json.Marshal(addr)
-	return C.CString(string(buf))
-}
-
-//export MinerDetails
-func MinerDetails(addr string) *C.char {
+//export PoolDetails
+func PoolDetails(addr string) *C.char {
 	return C.CString(ethereum.PoolDetails(addr))
 }
 
-//export MinerPoolList
-func MinerPoolList() *C.char {
+//export PoolListWithDetails
+func PoolListWithDetails() *C.char {
 	jsonStr := ethereum.PoolListWithDetails()
 	return C.CString(jsonStr)
 }
 
-//export MySubPools
-func MySubPools(addr string) *C.char {
-	jsonStr := ethereum.MySubPools(addr)
-	return C.CString(jsonStr)
-}
-
-//export MySubPoolsWithDetails
-func MySubPoolsWithDetails(addr string) *C.char {
-	jsonStr := ethereum.MySubPoolsWithDetails(addr)
+//export MyChannelWithDetails
+func MyChannelWithDetails(addr string) *C.char {
+	jsonStr := ethereum.MyChannelWithDetails(addr)
 	return C.CString(jsonStr)
 }
 
