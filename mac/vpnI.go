@@ -4,7 +4,9 @@ import "C"
 import (
 	"fmt"
 	"github.com/pangolin-lab/atom/pipeProxy"
+	"github.com/pangolin-lab/atom/proxy"
 	"github.com/pangolin-lab/atom/wallet"
+	"github.com/pangolink/miner-pool/account"
 )
 
 var proxyConf *pipeProxy.ProxyConfig = nil
@@ -58,7 +60,7 @@ func LibCreateProxy(password, locSer string) bool {
 		return false
 	}
 
-	proxy, e := pipeProxy.NewProxy(locSer, w, NewTunReader())
+	proxy, e := pipeProxy.NewProxy(locSer, w, proxy.NewTunReader())
 	if e != nil {
 		fmt.Println(e)
 		return false
@@ -90,8 +92,19 @@ func LibStopClient() {
 }
 
 //export RunVpnService
-func RunVpnService(password, cipher, poolAddr, lNetAddr string) *C.char {
+func RunVpnService(auth, cipher, minerAddr, localSerAddr string) *C.char {
 	result := make(chan string, 1)
+
+	w, e := account.DecryptWallet([]byte(cipher), auth)
+	if e != nil {
+		return C.CString(e.Error())
+	}
+
+	p, e := proxy.NewProxyService(localSerAddr, minerAddr, w, nil)
+	if e != nil {
+		return C.CString(e.Error())
+	}
+	go p.Accepting(result)
 
 	ret := <-result
 	return C.CString(ret)

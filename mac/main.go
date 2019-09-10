@@ -10,6 +10,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/pipeProxy"
+	proxy2 "github.com/pangolin-lab/atom/proxy"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/go-node/account"
 	wa "github.com/pangolink/miner-pool/account"
@@ -197,7 +198,7 @@ func test13() {
 		panic(err)
 	}
 
-	proxy, e := pipeProxy.NewProxy(":51080", w, NewTunReader())
+	proxy, e := pipeProxy.NewProxy(":51080", w, proxy2.NewTunReader())
 	if e != nil {
 		panic(err)
 	}

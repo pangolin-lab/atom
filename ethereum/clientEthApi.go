@@ -231,6 +231,7 @@ func MyChannelWithDetails(addr string) string {
 	return string(b)
 }
 
+//TODO::refactor this logic
 func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey) (string, error) {
 	client, conn, err := tokenConn()
 	if err != nil {

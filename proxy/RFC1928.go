@@ -1,4 +1,4 @@
-package main
+package proxy
 
 import (
 	"fmt"
@@ -519,4 +519,29 @@ func (str *SimpleTunReader) Proxying(chan error) {
 }
 func (str *SimpleTunReader) RemoveFromSession(keyPort int) {
 	//Stub
+}
+
+func GetTarget(conn net.Conn) string {
+
+	obj := &rfcObj{
+		buffer: make([]byte, MaxAddrLen),
+		conn:   conn,
+	}
+
+	if err := obj.tcpMethod(); err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	if err := obj.request(); err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	if err := obj.replies(conn.LocalAddr().String()); err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return obj.Target
 }
