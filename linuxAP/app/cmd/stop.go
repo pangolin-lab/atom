@@ -15,29 +15,42 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"log"
+	"github.com/proton-lab/autom/linuxAP/app/cmdclient"
 )
 
+var sign string
 // stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "stop proxy",
-	Long: `stop proxy`,
+	Short: "stop protonap",
+	Long: `stop protonap`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("stop called")
+
+		if remoteaddr =="" {
+			if _, err := common.IsLinuxAPProcessStarted(); err != nil {
+				log.Println(err)
+				return
+			}
+		}
+
+
+		cmdclient.DefaultCmdSend(remoteaddr,common.CMD_STOP)
+
+
 	},
 }
 
 func init() {
-	proxyCmd.AddCommand(stopCmd)
+	rootCmd.AddCommand(stopCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// stopCmd.PersistentFlags().String("foo", "", "A help for foo")
+	//stopCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

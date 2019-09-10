@@ -15,9 +15,13 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/proton-lab/autom/linuxAP/config"
+	"log"
+	"github.com/proton-lab/autom/linuxAP/app/cmdservice"
+	"path"
+	"github.com/sevlyar/go-daemon"
 )
 
 // daemonCmd represents the daemon command
@@ -26,7 +30,37 @@ var daemonCmd = &cobra.Command{
 	Short: "start as a daemon service",
 	Long: `start as a daemon service`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("daemon called")
+		if _,err:=common.IsLinxAPProcessCanStarted();err!=nil{
+			log.Println(err)
+			return
+		}
+
+		cfg:=config.GetAPConfigInst()
+		daemondir:=cfg.GetLogDir()
+		cntxt := daemon.Context{
+			PidFileName: path.Join(daemondir, "protonap.pid"),
+			PidFilePerm: 0644,
+			LogFileName: path.Join(daemondir, "protonap.log"),
+			LogFilePerm: 0640,
+			WorkDir:     daemondir,
+			Umask:       027,
+			Args:        []string{},
+		}
+		d, err := cntxt.Reborn()
+		if err != nil {
+			log.Fatal("Unable to run: ", err)
+		}
+		if d != nil {
+			log.Println("protonap starting, please check log at:", path.Join(daemondir, "protonap.log"))
+			return
+		}
+		defer cntxt.Release()
+
+		log.Println("protonap daemon begin to start ...")
+
+		cmdinst:=cmdservice.GetCmdServerInst()
+		cmdinst.StartCmdService()
+
 	},
 }
 

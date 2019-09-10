@@ -28,12 +28,11 @@ Test:
 	@echo $(BUILDTIME)
 	@echo $$(which ${BASENAME}) $(subst ${BASENAME},$(TARGET),$(srcname))
 
-rpcservice := app/pb
+rpcservice := cmdpb
 dhtrpc := dht/pb
 
 proto:
-	@true
-	#protoc -I=$(rpcservice)  --go_out=plugins=grpc:${rpcservice}   ${rpcservice}/*.proto
+	protoc -I=$(rpcservice)  --go_out=plugins=grpc:${rpcservice}   ${rpcservice}/*.proto
 	#protoc -I=$(dhtrpc)  --go_out=plugins=grpc:${dhtrpc}   ${dhtrpc}/*.proto
 
 $(TARGET): proto $(SRC)

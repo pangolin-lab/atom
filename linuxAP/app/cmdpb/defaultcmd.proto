@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package cmdpb;
+
+import "default.proto";
+
+service defaultcmdsrv {
+    rpc DefaultCmdDo(DefaultRequest) returns (DefaultResp) {}
+}
+
+

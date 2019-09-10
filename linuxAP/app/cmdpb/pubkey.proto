@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package cmdpb;
+
+import "default.proto";
+
+
+message PubKeyReq{
+    string key = 1;
+    string name = 2;
+    int32  op = 3;          //1 add, 2 del, 3 show
+}
+
+
+
+service pubkey {
+    rpc PubkeyDo(PubKeyReq) returns (DefaultResp) {}
+}
+
+
+

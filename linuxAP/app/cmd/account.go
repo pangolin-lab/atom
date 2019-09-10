@@ -20,6 +20,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var offlineFlag bool
+
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use:   "account",
@@ -42,4 +44,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// accountCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	accountCmd.Flags().BoolVarP(&offlineFlag,"offline","o",false,"offline create account")
+
 }

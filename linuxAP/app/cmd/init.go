@@ -15,18 +15,26 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/proton-lab/autom/linuxAP/config"
+	"log"
 )
+
+
+var initHomeDir string
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "before run protonap, initial the environment",
-	Long: `before run protonap, initial the environment`,
+	Short: "initial the runtime environment",
+	Long: `initial the runtime environment`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init called")
+		err:=config.InitAPConfig("")
+		if err!=nil{
+			log.Println("Initialization failed:",err)
+		}else {
+			log.Println("Initialize configuration successful")
+		}
 	},
 }
 
@@ -42,4 +50,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	initCmd.Flags().StringVarP(&initHomeDir,"homedir","d","","set home directory")
+
 }

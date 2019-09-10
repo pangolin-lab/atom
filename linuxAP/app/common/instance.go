@@ -1,0 +1,15 @@
+package common
+
+
+
+const(
+	CMD_STOP int32 = 1
+	CMD_CONFIG_SHOW int32 = 2
+	CMD_ACCOUNT_SHOW int32 = 3
+
+
+
+	CMD_PUBKEY_ADD = 101
+	CMD_PUBKEY_DEL = 102
+	CMD_PUBKEY_SHOW = 103
+)
