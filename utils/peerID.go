@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/pangolink/go-node/account"
 	"github.com/pangolink/go-node/network"
 	"strings"
 )
+
+var ErrInvalidID = fmt.Errorf("invalid node id")
 
 type PeerID struct {
 	IP string
@@ -13,10 +16,10 @@ type PeerID struct {
 
 const ServeNodeSep = "@"
 
-func ConvertPID(pid string) *PeerID {
+func ConvertPID(pid string) (*PeerID, error) {
 	arr := strings.Split(pid, ServeNodeSep)
 	if len(arr) != 2 {
-		return nil
+		return nil, ErrInvalidID
 	}
 
 	id := &PeerID{
@@ -24,7 +27,7 @@ func ConvertPID(pid string) *PeerID {
 		ID: account.ID(arr[0]),
 	}
 
-	return id
+	return id, nil
 }
 
 func (pid *PeerID) String() string {

@@ -11,7 +11,6 @@ type VpnProxy struct {
 	conn    net.Listener
 	saver   utils.ConnSaver
 	payChan microPay.PayChannel
-	miner   *utils.PeerID
 }
 
 func NewProxyService(localSerAddr string, pc microPay.PayChannel, s utils.ConnSaver) (*VpnProxy, error) {
@@ -29,7 +28,10 @@ func NewProxyService(localSerAddr string, pc microPay.PayChannel, s utils.ConnSa
 	return vp, nil
 }
 
-func (vp *VpnProxy) Accepting(result chan string) {
+type TargetFetcher func(conn net.Conn) string
+
+func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher) {
+
 	fmt.Println("Proxy starting......")
 
 	for {
@@ -38,6 +40,6 @@ func (vp *VpnProxy) Accepting(result chan string) {
 			result <- e.Error()
 			return
 		}
-		go vp.NewReqThread(c)
+		go vp.newProxyPipe(c, fetcher)
 	}
 }

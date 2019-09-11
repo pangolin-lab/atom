@@ -116,6 +116,7 @@ type PoolDetail struct {
 	GuaranteedNo float64
 	ShortName    string
 	DetailInfos  string
+	Seeds        string
 }
 
 func PoolListWithDetails() string {
@@ -144,6 +145,7 @@ func PoolListWithDetails() string {
 			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
 			ShortName:    d.ShortName,
 			DetailInfos:  d.DetailInfos,
+			Seeds:        d.Seeds,
 		}
 
 		arr = append(arr, details)

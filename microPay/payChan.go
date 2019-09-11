@@ -10,12 +10,15 @@ import (
 )
 
 type PayChannel interface {
+	Setup() error
+	MinerNetAddr() string
 }
 
 type micPayChan struct {
-	wallet  account.Wallet
-	conn    *network.JsonConn
-	minerID *utils.PeerID
+	wallet       account.Wallet
+	conn         *network.JsonConn
+	minerID      *utils.PeerID
+	minerNetAddr string
 }
 
 func NewChannel(cipherTxt, auth, poolNode string) (PayChannel, error) {
@@ -24,7 +27,10 @@ func NewChannel(cipherTxt, auth, poolNode string) (PayChannel, error) {
 		return nil, e
 	}
 
-	peerId := utils.ConvertPID(poolNode)
+	peerId, e := utils.ConvertPID(poolNode)
+	if e != nil {
+		return nil, e
+	}
 	conn, err := utils.GetSavedConn(peerId.NetAddr())
 	if err != nil {
 		return nil, err
@@ -67,6 +73,15 @@ func (mpc *micPayChan) Setup() error {
 		return fmt.Errorf("create payment channel err:%s", ack.ErrMsg)
 	}
 
-	mpc.minerID = utils.ConvertPID(ack.MinerId)
+	mid, e := utils.ConvertPID(ack.MinerId)
+	if e != nil {
+		return utils.ErrInvalidID
+	}
+	mpc.minerID = mid
+	mpc.minerNetAddr = mid.NetAddr()
 	return nil
+}
+
+func (mpc *micPayChan) MinerNetAddr() string {
+	return mpc.minerNetAddr
 }

@@ -2,6 +2,9 @@ package main
 
 import "C"
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -15,6 +18,7 @@ import (
 	"github.com/pangolink/go-node/account"
 	wa "github.com/pangolink/miner-pool/account"
 	"golang.org/x/net/publicsuffix"
+	"io"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -35,6 +39,64 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
+	key := []byte("1234567890asdfgh")
+	data := []byte("abc hello world!")
+	cry := AESCFBEncrypt(data, key)
+
+	fmt.Println(hex.EncodeToString(cry))
+	//fmt.Println(base64.StdEncoding.EncodeToString(cry))
+
+	ori := AESCFBDecrypt(cry, key)
+	fmt.Println(string(ori))
+
+}
+
+//CFB分组模式加密
+func AESCFBEncrypt(oriData []byte, key []byte) []byte {
+
+	//校验密钥
+	block, _ := aes.NewCipher(key)
+
+	//拆分iv和密文
+	cipherText := make([]byte, aes.BlockSize+len(oriData))
+
+	iv := cipherText[:aes.BlockSize]
+
+	//向iv切片数组初始化 reader（随机内存流）
+	io.ReadFull(rand.Reader, iv)
+
+	//设置加密模式CFB
+	stream := cipher.NewCFBEncrypter(block, iv)
+
+	//加密
+	stream.XORKeyStream(cipherText[aes.BlockSize:], oriData)
+
+	return cipherText
+
+}
+
+//解密
+func AESCFBDecrypt(cryptText []byte, key []byte) []byte {
+
+	//校验密钥
+	block, _ := aes.NewCipher(key)
+
+	//拆分iv 和密文
+	iv := cryptText[:aes.BlockSize]
+	cipherText := cryptText[aes.BlockSize:]
+
+	//设置解密模式
+	stream := cipher.NewCFBDecrypter(block, iv)
+
+	var des = make([]byte, len(cipherText))
+
+	//解密
+	stream.XORKeyStream(des, cipherText)
+
+	return des
+}
+
+func test20() {
 	str := `{
 	"version": 1,
 	"mainAddress": "d3e7ebf2e7ecc6101d5ef42551c650d0bcd4dccf",
