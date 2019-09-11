@@ -41,59 +41,42 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 func main() {
 	key := []byte("1234567890asdfgh")
 	data := []byte("abc hello world!")
-	cry := AESCFBEncrypt(data, key)
+	data2 := []byte("this is the second")
+	data3 := []byte("this is the third")
 
-	fmt.Println(hex.EncodeToString(cry))
-	//fmt.Println(base64.StdEncoding.EncodeToString(cry))
-
-	ori := AESCFBDecrypt(cry, key)
-	fmt.Println(string(ori))
-
-}
-
-//CFB分组模式加密
-func AESCFBEncrypt(oriData []byte, key []byte) []byte {
-
-	//校验密钥
-	block, _ := aes.NewCipher(key)
-
-	//拆分iv和密文
-	cipherText := make([]byte, aes.BlockSize+len(oriData))
-
-	iv := cipherText[:aes.BlockSize]
-
-	//向iv切片数组初始化 reader（随机内存流）
+	iv := make([]byte, aes.BlockSize)
 	io.ReadFull(rand.Reader, iv)
-
-	//设置加密模式CFB
+	block, _ := aes.NewCipher(key)
 	stream := cipher.NewCFBEncrypter(block, iv)
 
-	//加密
-	stream.XORKeyStream(cipherText[aes.BlockSize:], oriData)
+	cipherText := make([]byte, len(data))
+	stream.XORKeyStream(cipherText, data)
 
-	return cipherText
+	cipherText2 := make([]byte, len(data2))
+	stream.XORKeyStream(cipherText2, data2)
 
-}
+	cipherText3 := make([]byte, len(data3))
+	stream.XORKeyStream(cipherText3, data3)
 
-//解密
-func AESCFBDecrypt(cryptText []byte, key []byte) []byte {
+	fmt.Println(hex.EncodeToString(cipherText))
+	fmt.Println(hex.EncodeToString(cipherText2))
+	fmt.Println(hex.EncodeToString(cipherText3))
 
-	//校验密钥
-	block, _ := aes.NewCipher(key)
-
-	//拆分iv 和密文
-	iv := cryptText[:aes.BlockSize]
-	cipherText := cryptText[aes.BlockSize:]
-
-	//设置解密模式
-	stream := cipher.NewCFBDecrypter(block, iv)
+	desStream := cipher.NewCFBDecrypter(block, iv)
 
 	var des = make([]byte, len(cipherText))
+	desStream.XORKeyStream(des, cipherText)
 
-	//解密
-	stream.XORKeyStream(des, cipherText)
+	var des2 = make([]byte, len(cipherText2))
+	desStream.XORKeyStream(des2, cipherText2)
 
-	return des
+	var des3 = make([]byte, len(cipherText3))
+	desStream.XORKeyStream(des3, cipherText3)
+
+	fmt.Println(string(des))
+	fmt.Println(string(des2))
+	fmt.Println(string(des3))
+
 }
 
 func test20() {
