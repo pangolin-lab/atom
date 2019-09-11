@@ -2,32 +2,30 @@ package proxy
 
 import (
 	"fmt"
-	"github.com/pangolink/miner-pool/account"
+	"github.com/pangolin-lab/atom/microPay"
+	"github.com/pangolin-lab/atom/utils"
 	"net"
 )
 
 type VpnProxy struct {
-	conn   net.Listener
-	saver  ConnSaver
-	wallet account.Wallet
-	miner  string
+	conn    net.Listener
+	saver   utils.ConnSaver
+	payChan microPay.PayChannel
+	miner   *utils.PeerID
 }
 
-type ConnSaver func(fd uintptr)
+func NewProxyService(localSerAddr string, pc microPay.PayChannel, s utils.ConnSaver) (*VpnProxy, error) {
 
-func NewProxyService(addr, url string, w account.Wallet, s ConnSaver) (*VpnProxy, error) {
-
-	c, e := net.Listen("tcp", addr)
+	c, e := net.Listen("tcp", localSerAddr)
 	if e != nil {
 		return nil, e
 	}
 
 	vp := &VpnProxy{
-		conn:   c,
-		saver:  s,
-		wallet: w,
+		conn:    c,
+		saver:   s,
+		payChan: pc,
 	}
-
 	return vp, nil
 }
 
@@ -40,7 +38,6 @@ func (vp *VpnProxy) Accepting(result chan string) {
 			result <- e.Error()
 			return
 		}
-
 		go vp.NewReqThread(c)
 	}
 }

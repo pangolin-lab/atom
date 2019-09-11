@@ -3,10 +3,10 @@ package main
 import "C"
 import (
 	"fmt"
+	"github.com/pangolin-lab/atom/microPay"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/proxy"
 	"github.com/pangolin-lab/atom/wallet"
-	"github.com/pangolink/miner-pool/account"
 )
 
 var proxyConf *pipeProxy.ProxyConfig = nil
@@ -92,20 +92,21 @@ func LibStopClient() {
 }
 
 //export RunVpnService
-func RunVpnService(auth, cipher, minerAddr, localSerAddr string) *C.char {
+func RunVpnService(auth, cipher, poolNodeId, localSerAddr string) *C.char {
+
+	pc, e := microPay.NewChannel(cipher, auth, poolNodeId)
+	if e != nil {
+		return C.CString(e.Error())
+	}
+
+	p, e := proxy.NewProxyService(localSerAddr, pc, nil)
+	if e != nil {
+		return C.CString(e.Error())
+	}
+
 	result := make(chan string, 1)
-
-	w, e := account.DecryptWallet([]byte(cipher), auth)
-	if e != nil {
-		return C.CString(e.Error())
-	}
-
-	p, e := proxy.NewProxyService(localSerAddr, minerAddr, w, nil)
-	if e != nil {
-		return C.CString(e.Error())
-	}
 	go p.Accepting(result)
-
 	ret := <-result
+
 	return C.CString(ret)
 }

@@ -307,7 +307,6 @@ func QueryApproved(address common.Address) *big.Int {
 
 func QueryMicroPayPrice() *big.Int {
 	conn, err := connect()
-
 	if err != nil {
 		fmt.Println("[QueryMicroPayPrice]: connect err:", err.Error())
 		return nil
