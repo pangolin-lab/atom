@@ -5,7 +5,6 @@ import (
 	"github.com/pangolin-lab/atom/utils"
 	"github.com/pangolink/go-node/network"
 	"net"
-	"time"
 )
 
 type Pipe struct {
