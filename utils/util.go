@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/binary"
 	"net"
 	"syscall"
 	"time"
@@ -24,4 +25,13 @@ func GetSavedConn(rAddr string) (net.Conn, error) {
 	}
 
 	return d.Dial("tcp", rAddr)
+}
+
+func UintToByte(val uint32) []byte {
+	lenBuf := make([]byte, 4, 4)
+	binary.BigEndian.PutUint32(lenBuf, val)
+	return lenBuf
+}
+func ByteToUint(buff []byte) uint32 {
+	return binary.BigEndian.Uint32(buff)
 }

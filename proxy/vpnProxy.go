@@ -40,6 +40,6 @@ func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher) {
 			result <- e.Error()
 			return
 		}
-		go vp.newProxyPipe(c, fetcher)
+		go vp.newPipeTask(c, fetcher)
 	}
 }

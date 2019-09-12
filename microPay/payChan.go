@@ -2,23 +2,32 @@ package microPay
 
 import "C"
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"fmt"
 	"github.com/pangolin-lab/atom/utils"
+	acc "github.com/pangolink/go-node/account"
 	"github.com/pangolink/go-node/network"
 	"github.com/pangolink/miner-pool/account"
 	"github.com/pangolink/miner-pool/core"
+	"io"
 )
 
 type PayChannel interface {
-	Setup() error
-	MinerNetAddr() string
+	SetupAesConn(tgt string) (*AesConn, error)
+}
+
+type MinerNode struct {
+	ID      *utils.PeerID
+	NetAddr string
+	AesKey  []byte
 }
 
 type micPayChan struct {
-	wallet       account.Wallet
-	conn         *network.JsonConn
-	minerID      *utils.PeerID
-	minerNetAddr string
+	wallet account.Wallet
+	conn   *network.JsonConn
+	miner  *MinerNode
 }
 
 func NewChannel(cipherTxt, auth, poolNode string) (PayChannel, error) {
@@ -35,53 +44,98 @@ func NewChannel(cipherTxt, auth, poolNode string) (PayChannel, error) {
 	if err != nil {
 		return nil, err
 	}
+	c := &network.JsonConn{Conn: conn}
 
-	return &micPayChan{
+	minerId, err := handShake(w, c)
+	if err != nil {
+		return nil, err
+	}
+	miner, err := newMiner(minerId, w)
+	if err != nil {
+		return nil, err
+	}
+
+	m := &micPayChan{
 		wallet: w,
-		conn:   &network.JsonConn{Conn: conn},
-	}, nil
+		conn:   c,
+		miner:  miner,
+	}
+	return m, nil
 }
 
-func (mpc *micPayChan) Setup() error {
-	main, sub := mpc.wallet.Address()
-
-	req := &core.ChanCreateReq{
-		MainAddr: main,
-		SubAddr:  sub,
+func handShake(w account.Wallet, conn *network.JsonConn) (string, error) {
+	mAddr, sAddr := w.Address()
+	syn := &core.PayChanSyn{
+		MsgType: core.CreateReq,
+		CreateReq: &core.ChanCreateReq{
+			MainAddr: mAddr,
+			SubAddr:  sAddr,
+		},
 	}
-	sig, err := mpc.wallet.Sign(req)
+	sig, err := w.Sign(syn.CreateReq)
 	if err != nil {
-		return err
+		return "", err
 	}
+	syn.Sig = sig
 
-	syn := core.PayChanSyn{
-		MsgType:   core.CreateReq,
-		Sig:       sig,
-		CreateReq: req,
+	if err := conn.WriteJsonMsg(syn); err != nil {
+		return "", err
 	}
-
-	if err := mpc.conn.WriteJsonMsg(syn); err != nil {
-		return err
-	}
-
 	ack := &core.PayChanAck{}
-	if err := mpc.conn.ReadJsonMsg(ack); err != nil {
-		return err
+	if err := conn.ReadJsonMsg(ack); err != nil {
+		return "", err
 	}
 
 	if ack.Success != true {
-		return fmt.Errorf("create payment channel err:%s", ack.ErrMsg)
+		return "", fmt.Errorf("create payment channel err:%s", ack.ErrMsg)
 	}
-
-	mid, e := utils.ConvertPID(ack.MinerId)
-	if e != nil {
-		return utils.ErrInvalidID
-	}
-	mpc.minerID = mid
-	mpc.minerNetAddr = mid.NetAddr()
-	return nil
+	return ack.MinerId, nil
 }
 
-func (mpc *micPayChan) MinerNetAddr() string {
-	return mpc.minerNetAddr
+func newMiner(minerId string, w account.Wallet) (*MinerNode, error) {
+
+	mid, e := utils.ConvertPID(minerId)
+	if e != nil {
+		return nil, utils.ErrInvalidID
+	}
+
+	aesKey := new(acc.PipeCryptKey)
+	if err := acc.GenerateAesKey(aesKey, mid.ID.ToPubKey(), w.CryptKey()); err != nil {
+		return nil, err
+	}
+	m := &MinerNode{
+		ID:      mid,
+		NetAddr: mid.NetAddr(),
+		AesKey:  make([]byte, len(aesKey)),
+	}
+	copy(m.AesKey, aesKey[:])
+	return m, nil
+}
+
+func (mpc *micPayChan) SetupAesConn(target string) (*AesConn, error) {
+	conn, err := utils.GetSavedConn(mpc.miner.NetAddr)
+	if err != nil {
+		fmt.Printf("\nConnect to miner failed:[%s]", err.Error())
+		return nil, err
+	}
+
+	iv := make([]byte, aes.BlockSize)
+	io.ReadFull(rand.Reader, iv[:])
+
+	if _, err := conn.Write(iv[:]); err != nil {
+		fmt.Println("Send salt to miner failed:", err)
+		return nil, err
+	}
+
+	block, err := aes.NewCipher(mpc.miner.AesKey)
+	if err != nil {
+		return nil, err
+	}
+
+	ac := &AesConn{
+		Conn:    conn,
+		encoder: cipher.NewCFBEncrypter(block, iv),
+		decoder: cipher.NewCFBDecrypter(block, iv),
+	}
+	return ac, nil
 }

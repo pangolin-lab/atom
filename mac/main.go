@@ -76,7 +76,6 @@ func main() {
 	fmt.Println(string(des))
 	fmt.Println(string(des2))
 	fmt.Println(string(des3))
-
 }
 
 func test20() {

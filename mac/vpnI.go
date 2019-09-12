@@ -99,10 +99,6 @@ func RunVpnService(auth, cipher, poolNodeId, localSerAddr string) *C.char {
 		return C.CString(e.Error())
 	}
 
-	if err := pc.Setup(); err != nil {
-		return C.CString(e.Error())
-	}
-
 	p, e := proxy.NewProxyService(localSerAddr, pc, nil)
 	if e != nil {
 		return C.CString(e.Error())
