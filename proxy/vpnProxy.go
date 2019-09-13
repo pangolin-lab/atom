@@ -43,3 +43,8 @@ func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher) {
 		go vp.newPipeTask(c, fetcher)
 	}
 }
+
+func (vp *VpnProxy) Close() {
+	vp.conn.Close()
+	vp.payChan.Close()
+}

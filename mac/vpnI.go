@@ -107,6 +107,6 @@ func RunVpnService(auth, cipher, poolNodeId, localSerAddr string) *C.char {
 	result := make(chan string, 1)
 	go p.Accepting(result, proxy.GetTarget)
 	ret := <-result
-
+	p.Close()
 	return C.CString(ret)
 }

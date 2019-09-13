@@ -9,13 +9,20 @@ import (
 	"github.com/pangolin-lab/atom/utils"
 	acc "github.com/pangolink/go-node/account"
 	"github.com/pangolink/go-node/network"
+	"github.com/pangolink/go-node/service/rpcMsg"
 	"github.com/pangolink/miner-pool/account"
 	"github.com/pangolink/miner-pool/core"
 	"io"
+	"sync"
+)
+
+const (
+	RechargeThreadHold = 1 << 12 //4M
 )
 
 type PayChannel interface {
-	SetupAesConn(tgt string) (*AesConn, error)
+	SetupAesConn(tgt string) (*account.AesConn, error)
+	Close()
 }
 
 type MinerNode struct {
@@ -25,9 +32,11 @@ type MinerNode struct {
 }
 
 type micPayChan struct {
-	wallet account.Wallet
-	conn   *network.JsonConn
-	miner  *MinerNode
+	sync.RWMutex
+	rCounter int
+	wallet   account.Wallet
+	conn     *network.JsonConn
+	miner    *MinerNode
 }
 
 func NewChannel(cipherTxt, auth, poolNode string) (PayChannel, error) {
@@ -112,7 +121,7 @@ func newMiner(minerId string, w account.Wallet) (*MinerNode, error) {
 	return m, nil
 }
 
-func (mpc *micPayChan) SetupAesConn(target string) (*AesConn, error) {
+func (mpc *micPayChan) SetupAesConn(target string) (*account.AesConn, error) {
 	conn, err := utils.GetSavedConn(mpc.miner.NetAddr)
 	if err != nil {
 		fmt.Printf("\nConnect to miner failed:[%s]", err.Error())
@@ -122,7 +131,17 @@ func (mpc *micPayChan) SetupAesConn(target string) (*AesConn, error) {
 	iv := make([]byte, aes.BlockSize)
 	io.ReadFull(rand.Reader, iv[:])
 
-	if _, err := conn.Write(iv[:]); err != nil {
+	//TODO:: iv, target, sub addr
+	jsonConn := network.JsonConn{Conn: conn}
+	_, subAddr := mpc.wallet.Address()
+	req := rpcMsg.AesConnSetup{
+		IV:          iv[:],
+		Target:      target,
+		UserSubAddr: subAddr,
+	}
+
+	req.Sig = mpc.wallet.SignSub(req)
+	if err := jsonConn.Syn(req); err != nil {
 		fmt.Println("Send salt to miner failed:", err)
 		return nil, err
 	}
@@ -132,10 +151,34 @@ func (mpc *micPayChan) SetupAesConn(target string) (*AesConn, error) {
 		return nil, err
 	}
 
-	ac := &AesConn{
+	ac := &account.AesConn{
 		Conn:    conn,
-		encoder: cipher.NewCFBEncrypter(block, iv),
-		decoder: cipher.NewCFBDecrypter(block, iv),
+		Counter: mpc,
+		Encoder: cipher.NewCFBEncrypter(block, iv),
+		Decoder: cipher.NewCFBDecrypter(block, iv),
 	}
 	return ac, nil
+}
+
+func (mpc *micPayChan) Close() {
+	mpc.conn.Close()
+	mpc.wallet.Close()
+}
+
+func (mpc *micPayChan) ReadCount(n int) {
+	mpc.Lock()
+	defer mpc.Unlock()
+	mpc.rCounter += n
+	if mpc.rCounter >= RechargeThreadHold {
+		go mpc.microPay()
+	}
+}
+
+func (mpc *micPayChan) WriteCount(n int) {
+	//Stub don't care
+}
+
+func (mpc *micPayChan) microPay() {
+	receipt := core.MicPayReceipt{}
+	mpc.conn.WriteJsonMsg(receipt)
 }
