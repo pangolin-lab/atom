@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pangolin-lab/atom/microPay"
 	"github.com/pangolink/go-node/network"
+	"github.com/pangolink/miner-pool/account"
 	"io"
 	"net"
 )
@@ -13,7 +14,7 @@ type Pipe struct {
 	lBuf   []byte
 	rBuf   []byte
 	lConn  net.Conn
-	rConn  *microPay.AesConn
+	rConn  account.CryptConn
 }
 
 func (p *Pipe) Close() {
@@ -64,7 +65,7 @@ func (p *Pipe) transLocalData() {
 	}
 }
 
-func (vp *VpnProxy) newPipeTask(c net.Conn, fetcher TargetFetcher) {
+func (vp *VpnProxy) newPipeTask(c net.Conn, fetcher TargetFetcher, payChan microPay.PayChannel) {
 	c.(*net.TCPConn).SetKeepAlive(true)
 
 	tgtHost := fetcher(c)
@@ -73,7 +74,7 @@ func (vp *VpnProxy) newPipeTask(c net.Conn, fetcher TargetFetcher) {
 		return
 	}
 
-	aesConn, err := vp.payChan.SetupAesConn(tgtHost)
+	aesConn, err := payChan.SetupAesConn(tgtHost)
 	if err != nil {
 		fmt.Printf("Create connection to miner for [%s] err:%s", tgtHost, err.Error())
 		return

@@ -521,7 +521,7 @@ func (str *SimpleTunReader) RemoveFromSession(keyPort int) {
 	//Stub
 }
 
-func GetTarget(conn net.Conn) string {
+func Socks5Target(conn net.Conn) string {
 
 	obj := &rfcObj{
 		buffer: make([]byte, MaxAddrLen),

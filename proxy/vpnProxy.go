@@ -8,12 +8,11 @@ import (
 )
 
 type VpnProxy struct {
-	conn    net.Listener
-	saver   utils.ConnSaver
-	payChan microPay.PayChannel
+	conn  net.Listener
+	saver utils.ConnSaver
 }
 
-func NewProxyService(localSerAddr string, pc microPay.PayChannel, s utils.ConnSaver) (*VpnProxy, error) {
+func NewProxyService(localSerAddr string, s utils.ConnSaver) (*VpnProxy, error) {
 
 	c, e := net.Listen("tcp", localSerAddr)
 	if e != nil {
@@ -21,30 +20,27 @@ func NewProxyService(localSerAddr string, pc microPay.PayChannel, s utils.ConnSa
 	}
 
 	vp := &VpnProxy{
-		conn:    c,
-		saver:   s,
-		payChan: pc,
+		conn:  c,
+		saver: s,
 	}
 	return vp, nil
 }
 
 type TargetFetcher func(conn net.Conn) string
 
-func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher) {
+func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher, payChan microPay.PayChannel) {
 
 	fmt.Println("Proxy starting......")
-
 	for {
 		c, e := vp.conn.Accept()
 		if e != nil {
 			result <- e.Error()
 			return
 		}
-		go vp.newPipeTask(c, fetcher)
+		go vp.newPipeTask(c, fetcher, payChan)
 	}
 }
 
 func (vp *VpnProxy) Close() {
 	vp.conn.Close()
-	vp.payChan.Close()
 }

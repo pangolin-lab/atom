@@ -42,7 +42,6 @@ func connect() (*generated.MicroPaySystem, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return generated.NewMicroPaySystem(common.HexToAddress(Conf.MicroPaySys), conn)
 }
 
