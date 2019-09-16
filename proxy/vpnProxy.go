@@ -28,13 +28,22 @@ func NewProxyService(localSerAddr string, s utils.ConnSaver) (*VpnProxy, error) 
 
 type TargetFetcher func(conn net.Conn) string
 
-func (vp *VpnProxy) Accepting(result chan error, fetcher TargetFetcher, protocol payment.PacketPaymentProtocol) {
+func (vp *VpnProxy) Accepting(err chan error, fetcher TargetFetcher, protocol payment.PacketPaymentProtocol) {
 
 	fmt.Println("Proxy starting......")
+	defer vp.Close()
+
 	for {
+		select {
+		case e := <-err:
+			fmt.Println("error from outside:", e)
+			return
+		default:
+
+		}
 		c, e := vp.conn.Accept()
 		if e != nil {
-			result <- e
+			err <- e
 			return
 		}
 		go vp.newPipeTask(c, fetcher, protocol)

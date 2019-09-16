@@ -393,3 +393,18 @@ func TransferLinToken(target string, tokenNo float64, key *ecdsa.PrivateKey) (st
 
 	return tx.Hash().Hex(), nil
 }
+
+func MarketDataVersion() uint32 {
+	conn, err := connect()
+	if err != nil {
+		fmt.Println("[TransferLinToken]: connect err:", err.Error())
+		return 0
+	}
+	ver, err := conn.MinerPoolVersion(nil)
+	if err != nil {
+		fmt.Println("[TransferLinToken]: MinerPoolVersion err:", err.Error())
+		return 0
+	}
+
+	return ver
+}

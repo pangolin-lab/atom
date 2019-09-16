@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	DBKeySubPoolArr   = "SUB_POOL_Arr_"
-	DBMicPayChan      = "MICRO_PAY_CHANNEL_"
-	MarketDataVersion = "_DB_MARKET_DATA_VERSION"
+	DBKeySubPoolArr     = "_DB_SUB_POOL_Arr_"
+	DBMicPayChan        = "_DB_MICRO_PAY_CHANNEL_"
+	MarketDataVersion   = "_DB_MARKET_DATA_VERSION_"
+	PoolAddressInMarket = "_DB_Pool_Address_In_Market_"
 )
 
 type BlockChainDataCache struct {
@@ -42,12 +43,18 @@ func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataCache, error)
 		return nil, err
 	}
 
+	dataVersion := uint32(0)
+	if data, err := db.Get([]byte(MarketDataVersion), nil); err == nil {
+		dataVersion = utils.ByteToUint(data)
+	}
+
 	bcd := &BlockChainDataCache{
-		DB:               db,
-		poolsOfMyChannel: make([]common.Address, 0),
-		poolsInMarket:    make([]common.Address, 0),
-		poolDetails:      make(map[string]*ethereum.PoolDetail),
-		channelDetails:   make(map[string]*ethereum.PayChannel),
+		DB:                db,
+		marketDataVersion: dataVersion,
+		poolsOfMyChannel:  make([]common.Address, 0),
+		poolsInMarket:     make([]common.Address, 0),
+		poolDetails:       make(map[string]*ethereum.PoolDetail),
+		channelDetails:    make(map[string]*ethereum.PayChannel),
 	}
 
 	go bcd.loadPacketMarket()
@@ -59,12 +66,35 @@ func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataCache, error)
 }
 
 func (bcd *BlockChainDataCache) loadPacketMarket() {
-	data, err := bcd.Get([]byte(MarketDataVersion), nil)
-	if err != nil {
-		bcd.marketDataVersion = 0
+	addresses := make([]common.Address, 0)
+	if err := bcd.getObj([]byte(PoolAddressInMarket), addresses); err != nil {
+		bcd.syncPacketMarket()
+		return
 	}
-	bcd.marketDataVersion = utils.ByteToUint(data)
+	bcd.poolsInMarket = addresses
 
+	go bcd.syncPacketMarket()
+}
+
+func (bcd *BlockChainDataCache) syncPacketMarket() {
+	newVer := ethereum.MarketDataVersion()
+	if bcd.marketDataVersion == newVer {
+		return
+	}
+
+	addresses := ethereum.PoolAddressList()
+	if addresses == nil {
+		fmt.Println("[PPP] ethereum PoolAddressList no data found:")
+		return
+	}
+
+	if err := bcd.saveObj([]byte(PoolAddressInMarket), addresses); err != nil {
+		fmt.Println("[PPP] ethereum save pool address in market err:", err)
+		return
+	}
+
+	bcd.marketDataVersion = newVer
+	_ = bcd.Put([]byte(MarketDataVersion), utils.UintToByte(newVer), nil)
 }
 
 func (bcd *BlockChainDataCache) loadSubPools(addr string) {
@@ -83,7 +113,7 @@ func (bcd *BlockChainDataCache) loadSubPools(addr string) {
 func (bcd *BlockChainDataCache) SyncSubPools(addr string) {
 	poolArr, err := ethereum.MySubPools(addr)
 	if err != nil {
-		fmt.Println("[PPP] ethereum.MySubPools err:", err)
+		fmt.Println("[PPP] ethereum MySubPools err:", err)
 		return
 	}
 

@@ -95,7 +95,6 @@ func startService(srvAddr string) (int, *C.char) {
 	go srv.Accepting(_appInstance.err, proxy.Socks5Target, _appInstance.ppp)
 	ret := <-_appInstance.err
 
-	stopService()
 	return ErrVpnServiceExit, C.CString(ret.Error())
 }
 
