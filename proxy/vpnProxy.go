@@ -2,7 +2,7 @@ package proxy
 
 import (
 	"fmt"
-	"github.com/pangolin-lab/atom/microPay"
+	"github.com/pangolin-lab/atom/payment"
 	"github.com/pangolin-lab/atom/utils"
 	"net"
 )
@@ -28,7 +28,7 @@ func NewProxyService(localSerAddr string, s utils.ConnSaver) (*VpnProxy, error) 
 
 type TargetFetcher func(conn net.Conn) string
 
-func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher, payChan microPay.PayChannel) {
+func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher, protocol payment.PacketPaymentProtocol) {
 
 	fmt.Println("Proxy starting......")
 	for {
@@ -37,7 +37,7 @@ func (vp *VpnProxy) Accepting(result chan string, fetcher TargetFetcher, payChan
 			result <- e.Error()
 			return
 		}
-		go vp.newPipeTask(c, fetcher, payChan)
+		go vp.newPipeTask(c, fetcher, protocol)
 	}
 }
 

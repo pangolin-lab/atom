@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/binary"
 	"net"
+	"os"
 	"syscall"
 	"time"
 )
@@ -34,4 +35,26 @@ func UintToByte(val uint32) []byte {
 }
 func ByteToUint(buff []byte) uint32 {
 	return binary.BigEndian.Uint32(buff)
+}
+
+func FileExists(fileName string) (os.FileInfo, bool) {
+
+	fileInfo, err := os.Lstat(fileName)
+
+	if fileInfo != nil || (err != nil && !os.IsNotExist(err)) {
+		return fileInfo, true
+	}
+
+	return nil, false
+}
+
+func TouchDir(dir string) error {
+	if _, ok := FileExists(dir); ok {
+		return nil
+	}
+
+	if err := os.Mkdir(dir, os.ModePerm); err != nil {
+		return err
+	}
+	return nil
 }

@@ -19,6 +19,22 @@ import (
 
 var Conf = com.TestNet
 
+type PoolDetail struct {
+	MainAddr     string
+	Payer        string
+	GuaranteedNo float64
+	ShortName    string
+	DetailInfos  string
+	Seeds        string
+}
+
+type PayChannel struct {
+	MainAddr      string
+	RemindTokens  float64
+	RemindPackets int64
+	Expiration    int64
+}
+
 func ConvertByDecimal(val *big.Int) float64 {
 	fVal := new(big.Float)
 	fVal.SetString(val.String())
@@ -86,36 +102,29 @@ func PoolAddressList() []common.Address {
 	return addArr
 }
 
-func PoolDetails(addr string) string {
+func PoolDetails(addr common.Address) (*PoolDetail, error) {
 
 	conn, err := connect()
 	if err != nil {
 		fmt.Print(err)
-		return ""
+		return nil, err
 	}
 
-	pool, err := conn.MinerPools(nil, common.HexToAddress(addr))
+	d, err := conn.MinerPools(nil, addr)
 	if err != nil {
 		fmt.Print(err)
-		return ""
+		return nil, err
 	}
 
-	buf, err := json.Marshal(pool)
-	if err != nil {
-		fmt.Print(err)
-		return ""
+	details := &PoolDetail{
+		MainAddr:     d.MainAddr.String(),
+		Payer:        d.Payer.String(),
+		GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
+		ShortName:    d.ShortName,
+		DetailInfos:  d.DetailInfos,
+		Seeds:        d.Seeds,
 	}
-
-	return string(buf)
-}
-
-type PoolDetail struct {
-	MainAddr     common.Address
-	Payer        common.Address
-	GuaranteedNo float64
-	ShortName    string
-	DetailInfos  string
-	Seeds        string
+	return details, nil
 }
 
 func PoolListWithDetails() string {
@@ -139,8 +148,8 @@ func PoolListWithDetails() string {
 		}
 
 		details := PoolDetail{
-			MainAddr:     d.MainAddr,
-			Payer:        d.Payer,
+			MainAddr:     d.MainAddr.String(),
+			Payer:        d.Payer.String(),
 			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
 			ShortName:    d.ShortName,
 			DetailInfos:  d.DetailInfos,
@@ -161,48 +170,45 @@ func PoolListWithDetails() string {
 	return string(buf)
 }
 
-func MySubPools(addr string) string {
-
+func MySubPools(addr string) ([]common.Address, error) {
 	conn, err := connect()
 	if err != nil {
 		fmt.Println("[MySubPools]: connect err:", err.Error())
-		return ""
+		return nil, err
 	}
-
-	arr, err := conn.AllMySubPools(nil, common.HexToAddress(addr))
-	if err != nil {
-		fmt.Println("[MySubPools]: AllMySubPools err:", err.Error())
-		return ""
-	}
-
-	bytes, err := json.Marshal(arr)
-	if err != nil {
-		fmt.Println("[MySubPools]: marshal pool addresses arrays err:", err.Error())
-		return ""
-	}
-
-	return string(bytes)
+	return conn.AllMySubPools(nil, common.HexToAddress(addr))
 }
 
-type PayChannel struct {
-	MainAddr      common.Address
-	RemindTokens  float64
-	RemindPackets int64
-	Expiration    int64
-}
-
-func MyChannelWithDetails(addr string) string {
+func ChannelDetails(user, pool common.Address) (*PayChannel, error) {
 	conn, err := connect()
 	if err != nil {
 		fmt.Println("[Atom]: connect err:", err.Error())
-		return ""
+		return nil, err
+	}
+
+	detail, err := conn.MicroPaymentChannels(nil, user, pool)
+	ch := &PayChannel{
+		MainAddr:      detail.MainAddr.String(),
+		RemindTokens:  ConvertByDecimal(detail.RemindTokens),
+		RemindPackets: detail.RemindPackets.Int64(),
+		Expiration:    detail.Expiration.Int64(),
+	}
+
+	return ch, nil
+}
+
+func MyChannelWithDetails(addr string) ([]PayChannel, error) {
+	conn, err := connect()
+	if err != nil {
+		fmt.Println("[Atom]: connect err:", err.Error())
+		return nil, err
 	}
 
 	myAddr := common.HexToAddress(addr)
 	arr, err := conn.AllMySubPools(nil, myAddr)
 	if err != nil {
 		fmt.Println("[MyChannelWithDetails]: AllMySubPools err:", err.Error())
-		return ""
+		return nil, err
 	}
 
 	poolArr := make([]PayChannel, 0)
@@ -215,21 +221,14 @@ func MyChannelWithDetails(addr string) string {
 		}
 
 		d := PayChannel{
-			MainAddr:      poolAddr,
+			MainAddr:      poolAddr.String(),
 			RemindTokens:  ConvertByDecimal(detail.RemindTokens),
 			RemindPackets: detail.RemindPackets.Int64(),
 			Expiration:    detail.Expiration.Int64(),
 		}
 		poolArr = append(poolArr, d)
 	}
-
-	b, err := json.Marshal(poolArr)
-	if err != nil {
-		fmt.Println("[MyChannelWithDetails]: marshal pool with details arrays err:", err.Error())
-		return ""
-	}
-
-	return string(b)
+	return poolArr, nil
 }
 
 //TODO::refactor this logic

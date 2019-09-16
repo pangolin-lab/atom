@@ -2,7 +2,7 @@ package main
 
 import "C"
 import (
-	"github.com/pangolin-lab/atom/microPay"
+	"github.com/pangolin-lab/atom/payment"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/proxy"
 )
@@ -10,13 +10,13 @@ import (
 var proxyConf *pipeProxy.ProxyConfig = nil
 var curProxy *pipeProxy.PipeProxy = nil
 
-var MicroPaymentChannel microPay.PayChannel = nil
+var MicroPaymentChannel payment.PayChannel = nil
 var VPNService *proxy.VpnProxy = nil
 
 //export OpenMicroPayChannel
 func OpenMicroPayChannel(auth, cipher, poolNodeId, accBookPath string) *C.char {
 
-	pc, e := microPay.NewChannel(cipher, auth, poolNodeId, accBookPath)
+	pc, e := payment.NewChannel(cipher, auth, poolNodeId, accBookPath)
 	if e != nil {
 		return C.CString(e.Error())
 	}
@@ -47,7 +47,7 @@ func RunVpnService(localSerAddr string) *C.char {
 	VPNService = p
 
 	result := make(chan string, 1)
-	go p.Accepting(result, proxy.Socks5Target, MicroPaymentChannel)
+	//go p.Accepting(result, proxy.Socks5Target, MicroPaymentChannel)
 
 	ret := <-result
 

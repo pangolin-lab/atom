@@ -1,4 +1,4 @@
-package microPay
+package payment
 
 import "C"
 import (

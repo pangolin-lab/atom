@@ -3,6 +3,7 @@ package main
 import "C"
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pangolin-lab/atom/ethereum"
@@ -11,7 +12,19 @@ import (
 
 //export PoolDetails
 func PoolDetails(addr string) *C.char {
-	return C.CString(ethereum.PoolDetails(addr))
+	pd, err := ethereum.PoolDetails(common.HexToAddress(addr))
+	if err != nil {
+		fmt.Print(err)
+		return C.CString("")
+	}
+
+	buf, err := json.Marshal(pd)
+	if err != nil {
+		fmt.Print(err)
+		return C.CString("")
+	}
+
+	return C.CString(string(buf))
 }
 
 //export PoolListWithDetails
@@ -22,8 +35,18 @@ func PoolListWithDetails() *C.char {
 
 //export MyChannelWithDetails
 func MyChannelWithDetails(addr string) *C.char {
-	jsonStr := ethereum.MyChannelWithDetails(addr)
-	return C.CString(jsonStr)
+	poolArr, err := ethereum.MyChannelWithDetails(addr)
+	if err != nil {
+		fmt.Println("[MyChannelWithDetails]: marshal pool with details arrays err:", err.Error())
+		return C.CString("")
+	}
+
+	b, err := json.Marshal(poolArr)
+	if err != nil {
+		fmt.Println("[MyChannelWithDetails]: marshal pool with details arrays err:", err.Error())
+		return C.CString("")
+	}
+	return C.CString(string(b))
 }
 
 //export BuyPacket
