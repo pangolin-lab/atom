@@ -57,7 +57,7 @@ func initEthereumConf(tokenAddr, payChanAddr, apiUrl string) {
 }
 
 //export initApp
-func initApp(tokenAddr, payChanAddr, apiUrl, baseDir, srvAddr string) (int, *C.char) {
+func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string) (int, *C.char) {
 	initEthereumConf(tokenAddr, payChanAddr, apiUrl)
 
 	if err := utils.TouchDir(baseDir); err != nil {
