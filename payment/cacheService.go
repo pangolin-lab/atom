@@ -8,19 +8,21 @@ import (
 	"github.com/btcsuite/goleveldb/leveldb/opt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pangolin-lab/atom/ethereum"
+	"github.com/pangolin-lab/atom/utils"
 	"sync"
 )
 
 const (
-	DBKeySubPoolArr = "SUB_POOL_Arr_"
-	DBMicPayChan    = "MICRO_PAY_CHANNEL_"
+	DBKeySubPoolArr   = "SUB_POOL_Arr_"
+	DBMicPayChan      = "MICRO_PAY_CHANNEL_"
+	MarketDataVersion = "_DB_MARKET_DATA_VERSION"
 )
 
 type BlockChainDataCache struct {
 	sync.RWMutex
 	*leveldb.DB
 
-	marketDataVersion int64
+	marketDataVersion uint32
 	poolsOfMyChannel  []common.Address
 	poolsInMarket     []common.Address
 	poolDetails       map[string]*ethereum.PoolDetail
@@ -39,6 +41,7 @@ func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataCache, error)
 	if err != nil {
 		return nil, err
 	}
+
 	bcd := &BlockChainDataCache{
 		DB:               db,
 		poolsOfMyChannel: make([]common.Address, 0),
@@ -56,6 +59,12 @@ func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataCache, error)
 }
 
 func (bcd *BlockChainDataCache) loadPacketMarket() {
+	data, err := bcd.Get([]byte(MarketDataVersion), nil)
+	if err != nil {
+		bcd.marketDataVersion = 0
+	}
+	bcd.marketDataVersion = utils.ByteToUint(data)
+
 }
 
 func (bcd *BlockChainDataCache) loadSubPools(addr string) {

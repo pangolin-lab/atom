@@ -17,6 +17,7 @@ const (
 	ErrInitProtocol
 	ErrInitDataCache
 	ErrInitVpnService
+	ErrVpnServiceExit
 
 	WalletFile      = "wallet.json"
 	ReceiptDataBase = "accountant"
@@ -28,9 +29,12 @@ type MacApp struct {
 	ppp     payment.PacketPaymentProtocol
 	cache   *payment.BlockChainDataCache
 	service *proxy.VpnProxy
+	err     chan error
 }
 
-var _appInstance = &MacApp{}
+var _appInstance = &MacApp{
+	err: make(chan error, 10),
+}
 
 func initEthereumConf(tokenAddr, payChanAddr, apiUrl string) {
 	if tokenAddr != "" {
@@ -77,13 +81,27 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir, srvAddr string) (int, *C.c
 	}
 	_appInstance.cache = cc
 
+	return Success, nil
+}
+
+//export startService
+func startService(srvAddr string) (int, *C.char) {
 	srv, err := proxy.NewProxyService(srvAddr, nil)
 	if err != nil {
 		return ErrInitVpnService, C.CString(err.Error())
 	}
 	_appInstance.service = srv
 
-	return Success, nil
+	go srv.Accepting(_appInstance.err, proxy.Socks5Target, _appInstance.ppp)
+	ret := <-_appInstance.err
+
+	stopService()
+	return ErrVpnServiceExit, C.CString(ret.Error())
+}
+
+//export stopService
+func stopService() {
+	_appInstance.err <- fmt.Errorf("stopped by user")
 }
 
 //export openWallet
