@@ -5,36 +5,43 @@ import (
 	"github.com/pangolink/go-node/account"
 	"github.com/pangolink/go-node/network"
 	"strings"
+	"time"
 )
 
 var ErrInvalidID = fmt.Errorf("invalid node id")
 
 type PeerID struct {
-	IP string
-	ID account.ID
+	ID      account.ID
+	IP      string
+	NetAddr string
+	Ping    time.Duration
 }
 
 const ServeNodeSep = "@"
 
-func ConvertPID(pid string) (*PeerID, error) {
-	arr := strings.Split(pid, ServeNodeSep)
+func ConvertPID(idStr string) (*PeerID, error) {
+	arr := strings.Split(idStr, ServeNodeSep)
 	if len(arr) != 2 {
 		return nil, ErrInvalidID
 	}
+	id := account.ID(arr[0])
+	ip := arr[1]
+	port := id.ToServerPort()
 
-	id := &PeerID{
-		IP: arr[1],
-		ID: account.ID(arr[0]),
+	pid := &PeerID{
+		ID:      id,
+		IP:      ip,
+		NetAddr: network.JoinHostPort(ip, port),
 	}
 
-	return id, nil
+	return pid, nil
 }
 
 func (pid *PeerID) String() string {
 	return strings.Join([]string{pid.ID.String(), pid.IP}, ServeNodeSep)
 }
 
-func (pid *PeerID) NetAddr() string {
-	port := pid.ID.ToServerPort()
-	return network.JoinHostPort(pid.IP, port)
+func (pid *PeerID) TTL() {
+	now := time.Now()
+	pid.Ping = time.Now().Sub(now)
 }

@@ -2,6 +2,9 @@ package utils
 
 import (
 	"encoding/binary"
+	"encoding/json"
+	"github.com/btcsuite/goleveldb/leveldb"
+	"github.com/btcsuite/goleveldb/leveldb/opt"
 	"net"
 	"os"
 	"syscall"
@@ -56,5 +59,32 @@ func TouchDir(dir string) error {
 	if err := os.Mkdir(dir, os.ModePerm); err != nil {
 		return err
 	}
+	return nil
+}
+
+func SaveObj(db *leveldb.DB, key []byte, v interface{}) error {
+
+	data, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	wo := &opt.WriteOptions{
+		Sync: true,
+	}
+
+	return db.Put(key, data, wo)
+}
+
+func GetObj(db *leveldb.DB, key []byte, v interface{}) error {
+
+	data, err := db.Get(key, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(data, v); err != nil {
+		return err
+	}
+
 	return nil
 }

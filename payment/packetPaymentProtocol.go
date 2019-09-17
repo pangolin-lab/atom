@@ -5,48 +5,22 @@ import (
 	"github.com/btcsuite/goleveldb/leveldb"
 	"github.com/btcsuite/goleveldb/leveldb/filter"
 	"github.com/btcsuite/goleveldb/leveldb/opt"
+	"github.com/pangolin-lab/atom/ethereum"
+	"github.com/pangolin-lab/atom/utils"
+	"github.com/pangolink/go-node/network"
 	"github.com/pangolink/miner-pool/account"
+	"github.com/pangolink/miner-pool/core"
 	"io/ioutil"
+	"sort"
 	"sync"
+	"time"
 )
 
 type PacketPaymentProtocol interface {
 	WalletAddr() (string, string)
-	OpenPacketWallet(auth string) error
+	OpenPayChannel(errCh chan error, poolId *ethereum.PoolDetail, auth string) error
 	SetupAesConn(string) (account.CryptConn, error)
-}
-
-type AccountBook struct {
-	sync.RWMutex
-	Counter  int
-	Nonce    int
-	UnSettle int64
-}
-
-type PacketAccountant struct {
-	*leveldb.DB
-	*AccountBook
-}
-
-func initAccountant(rPath string) (*PacketAccountant, error) {
-	opts := opt.Options{
-		ErrorIfExist: true,
-		Strict:       opt.DefaultStrict,
-		Compression:  opt.NoCompression,
-		Filter:       filter.NewBloomFilter(10),
-	}
-
-	db, err := leveldb.OpenFile(rPath, &opts)
-	if err != nil {
-		return nil, err
-	}
-
-	pa := &PacketAccountant{
-		DB:          db,
-		AccountBook: nil,
-	}
-
-	return pa, nil
+	IsPayChannelOpen(poolAddr string) bool
 }
 
 type SafeWallet struct {
@@ -75,14 +49,23 @@ func initWallet(wPath string) (*SafeWallet, error) {
 }
 
 type PacketWallet struct {
-	sWallet    *SafeWallet
-	wallet     account.Wallet
-	accountant *PacketAccountant
+	sWallet  *SafeWallet
+	database *leveldb.DB
+	*accountBook
+	*PayeeInfo
+	wallet account.Wallet
 }
 
 func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
 
-	ac, err := initAccountant(rPath)
+	opts := opt.Options{
+		ErrorIfExist: true,
+		Strict:       opt.DefaultStrict,
+		Compression:  opt.NoCompression,
+		Filter:       filter.NewBloomFilter(10),
+	}
+
+	db, err := leveldb.OpenFile(rPath, &opts)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +77,103 @@ func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
 	}
 
 	pw := &PacketWallet{
-		sWallet:    sw,
-		accountant: ac,
+		sWallet:  sw,
+		database: db,
 	}
 	return pw, nil
+}
+
+func (pw *PacketWallet) connectToMiner(pool *ethereum.PoolDetail) (*network.JsonConn, error) {
+	peerId, e := utils.ConvertPID(pool.Seeds)
+	if e != nil {
+		return nil, e
+	}
+	conn, err := utils.GetSavedConn(peerId.NetAddr)
+	if err != nil {
+		return nil, err
+	}
+	c := &network.JsonConn{Conn: conn}
+	return c, nil
+}
+
+func (pw *PacketWallet) initBootStrap(conn *network.JsonConn) ([]string, error) {
+
+	req := &core.PayChanReq{
+		MsgType: core.CreateReq,
+		CreateReq: &core.ChanCreateReq{
+			MainAddr: pw.sWallet.MainAddr,
+			SubAddr:  pw.sWallet.SubAddr,
+		},
+	}
+	req.Sig = pw.wallet.SignSub(req)
+	if err := conn.WriteJsonMsg(req); err != nil {
+		return nil, err
+	}
+
+	ack := &core.PayChanAck{}
+	if err := conn.ReadJsonMsg(ack); err != nil {
+		return nil, err
+	}
+
+	if ack.Success != true {
+		return nil, fmt.Errorf("create new coin payee err:%s", ack.ErrMsg)
+	}
+	return ack.CreateRes.MinerIDs, nil
+}
+
+func (pw *PacketWallet) monitor(errors chan error) {
+
+}
+
+func (pw *PacketWallet) Close() {
+
+}
+
+func (pw *PacketWallet) openWallet(auth string) error {
+	if pw.sWallet.cipherTxt == nil {
+		return fmt.Errorf("wallet data not found")
+	}
+
+	w, err := account.DecryptWallet(pw.sWallet.cipherTxt, auth)
+	if err != nil {
+		return err
+	}
+
+	pw.wallet = w
+	return nil
+}
+
+func (pw *PacketWallet) RandomMiner(minerIDs []string) (*utils.PeerID, error) {
+
+	var waiter sync.WaitGroup
+	s := make([]*utils.PeerID, 0)
+	var locker sync.Mutex
+
+	for _, id := range minerIDs {
+		pid, err := utils.ConvertPID(id)
+		if err != nil {
+			continue
+		}
+
+		waiter.Add(1)
+		go func() {
+			defer waiter.Done()
+
+			pid.TTL()
+			fmt.Printf("\nserver(%s) is ok (%dms)\n", pid.IP, pid.Ping/time.Millisecond)
+			locker.Lock()
+			s = append(s, pid)
+			locker.Unlock()
+		}()
+	}
+	waiter.Wait()
+
+	if len(s) == 0 {
+		return nil, fmt.Errorf("[RandomMiner] no valid miner node")
+	}
+
+	sort.Slice(s, func(i, j int) bool {
+		return s[i].Ping < s[j].Ping
+	})
+	return s[0], nil
 }

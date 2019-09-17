@@ -44,7 +44,7 @@ func NewChannel(cipherTxt, auth, poolNode, accPath string) (PayChannel, error) {
 	if e != nil {
 		return nil, e
 	}
-	conn, err := utils.GetSavedConn(peerId.NetAddr())
+	conn, err := utils.GetSavedConn(peerId.NetAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func handShake(w account.Wallet, conn *network.JsonConn) (string, error) {
 	if ack.Success != true {
 		return "", fmt.Errorf("create payment channel err:%s", ack.ErrMsg)
 	}
-	return ack.CreateRes.MinerId, nil
+	return ack.CreateRes.MinerIDs[0], nil
 }
 
 func newMiner(minerId string, w account.Wallet) (*minerInfo, error) {
@@ -118,7 +118,7 @@ func newMiner(minerId string, w account.Wallet) (*minerInfo, error) {
 	}
 	m := &minerInfo{
 		ID:      mid,
-		NetAddr: mid.NetAddr(),
+		NetAddr: mid.NetAddr,
 		AesKey:  make([]byte, len(aesKey)),
 	}
 	copy(m.AesKey, aesKey[:])

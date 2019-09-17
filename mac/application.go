@@ -18,6 +18,8 @@ const (
 	ErrInitDataCache
 	ErrInitVpnService
 	ErrVpnServiceExit
+	ErrOpenPayChannel
+	ErrNoSuchPool
 
 	WalletFile      = "wallet.json"
 	ReceiptDataBase = "accountant"
@@ -27,7 +29,7 @@ const (
 type MacApp struct {
 	proxy   *proxy.VpnProxy
 	ppp     payment.PacketPaymentProtocol
-	cache   *payment.BlockChainDataCache
+	dataSrv *payment.BlockChainDataService
 	service *proxy.VpnProxy
 	err     chan error
 }
@@ -79,18 +81,30 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string) (int, *C.char) {
 	if err != nil {
 		return ErrInitDataCache, C.CString(err.Error())
 	}
-	_appInstance.cache = cc
+	_appInstance.dataSrv = cc
 
 	return Success, nil
 }
 
 //export startService
-func startService(srvAddr string) (int, *C.char) {
+func startService(srvAddr, auth, minerPoolAddr string) (int, *C.char) {
 	srv, err := proxy.NewProxyService(srvAddr, nil)
 	if err != nil {
 		return ErrInitVpnService, C.CString(err.Error())
 	}
 	_appInstance.service = srv
+
+	if !_appInstance.ppp.IsPayChannelOpen(minerPoolAddr) {
+
+		miner, err := _appInstance.dataSrv.LoadMinerDetails(minerPoolAddr)
+		if err != nil {
+			return ErrNoSuchPool, C.CString(err.Error())
+		}
+
+		if err := _appInstance.ppp.OpenPayChannel(_appInstance.err, miner, auth); err != nil {
+			return ErrOpenPayChannel, C.CString(err.Error())
+		}
+	}
 
 	go srv.Accepting(_appInstance.err, proxy.Socks5Target, _appInstance.ppp)
 	ret := <-_appInstance.err
@@ -101,13 +115,4 @@ func startService(srvAddr string) (int, *C.char) {
 //export stopService
 func stopService() {
 	_appInstance.err <- fmt.Errorf("stopped by user")
-}
-
-//export openWallet
-func openWallet(auth string) (int, *C.char) {
-
-	if err := _appInstance.ppp.OpenPacketWallet(auth); err != nil {
-		return ErrOpenWallet, C.CString(err.Error())
-	}
-	return Success, C.CString("")
 }
