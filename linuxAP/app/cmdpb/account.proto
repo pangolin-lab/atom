@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package cmdpb;
+
+message AccountReq{
+    int32 op=1;  //add del show
+    string password=2;
+}
+
+message AccountResp{
+    string resp=1;
+    string address=2;
+    string ciperTxt=3;
+}
+
+service accountSrv {
+    rpc AccountCmdDo(AccountReq) returns (AccountResp) {}
+}

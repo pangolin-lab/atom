@@ -26,7 +26,7 @@ var (
 type APConfig struct {
 	CmdAddr string			`json:"cmdaddr"`
 	ProtonAddr string		`json:"protonaddr"`
-	CiperText string		`json:"-"`
+	CiperText string		`json:"cipertext"`
 	EthereumAddr string		`json:"ethereumaddr"`
 	LogDir       string     `json:"logdir"`
 	ClientPubKey map[string]string `json:"clientpubkey"`

@@ -56,3 +56,20 @@ func IsLinuxAPProcessStarted() (bool,error) {
 
 
 }
+
+func AccountIsCreated() (bool,error) {
+	if !config.IsInitialized(){
+		return false,errors.New("need to initialize config file first")
+	}
+
+	cfg:=config.GetAPConfigInst()
+	if cfg==nil{
+		return false,errors.New("load config failed")
+	}
+
+	if cfg.ProtonAddr != "" && cfg.CiperText!=""{
+		return true,nil
+	}
+
+	return false,nil
+}

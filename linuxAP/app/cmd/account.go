@@ -16,11 +16,14 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/proton-lab/autom/linuxAP/config"
+	"fmt"
+	"github.com/proton-lab/autom/linuxAP/app/common"
 	"log"
+	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
+	"github.com/proton-lab/autom/linuxAP/app/cmdclient"
 )
 
-var offlineFlag bool
+
 
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
@@ -28,17 +31,7 @@ var accountCmd = &cobra.Command{
 	Short: "show "+ProgramName+" account",
 	Long: "show "+ProgramName+" account",
 	Run: func(cmd *cobra.Command, args []string) {
-		if !config.IsInitialized(){
-			log.Println("Please Initialize "+ProgramName+" First!")
-			return
-		}
-		if offlineFlag{
-			cfg:=config.GetAPConfigInst()
-
-		}else{
-
-		}
-
+		fmt.Println("account cmd called")
 
 	},
 }
@@ -56,6 +49,34 @@ func init() {
 	// is called directly, e.g.:
 	// accountCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	accountCmd.Flags().BoolVarP(&offlineFlag,"offline","o",false,"offline create account")
+}
+
+func AccountSendCmdReq(remoteaddr string,op int32,password string)  {
+	if remoteaddr == "" || remoteaddr == "127.0.0.1"{
+		if _,err:=common.IsLinuxAPProcessStarted();err!=nil{
+			log.Println(err)
+			return
+		}
+	}
+
+	request:=&cmdpb.AccountReq{Op:op,Password:password}
+	cc:=cmdclient.NewCmdClient(remoteaddr)
+
+	cc.DialToCmdServer()
+	defer cc.Close()
+
+	client:=cmdpb.NewAccountSrvClient(cc.GetRpcClientConn())
+	ctx:=cc.GetRpcCnxt()
+
+	if resp,err:=client.AccountCmdDo(*ctx,request);err!=nil{
+		fmt.Println(err)
+	}else{
+		if resp.Address != "" {
+			fmt.Println("Proton Address:",resp.Address)
+			fmt.Println("CiperText     :",resp.CiperTxt)
+		}
+
+		fmt.Println(resp.Resp)
+	}
 
 }

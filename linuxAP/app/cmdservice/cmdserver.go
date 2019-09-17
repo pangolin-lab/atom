@@ -65,6 +65,7 @@ func (cs *cmdServer)StartCmdService()  {
 
 	cmdpb.RegisterDefaultcmdsrvServer(cs.grpcServer,&api.CmdDefaultServer{stop})
 	cmdpb.RegisterPubkeyServer(cs.grpcServer,&api.PubKeyService{})
+	cmdpb.RegisterAccountSrvServer(cs.grpcServer,&api.AccountCmdService{})
 
 	reflection.Register(cs.grpcServer)
 	log.Println("Commamd line server will start at",cs.localaddr)

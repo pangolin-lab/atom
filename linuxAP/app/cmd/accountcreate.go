@@ -15,10 +15,19 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/proton-lab/autom/linuxAP/config"
+	"log"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/howeyc/gopass"
+	"os"
+	"github.com/proton-lab/autom/linuxAP/golib"
+	"fmt"
+	"github.com/pkg/errors"
 )
+
+
+var offlineFlag bool
 
 // createCmd represents the create command
 var acctCreateCmd = &cobra.Command{
@@ -26,7 +35,57 @@ var acctCreateCmd = &cobra.Command{
 	Short: "create a "+ProgramName+" account",
 	Long: "create a "+ProgramName+" account",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("create called")
+		var password string
+		var err error
+
+		if remoteaddr == "" || remoteaddr == "127.0.0.1" {
+			if !config.IsInitialized() {
+				log.Println("Please Initialize " + ProgramName + " First!")
+				return
+			}
+			if !offlineFlag {
+				if _, err = common.IsLinuxAPProcessStarted(); err != nil {
+					log.Println(err)
+					return
+				}
+
+			}else{
+				if ok, _ := common.AccountIsCreated(); ok {
+					log.Println("Account was created. If you want recreate account, Please reset it first.")
+					return
+				}
+			}
+
+			if password,err = inputpassword();err!=nil{
+				log.Println(err)
+				return
+			}
+
+			//log.Println(password)
+			if offlineFlag {
+				cfg := config.GetAPConfigInst()
+				cfg.ProtonAddr, cfg.CiperText = golib.LibCreateAccount(password)
+
+				if cfg.ProtonAddr != "" {
+					cfg.Save()
+					fmt.Println("Proton Address:", cfg.ProtonAddr)
+					fmt.Println("CiperText     :", cfg.CiperText)
+					fmt.Println("Create successfully")
+				}else{
+					fmt.Println("Internal error\r\n,Account create failed")
+				}
+
+				return
+			}
+		}else{
+			if password,err = inputpassword();err!=nil{
+				log.Println(err)
+				return
+			}
+		}
+
+		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_ADD,password)
+
 	},
 }
 
@@ -42,4 +101,19 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	acctCreateCmd.Flags().BoolVarP(&offlineFlag,"offline","o",false,"offline create account")
+}
+
+func inputpassword() (password string,err error) {
+	passwd, err := gopass.GetPasswdPrompt("Please Enter Account Password:", true, os.Stdin, os.Stdout)
+	if err != nil {
+		return "",err
+	}
+
+	if len(passwd) <1{
+		return "",errors.New("Please input valid password")
+	}
+
+
+	return string(passwd),nil
 }
