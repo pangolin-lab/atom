@@ -31,7 +31,14 @@ var accountCmd = &cobra.Command{
 	Short: "show "+ProgramName+" account",
 	Long: "show "+ProgramName+" account",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("account cmd called")
+		if remoteaddr == "" || remoteaddr == "127.0.0.1"{
+			if _,err:=common.IsLinuxAPProcessStarted();err!=nil{
+				log.Println(err)
+				return
+			}
+		}
+
+		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_SHOW,"")
 
 	},
 }

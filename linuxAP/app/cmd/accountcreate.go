@@ -84,7 +84,7 @@ var acctCreateCmd = &cobra.Command{
 			}
 		}
 
-		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_ADD,password)
+		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_CREATE,password)
 
 	},
 }
