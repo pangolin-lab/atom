@@ -15,42 +15,31 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
-	"github.com/proton-lab/autom/linuxAP/config"
-	"log"
 )
 
-
-var initHomeDir string
-
-// initCmd represents the init command
-var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "initial "+ProgramName+" runtime environment",
-	Long: "initial "+ProgramName+" runtime environment",
+// proxystopCmd represents the proxystop command
+var proxystopCmd = &cobra.Command{
+	Use:   "stop",
+	Short: "stop proxy",
+	Long: `stop proxy`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err:=config.InitAPConfig(initHomeDir)
-		if err!=nil{
-			log.Println("Initialization configuration failed:",err)
-		}else {
-			log.Println("Initialize configuration successful")
-		}
+		fmt.Println("proxystop called")
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(initCmd)
+	proxyCmd.AddCommand(proxystopCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// proxystopCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	initCmd.Flags().StringVarP(&initHomeDir,"homedir","d","","set home directory")
-
+	// proxystopCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

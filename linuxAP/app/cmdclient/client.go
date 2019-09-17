@@ -10,9 +10,6 @@ import (
 	"fmt"
 )
 
-
-
-
 type CmdConnection struct {
 	c *grpc.ClientConn
 	ctx context.Context
@@ -38,7 +35,6 @@ func (cc *CmdClient)DialToCmdServer() *CmdConnection  {
 		cfg:=config.GetAPConfigInst()
 		cc.addr = cfg.CmdAddr
 	}
-
 
 	conn,err:=grpc.Dial(cc.addr,grpc.WithInsecure())
 	if err!=nil{
