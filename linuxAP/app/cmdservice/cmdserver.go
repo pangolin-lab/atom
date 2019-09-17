@@ -65,15 +65,7 @@ func (cs *cmdServer)StartCmdService()  {
 
 	cmdpb.RegisterDefaultcmdsrvServer(cs.grpcServer,&api.CmdDefaultServer{stop})
 	cmdpb.RegisterPubkeyServer(cs.grpcServer,&api.PubKeyService{})
-	//pb.RegisterDefaultnbssasrvServer(grpcServer, &api.CmdDefaultServer{StopCmdService})
-	//pb.RegisterConfigchangeServer(grpcServer, &api.CmdConfigServer{})
-	//pb.RegisterRemotechangeServer(grpcServer, &api.RemoteConfig{})
-	//pb.RegisterBootstrapCHGServer(grpcServer, &api.CmdBootstrapServer{})
-	//pb.RegisterLicenseUserChgServer(grpcServer,&api.CmdLicenseUserServer{})
-	//pb.RegisterHomeIPShowSrvServer(grpcServer,&api.CmdHomeShow{})
-	//pb.RegisterLicenseSrvServer(grpcServer,&api.CmdOpLicenseSrv{})
-	//pb.RegisterFileuploadsrvServer(grpcServer,&api.CmdFileUpLoad{})
-	//pb.RegisterFileudownloadsrvServer(grpcServer,&api.CmdFileDownload{})
+
 	reflection.Register(cs.grpcServer)
 	log.Println("Commamd line server will start at",cs.localaddr)
 	if err := cs.grpcServer.Serve(lis); err != nil {

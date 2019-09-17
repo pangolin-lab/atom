@@ -39,7 +39,7 @@ func (cds *CmdDefaultServer)stop()(*cmdpb.DefaultResp, error){
 		cds.Stop()
 	}()
 	resp := &cmdpb.DefaultResp{}
-	resp.Message = "protonap server stoped"
+	resp.Message = "server stoped"
 	return resp, nil
 }
 

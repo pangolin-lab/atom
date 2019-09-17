@@ -15,9 +15,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/proton-lab/autom/linuxAP/config"
+	"log"
 )
 
 var offlineFlag bool
@@ -28,7 +28,10 @@ var accountCmd = &cobra.Command{
 	Short: "show "+ProgramName+" account",
 	Long: "show "+ProgramName+" account",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("account called")
+		if !config.IsInitialized(){
+			log.Println("Please Initialize "+ProgramName+" First!")
+			return
+		}
 	},
 }
 

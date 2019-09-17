@@ -38,9 +38,9 @@ var daemonCmd = &cobra.Command{
 		cfg:=config.GetAPConfigInst()
 		daemondir:=cfg.GetLogDir()
 		cntxt := daemon.Context{
-			PidFileName: path.Join(daemondir, "protonap.pid"),
+			PidFileName: path.Join(daemondir, ProgramName+".pid"),
 			PidFilePerm: 0644,
-			LogFileName: path.Join(daemondir, "protonap.log"),
+			LogFileName: path.Join(daemondir, ProgramName+".log"),
 			LogFilePerm: 0640,
 			WorkDir:     daemondir,
 			Umask:       027,
@@ -51,12 +51,12 @@ var daemonCmd = &cobra.Command{
 			log.Fatal("Unable to run: ", err)
 		}
 		if d != nil {
-			log.Println("protonap starting, please check log at:", path.Join(daemondir, "protonap.log"))
+			log.Println(ProgramName+" starting, please check log at:", path.Join(daemondir, ProgramName+".log"))
 			return
 		}
 		defer cntxt.Release()
 
-		log.Println("protonap daemon begin to start ...")
+		log.Println(ProgramName+" daemon begin to start ...")
 
 		cmdinst:=cmdservice.GetCmdServerInst()
 		cmdinst.StartCmdService()

@@ -39,7 +39,7 @@ var rootCmd = &cobra.Command{
 			return
 		}else{
 			if b{
-				log.Println("protonap begin to start...")
+				log.Println(ProgramName+" begin to start...")
 			}else {
 				return
 			}

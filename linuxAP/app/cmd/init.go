@@ -31,7 +31,7 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err:=config.InitAPConfig("")
 		if err!=nil{
-			log.Println("Initialization failed:",err)
+			log.Println("Initialization configuration failed:",err)
 		}else {
 			log.Println("Initialize configuration successful")
 		}
