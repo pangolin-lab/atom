@@ -22,7 +22,7 @@ import (
 var Version string
 var Build string
 var BuildTime string
-var ProgramName string
+var ProgramName = "protonap"
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{

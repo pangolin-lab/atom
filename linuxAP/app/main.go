@@ -22,7 +22,7 @@ var (
 	Version string
 	Build string
 	BuildTime string
-	ProgramName string
+
 )
 
 
@@ -30,6 +30,5 @@ func main() {
 	cmd.Version = Version
 	cmd.BuildTime = BuildTime
 	cmd.Build = Build
-	cmd.ProgramName = ProgramName
 	cmd.Execute()
 }
