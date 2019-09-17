@@ -32,6 +32,14 @@ var accountCmd = &cobra.Command{
 			log.Println("Please Initialize "+ProgramName+" First!")
 			return
 		}
+		if offlineFlag{
+			cfg:=config.GetAPConfigInst()
+
+		}else{
+
+		}
+
+
 	},
 }
 

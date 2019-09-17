@@ -8,7 +8,7 @@ all: m a i test lnxap
 #	cd pbs/ && $(MAKE)
 #
 
-LNXAPLIBSRC = $(shell find linuxAP/lib/ -type f -name '*.go')
+LNXAPLIBSRC = $(shell find linuxAP/clib/ -type f -name '*.go')
 
 
 test:
