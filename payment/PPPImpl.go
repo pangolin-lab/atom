@@ -13,12 +13,12 @@ import (
 	"io"
 )
 
-func (pw *PacketWallet) IsPayChannelOpen(pool string) bool {
+func (pw *PacketWallet) IsPayChannelOpen(poolAddr string) bool {
 	if pw.wallet == nil || !pw.wallet.IsOpen() {
 		return false
 	}
 
-	if pw.PayeeInfo == nil || pw.PayeeInfo.PayeeAddr != pool {
+	if pw.Chanel == nil || pw.pool.MainAddr != poolAddr {
 		return false
 	}
 
@@ -32,36 +32,46 @@ func (pw *PacketWallet) OpenPayChannel(errCh chan error, pool *ethereum.PoolDeta
 		}
 	}
 
-	if pw.PayeeInfo != nil {
-		pw.Close()
+	if pw.Chanel != nil {
+		pw.CloseChannel()
 	}
 
-	conn, err := pw.connectToMiner(pool)
+	conn, err := pw.connectToMiner(pool.Seeds)
 	if err != nil {
 		return err
 	}
 
-	minerIDs, err := pw.initBootStrap(conn)
+	bootInfo, err := pw.handshake(conn)
 	if err != nil {
 		return err
 	}
 
-	miner, err := pw.RandomMiner(minerIDs)
+	miner, err := pw.randomMiner(bootInfo.MinerIDs)
 	if err != nil {
 		return err
 	}
 
-	pw.PayeeInfo = &PayeeInfo{
-		PayeeAddr: pool.MainAddr,
-		SelMiner:  miner,
-		conn:      conn,
+	accBook, err := pw.checkAccount(pool.MainAddr, bootInfo.Sig, bootInfo.LatestReceipt)
+	if err != nil {
+		return err
 	}
+
+	pw.Chanel = &Chanel{
+		pool:    pool,
+		miner:   miner,
+		conn:    conn,
+		accBook: accBook,
+	}
+
 	go pw.monitor(errCh)
+
 	return nil
 }
 
 func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
-	miner := pw.SelMiner
+
+	miner := pw.miner
+
 	conn, err := utils.GetSavedConn(miner.NetAddr)
 	if err != nil {
 		fmt.Printf("\nConnect to miner failed:[%s]", err.Error())

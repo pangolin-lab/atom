@@ -51,9 +51,8 @@ func initWallet(wPath string) (*SafeWallet, error) {
 type PacketWallet struct {
 	sWallet  *SafeWallet
 	database *leveldb.DB
-	*accountBook
-	*PayeeInfo
-	wallet account.Wallet
+	wallet   account.Wallet
+	*Chanel
 }
 
 func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
@@ -83,8 +82,8 @@ func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
 	return pw, nil
 }
 
-func (pw *PacketWallet) connectToMiner(pool *ethereum.PoolDetail) (*network.JsonConn, error) {
-	peerId, e := utils.ConvertPID(pool.Seeds)
+func (pw *PacketWallet) connectToMiner(poolNodeId string) (*network.JsonConn, error) {
+	peerId, e := utils.ConvertPID(poolNodeId)
 	if e != nil {
 		return nil, e
 	}
@@ -96,7 +95,7 @@ func (pw *PacketWallet) connectToMiner(pool *ethereum.PoolDetail) (*network.Json
 	return c, nil
 }
 
-func (pw *PacketWallet) initBootStrap(conn *network.JsonConn) ([]string, error) {
+func (pw *PacketWallet) handshake(conn *network.JsonConn) (*core.ChanCreateAck, error) {
 
 	req := &core.PayChanReq{
 		MsgType: core.CreateReq,
@@ -118,15 +117,21 @@ func (pw *PacketWallet) initBootStrap(conn *network.JsonConn) ([]string, error) 
 	if ack.Success != true {
 		return nil, fmt.Errorf("create new coin payee err:%s", ack.ErrMsg)
 	}
-	return ack.CreateRes.MinerIDs, nil
+	return ack.CreateRes, nil
 }
 
 func (pw *PacketWallet) monitor(errors chan error) {
 
 }
 
-func (pw *PacketWallet) Close() {
+func (pw *PacketWallet) CloseChannel() {
+	pw.conn.Close()
 
+	if pw.Chanel != nil {
+		pw.SynAccountBook()
+	}
+
+	pw.Chanel = nil
 }
 
 func (pw *PacketWallet) openWallet(auth string) error {
@@ -143,7 +148,7 @@ func (pw *PacketWallet) openWallet(auth string) error {
 	return nil
 }
 
-func (pw *PacketWallet) RandomMiner(minerIDs []string) (*utils.PeerID, error) {
+func (pw *PacketWallet) randomMiner(minerIDs []string) (*utils.PeerID, error) {
 
 	var waiter sync.WaitGroup
 	s := make([]*utils.PeerID, 0)
@@ -169,7 +174,7 @@ func (pw *PacketWallet) RandomMiner(minerIDs []string) (*utils.PeerID, error) {
 	waiter.Wait()
 
 	if len(s) == 0 {
-		return nil, fmt.Errorf("[RandomMiner] no valid miner node")
+		return nil, fmt.Errorf("[randomMiner] no valid miner node")
 	}
 
 	sort.Slice(s, func(i, j int) bool {
