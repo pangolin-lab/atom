@@ -23,8 +23,8 @@ import (
 // proxyCmd represents the proxy command
 var proxyCmd = &cobra.Command{
 	Use:   "proxy",
-	Short: "show proxy configuration",
-	Long: `show proxy configuration`,
+	Short: "show "+ProgramName+" proxy configuration",
+	Long: "show "+ProgramName+" configuration",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("proxy called")
 	},

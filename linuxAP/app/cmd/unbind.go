@@ -23,8 +23,8 @@ import (
 // unbindCmd represents the unbind command
 var unbindCmd = &cobra.Command{
 	Use:   "unbind",
-	Short: "unbind the relationship of ethereum address and proton address",
-	Long: `unbind the relationship of ethereum address and proton address`,
+	Short: "unbind the relationship of ethereum address and "+ProgramName+" address",
+	Long: "unbind the relationship of ethereum address and "+ProgramName+" address",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("unbind called")
 	},

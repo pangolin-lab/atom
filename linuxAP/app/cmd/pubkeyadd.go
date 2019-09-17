@@ -24,8 +24,8 @@ import (
 // addCmd represents the add command
 var pubkeyAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "add a pubkey",
-	Long: `add a pubkey`,
+	Short: "add a remote "+ProgramName+" pubkey",
+	Long: "add a remote "+ProgramName+" pubkey",
 	Run: func(cmd *cobra.Command, args []string) {
 		key:=""
 		if len(args)>0{

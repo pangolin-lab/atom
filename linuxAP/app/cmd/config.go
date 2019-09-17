@@ -23,8 +23,8 @@ import (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "set some config item",
-	Long: `set some config item as like k=v`,
+	Short: "set "+ProgramName+" some config item",
+	Long: "set "+ProgramName+" some config item as like k=v",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("config called")
 	},

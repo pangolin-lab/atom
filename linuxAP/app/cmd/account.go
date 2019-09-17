@@ -25,8 +25,8 @@ var offlineFlag bool
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use:   "account",
-	Short: "show proton account",
-	Long: `show proton account`,
+	Short: "show "+ProgramName+" account",
+	Long: "show "+ProgramName+" account",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("account called")
 	},

@@ -28,8 +28,8 @@ var pubkeyname string
 // pubkeyCmd represents the pubkey command
 var pubkeyCmd = &cobra.Command{
 	Use:   "pubkey",
-	Short: "show all pubkey",
-	Long: `show all pubkey`,
+	Short: "show "+ProgramName+" remote login pubkeys",
+	Long: "show "+ProgramName+" remote login pubkeys",
 	Run: func(cmd *cobra.Command, args []string) {
 		var key string
 		if len(args)>0{

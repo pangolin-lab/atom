@@ -24,8 +24,8 @@ import (
 // showCmd represents the show command
 var configShowCmd = &cobra.Command{
 	Use:   "show",
-	Short: "config show",
-	Long: `config show`,
+	Short: "show "+ProgramName+" config",
+	Long: "show "+ProgramName+" config",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if remoteaddr == "" {

@@ -25,8 +25,8 @@ var sign string
 // stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "stop protonap",
-	Long: `stop protonap`,
+	Short: "stop "+ProgramName,
+	Long: "stop "+ProgramName,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if remoteaddr =="" {
@@ -36,10 +36,7 @@ var stopCmd = &cobra.Command{
 			}
 		}
 
-
 		cmdclient.DefaultCmdSend(remoteaddr,common.CMD_STOP)
-
-
 	},
 }
 

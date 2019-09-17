@@ -26,8 +26,8 @@ var initHomeDir string
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "initial the runtime environment",
-	Long: `initial the runtime environment`,
+	Short: "initial "+ProgramName+" runtime environment",
+	Long: "initial "+ProgramName+" runtime environment",
 	Run: func(cmd *cobra.Command, args []string) {
 		err:=config.InitAPConfig("")
 		if err!=nil{

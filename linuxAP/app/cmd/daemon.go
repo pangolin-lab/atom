@@ -27,8 +27,8 @@ import (
 // daemonCmd represents the daemon command
 var daemonCmd = &cobra.Command{
 	Use:   "daemon",
-	Short: "start as a daemon service",
-	Long: `start as a daemon service`,
+	Short: "start "+ProgramName +" as a daemon service",
+	Long:  "start "+ProgramName +" as a daemon service",
 	Run: func(cmd *cobra.Command, args []string) {
 		if _,err:=common.IsLinxAPProcessCanStarted();err!=nil{
 			log.Println(err)

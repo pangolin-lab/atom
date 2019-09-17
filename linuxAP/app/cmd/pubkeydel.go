@@ -24,8 +24,8 @@ import (
 // delCmd represents the del command
 var pubkeyDelCmd = &cobra.Command{
 	Use:   "del",
-	Short: "delete a pubkey",
-	Long: `delete a pubkey`,
+	Short: "delete a remote "+ProgramName+" pubkey",
+	Long: "delete a remote "+ProgramName+" pubkey",
 	Run: func(cmd *cobra.Command, args []string) {
 		key:=""
 		if len(args)>0{

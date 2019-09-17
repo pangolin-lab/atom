@@ -23,8 +23,8 @@ import (
 // createCmd represents the create command
 var acctCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "create a proton account",
-	Long: `create a proton account`,
+	Short: "create a "+ProgramName+" account",
+	Long: "create a "+ProgramName+" account",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("create called")
 	},

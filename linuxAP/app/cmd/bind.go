@@ -23,8 +23,8 @@ import (
 // bindCmd represents the bind command
 var bindCmd = &cobra.Command{
 	Use:   "bind",
-	Short: "bind proton account to a ethereum account",
-	Long: `bind proton account to a ethereum account`,
+	Short: "bind "+ProgramName+" account to a ethereum account",
+	Long: "bind "+ProgramName+" account to a ethereum account",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("bind called")
 	},

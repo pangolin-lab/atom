@@ -22,12 +22,13 @@ import (
 var Version string
 var Build string
 var BuildTime string
+var ProgramName string
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "show protonap version",
-	Long: `show protonap version`,
+	Short: "show "+ProgramName+" version",
+	Long: "show "+ProgramName+" version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Version  :",Version)
 		fmt.Println("Build    :",Build)

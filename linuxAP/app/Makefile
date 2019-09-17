@@ -7,12 +7,13 @@ TARGET := protonap
 
 # These will be provided to the target
 VERSION := 1.0.1
+PROGNAME := protonap
 BUILD := `git rev-parse HEAD`
 BUILDTIME := `date "+%Y-%m-%d/%H:%M:%S/%Z"`
 
 # Use linker flags to provide version/build settings to the target
 #LDFLAGS=-ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD) -X=main.BuildTime=$(BUILDTIME) -linkmode=external -v"
-LDFLAGS=-x -ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD) -X=main.BuildTime=$(BUILDTIME)"
+LDFLAGS=-x -ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD) -X=main.BuildTime=$(BUILDTIME) -X=main.ProgramName=$(PROGNAME)"
 #LDFLAGS=-race -x -ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD) -X=main.BuildTime=$(BUILDTIME)"
 
 # go source files, ignore vendor directory
