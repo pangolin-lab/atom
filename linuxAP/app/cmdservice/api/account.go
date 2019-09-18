@@ -7,6 +7,7 @@ import (
 	"github.com/proton-lab/autom/linuxAP/config"
 	"github.com/proton-lab/autom/linuxAP/golib"
 	"log"
+	"github.com/pangolink/proton-node/account"
 )
 
 type AccountCmdService struct {
@@ -63,7 +64,29 @@ func (acs *AccountCmdService)create(req *cmdpb.AccountReq)(*cmdpb.AccountResp, e
 }
 
 func (acs *AccountCmdService)destroy(req *cmdpb.AccountReq)(*cmdpb.AccountResp, error){
-	return nil,nil
+	if len(req.Password) < 1{
+		return encapAccountResp("Please input valid password","",""),nil
+	}
+
+	cfg:=config.GetAPConfigInst()
+	if cfg.ProtonAddr == ""{
+		return encapAccountResp("No created account to destroy","",""),nil
+	}
+
+	if _,err:=account.AccFromString(cfg.ProtonAddr,cfg.CiperText,req.Password);err!=nil{
+		return encapAccountResp("Password error, can't destroy account","",""),nil
+	}
+
+	log.Println("Cmd Destroy account",cfg.ProtonAddr,cfg.CiperText)
+
+	resp:=encapAccountResp("Destroy successfully",cfg.ProtonAddr,cfg.CiperText)
+
+	cfg.ProtonAddr = ""
+	cfg.CiperText = ""
+
+	cfg.Save()
+
+	return resp,nil
 }
 
 func (acs *AccountCmdService)show(req *cmdpb.AccountReq)(*cmdpb.AccountResp, error){

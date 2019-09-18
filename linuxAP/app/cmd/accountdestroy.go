@@ -15,30 +15,46 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"log"
 )
 
-// proxystopCmd represents the proxystop command
-var proxystopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "stop proxy",
-	Long: `stop proxy`,
+// accountdestroyCmd represents the accountdestroy command
+var accountdestroyCmd = &cobra.Command{
+	Use:   "destroy",
+	Short: "destroy account",
+	Long: `destroy account`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("proxystop called")
+		if remoteaddr == "" || remoteaddr == "127.0.0.1"{
+			if _,err:=common.IsLinuxAPProcessStarted();err!=nil{
+				log.Println(err)
+				return
+			}
+		}
+
+		password,err:=inputpassword()
+		if err!=nil{
+			log.Println(err)
+			return
+		}
+
+
+		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_DESTROY,password)
+
 	},
 }
 
 func init() {
-	proxyCmd.AddCommand(proxystopCmd)
+	accountCmd.AddCommand(accountdestroyCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// proxystopCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// accountdestroyCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// proxystopCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// accountdestroyCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
