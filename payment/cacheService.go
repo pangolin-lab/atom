@@ -86,6 +86,7 @@ func (bcd *BlockChainDataService) loadPacketMarket() {
 func (bcd *BlockChainDataService) syncPacketMarket() {
 	newVer := ethereum.MarketDataVersion()
 	if bcd.marketDataVersion == newVer {
+		fmt.Println("[DataService-syncPacketMarket]  no need to sync packet market data")
 		return
 	}
 
@@ -99,9 +100,9 @@ func (bcd *BlockChainDataService) syncPacketMarket() {
 		fmt.Println("[DataService] ethereum save pool address in market err:", err)
 		return
 	}
-
+	bcd.poolsInMarket = addresses
 	bcd.marketDataVersion = newVer
-	_ = bcd.Put([]byte(MarketDataVersion), utils.UintToByte(newVer), nil)
+	_ = bcd.Put(MarketDataVersion, utils.UintToByte(newVer), nil)
 	fmt.Println("[dataService] syncPacketMarket success......")
 }
 
@@ -160,4 +161,13 @@ func (bcd *BlockChainDataService) synDetailsCache(addr string, d *ethereum.PoolD
 	if err := utils.SaveObj(bcd.DB, PoolDetailsCached, bcd.poolDetails); err != nil {
 		fmt.Println("[DataService]  synDetailsCache err:", err)
 	}
+}
+
+func (bcd *BlockChainDataService) PoolsInMarket() []common.Address {
+	bcd.RLock()
+	defer bcd.RUnlock()
+
+	bcd.syncPacketMarket()
+
+	return bcd.poolsInMarket
 }

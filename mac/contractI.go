@@ -10,12 +10,6 @@ import (
 	"github.com/pangolink/miner-pool/account"
 )
 
-//export PoolListWithDetails
-func PoolListWithDetails() *C.char {
-	jsonStr := ethereum.PoolListWithDetails()
-	return C.CString(jsonStr)
-}
-
 //export MyChannelWithDetails
 func MyChannelWithDetails(addr string) *C.char {
 	poolArr, err := ethereum.MyChannelWithDetails(addr)
@@ -83,4 +77,28 @@ func PoolDetails(addr string) *C.char {
 	}
 
 	return C.CString(string(buf))
+}
+
+//export PoolListWithDetails
+func PoolListWithDetails() *C.char {
+	addrArr := _appInstance.dataSrv.PoolsInMarket()
+
+	poolArr := make([]*ethereum.PoolDetail, 0)
+	for _, addr := range addrArr {
+		p, e := _appInstance.dataSrv.LoadPoolDetails(addr.String())
+		if e != nil {
+			fmt.Println(e)
+			continue
+		}
+
+		poolArr = append(poolArr, p)
+	}
+
+	jsonStr, err := json.Marshal(poolArr)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	return C.CString(string(jsonStr))
 }
