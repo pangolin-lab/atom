@@ -35,19 +35,19 @@ type BlockChainDataService struct {
 
 func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataService, error) {
 	opts := opt.Options{
-		ErrorIfExist: true,
-		Strict:       opt.DefaultStrict,
-		Compression:  opt.NoCompression,
-		Filter:       filter.NewBloomFilter(10),
+		Strict:      opt.DefaultStrict,
+		Compression: opt.NoCompression,
+		Filter:      filter.NewBloomFilter(10),
 	}
 
 	db, err := leveldb.OpenFile(dataPath, &opts)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("[InitBlockDataCache] open block chain cached database success......")
 
 	dataVersion := uint32(0)
-	if data, err := db.Get([]byte(MarketDataVersion), nil); err == nil {
+	if data, err := db.Get(MarketDataVersion, nil); err == nil {
 		dataVersion = utils.ByteToUint(data)
 	}
 
@@ -68,6 +68,7 @@ func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataService, erro
 	if mainAddr != "" {
 		go bcd.loadSubPools(mainAddr)
 	}
+	fmt.Println("[InitBlockDataCache] init success......")
 	return bcd, nil
 }
 
@@ -78,7 +79,7 @@ func (bcd *BlockChainDataService) loadPacketMarket() {
 		return
 	}
 	bcd.poolsInMarket = addresses
-
+	fmt.Println("[dataService] loadPacketMarket success......")
 	go bcd.syncPacketMarket()
 }
 
@@ -101,6 +102,7 @@ func (bcd *BlockChainDataService) syncPacketMarket() {
 
 	bcd.marketDataVersion = newVer
 	_ = bcd.Put([]byte(MarketDataVersion), utils.UintToByte(newVer), nil)
+	fmt.Println("[dataService] syncPacketMarket success......")
 }
 
 func (bcd *BlockChainDataService) loadSubPools(addr string) {

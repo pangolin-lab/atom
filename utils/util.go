@@ -47,7 +47,6 @@ func FileExists(fileName string) (os.FileInfo, bool) {
 	if fileInfo != nil || (err != nil && !os.IsNotExist(err)) {
 		return fileInfo, true
 	}
-
 	return nil, false
 }
 

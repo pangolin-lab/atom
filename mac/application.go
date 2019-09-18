@@ -41,21 +41,21 @@ var _appInstance = &MacApp{
 func initEthereumConf(tokenAddr, payChanAddr, apiUrl string) {
 	if tokenAddr != "" {
 		var tmp = make([]byte, len(tokenAddr))
-		copy(tmp, ([]byte)(tokenAddr))
+		copy(tmp, tokenAddr)
 		ethereum.Conf.Token = string(tmp)
 	}
 	if payChanAddr != "" {
 		var tmp = make([]byte, len(payChanAddr))
-		copy(tmp, ([]byte)(payChanAddr))
+		copy(tmp, payChanAddr)
 		ethereum.Conf.MicroPaySys = string(tmp)
 	}
 	if apiUrl != "" {
 		var tmp = make([]byte, len(apiUrl))
-		copy(tmp, ([]byte)(apiUrl))
+		copy(tmp, apiUrl)
 		ethereum.Conf.EthApiUrl = string(tmp)
 	}
-
 	fmt.Println(ethereum.Conf.String())
+	fmt.Println("init ethereum config success......")
 }
 
 //export initApp
@@ -63,7 +63,8 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string) (int, *C.char) {
 	initEthereumConf(tokenAddr, payChanAddr, apiUrl)
 
 	if err := utils.TouchDir(baseDir); err != nil {
-		return ErrCreateDir, C.CString(err.Error())
+		errStr := fmt.Sprintf("touch dir(%s) err:%s", baseDir, err.Error())
+		return ErrCreateDir, C.CString(errStr)
 	}
 	walletPath := filepath.Join(baseDir, string(filepath.Separator), WalletFile)
 	receiptPath := filepath.Join(baseDir, string(filepath.Separator), ReceiptDataBase)

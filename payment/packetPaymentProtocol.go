@@ -50,6 +50,7 @@ func initWallet(wPath string) (*SafeWallet, error) {
 		SubAddr:   sAddr,
 		cipherTxt: data,
 	}
+	fmt.Println("[InitProtocol] wallet initialization success......")
 	return sw, nil
 }
 
@@ -65,27 +66,30 @@ type PacketWallet struct {
 func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
 
 	opts := opt.Options{
-		ErrorIfExist: true,
-		Strict:       opt.DefaultStrict,
-		Compression:  opt.NoCompression,
-		Filter:       filter.NewBloomFilter(10),
+		Strict:      opt.DefaultStrict,
+		Compression: opt.NoCompression,
+		Filter:      filter.NewBloomFilter(10),
 	}
 
 	db, err := leveldb.OpenFile(rPath, &opts)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("[InitProtocol] open ppp database success......")
 
 	sw, err := initWallet(wPath)
 	if err != nil {
-		fmt.Println("[PPP] InitProtocol initWallet err:", err)
+		fmt.Println("[InitProtocol]  empty wallet warning:", err)
 		sw = &SafeWallet{}
 	}
+
 	//TODO::sync all packet balance from ethereum block chain contract
 	pw := &PacketWallet{
 		sWallet:  sw,
 		database: db,
 	}
+
+	fmt.Println("[InitProtocol] packet payment protocol success......")
 	return pw, nil
 }
 
