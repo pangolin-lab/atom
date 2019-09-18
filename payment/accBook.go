@@ -12,11 +12,6 @@ import (
 	"sync"
 )
 
-const (
-	RechargeThreadHold = 1 << 12 //4M
-	AccBookKeyJoin     = "@"
-)
-
 type BookItem struct {
 	sync.RWMutex
 	Counter  int

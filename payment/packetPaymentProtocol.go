@@ -23,6 +23,11 @@ type PacketPaymentProtocol interface {
 	IsPayChannelOpen(poolAddr string) bool
 }
 
+const (
+	RechargeThreadHold = 1 << 12 //4M
+	AccBookKeyJoin     = "@"
+)
+
 type SafeWallet struct {
 	MainAddr  string
 	SubAddr   string
@@ -52,6 +57,9 @@ type PacketWallet struct {
 	sWallet  *SafeWallet
 	database *leveldb.DB
 	wallet   account.Wallet
+	pool     *ethereum.PoolDetail
+	errCh    chan error
+
 	*Chanel
 }
 
@@ -120,10 +128,6 @@ func (pw *PacketWallet) handshake(conn *network.JsonConn) (*core.ChanCreateAck, 
 	return ack.CreateRes, nil
 }
 
-func (pw *PacketWallet) monitor(errors chan error) {
-
-}
-
 func (pw *PacketWallet) CloseChannel() {
 	pw.conn.Close()
 
@@ -181,4 +185,27 @@ func (pw *PacketWallet) randomMiner(minerIDs []string) (*utils.PeerID, error) {
 		return s[i].Ping < s[j].Ping
 	})
 	return s[0], nil
+}
+
+func (pw *PacketWallet) isChanOpen() bool {
+	return pw.Chanel != nil
+}
+
+func (pw *PacketWallet) isWalletOpen() bool {
+	return pw.wallet != nil && pw.wallet.IsOpen()
+}
+
+func (pw *PacketWallet) tryReopen() error {
+
+	if !pw.wallet.IsOpen() {
+		return fmt.Errorf("wallet has closed")
+	}
+
+	c, err := pw.createChan(pw.pool)
+	if err != nil {
+		return err
+	}
+	pw.Chanel = c
+	go pw.monitor()
+	return nil
 }

@@ -14,61 +14,39 @@ import (
 )
 
 func (pw *PacketWallet) IsPayChannelOpen(poolAddr string) bool {
-	if pw.wallet == nil || !pw.wallet.IsOpen() {
-		return false
-	}
-
-	if pw.Chanel == nil || pw.pool.MainAddr != poolAddr {
-		return false
-	}
-
-	return true
+	return pw.isChanOpen() && pw.isWalletOpen() && pw.pool.MainAddr == poolAddr
 }
 
 func (pw *PacketWallet) OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error {
+	pw.pool = pool
+	pw.errCh = errCh
+
 	if pw.wallet == nil || !pw.wallet.IsOpen() {
 		if err := pw.openWallet(auth); err != nil {
 			return err
 		}
 	}
 
-	if pw.Chanel != nil {
+	if pw.isChanOpen() {
 		pw.CloseChannel()
 	}
 
-	conn, err := pw.connectToMiner(pool.Seeds)
+	c, err := pw.createChan(pool)
 	if err != nil {
 		return err
 	}
-
-	bootInfo, err := pw.handshake(conn)
-	if err != nil {
-		return err
-	}
-
-	miner, err := pw.randomMiner(bootInfo.MinerIDs)
-	if err != nil {
-		return err
-	}
-
-	accBook, err := pw.checkAccount(pool.MainAddr, bootInfo.Sig, bootInfo.LatestReceipt)
-	if err != nil {
-		return err
-	}
-
-	pw.Chanel = &Chanel{
-		pool:    pool,
-		miner:   miner,
-		conn:    conn,
-		accBook: accBook,
-	}
-
-	go pw.monitor(errCh)
-
+	pw.Chanel = c
+	go pw.monitor()
 	return nil
 }
 
 func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
+
+	if !pw.isChanOpen() {
+		if err := pw.tryReopen(); err != nil {
+			return nil, err
+		}
+	}
 
 	miner := pw.miner
 
