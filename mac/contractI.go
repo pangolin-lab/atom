@@ -10,23 +10,6 @@ import (
 	"github.com/pangolink/miner-pool/account"
 )
 
-//export PoolDetails
-func PoolDetails(addr string) *C.char {
-	pd, err := ethereum.PoolDetails(common.HexToAddress(addr))
-	if err != nil {
-		fmt.Print(err)
-		return C.CString("")
-	}
-
-	buf, err := json.Marshal(pd)
-	if err != nil {
-		fmt.Print(err)
-		return C.CString("")
-	}
-
-	return C.CString(string(buf))
-}
-
 //export PoolListWithDetails
 func PoolListWithDetails() *C.char {
 	jsonStr := ethereum.PoolListWithDetails()
@@ -83,4 +66,21 @@ func QueryMicroPayPrice() int64 {
 	}
 
 	return p.Int64()
+}
+
+//export PoolDetails
+func PoolDetails(addr string) *C.char {
+	pool, err := _appInstance.dataSrv.LoadPoolDetails(addr)
+	if err != nil {
+		fmt.Print(err)
+		return nil
+	}
+
+	buf, err := json.Marshal(pool)
+	if err != nil {
+		fmt.Print(err)
+		return nil
+	}
+
+	return C.CString(string(buf))
 }

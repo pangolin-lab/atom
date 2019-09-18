@@ -97,12 +97,12 @@ func startService(srvAddr, auth, minerPoolAddr string) (int, *C.char) {
 
 	if !_appInstance.ppp.IsPayChannelOpen(minerPoolAddr) {
 
-		miner, err := _appInstance.dataSrv.LoadMinerDetails(minerPoolAddr)
+		pool, err := _appInstance.dataSrv.LoadPoolDetails(minerPoolAddr)
 		if err != nil {
 			return ErrNoSuchPool, C.CString(err.Error())
 		}
 
-		if err := _appInstance.ppp.OpenPayChannel(_appInstance.err, miner, auth); err != nil {
+		if err := _appInstance.ppp.OpenPayChannel(_appInstance.err, pool, auth); err != nil {
 			return ErrOpenPayChannel, C.CString(err.Error())
 		}
 	}

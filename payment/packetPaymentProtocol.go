@@ -18,7 +18,7 @@ import (
 
 type PacketPaymentProtocol interface {
 	WalletAddr() (string, string)
-	OpenPayChannel(errCh chan error, poolId *ethereum.PoolDetail, auth string) error
+	OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error
 	SetupAesConn(string) (account.CryptConn, error)
 	IsPayChannelOpen(poolAddr string) bool
 }

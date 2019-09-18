@@ -135,7 +135,7 @@ func (bcd *BlockChainDataService) SyncSubPools(addr string) {
 	bcd.poolsOfMyChannel = poolArr
 }
 
-func (bcd *BlockChainDataService) LoadMinerDetails(poolAddr string) (*ethereum.PoolDetail, error) {
+func (bcd *BlockChainDataService) LoadPoolDetails(poolAddr string) (*ethereum.PoolDetail, error) {
 	bcd.RLock()
 	if details, ok := bcd.poolDetails[poolAddr]; ok {
 		bcd.RUnlock()
