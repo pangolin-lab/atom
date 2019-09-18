@@ -76,7 +76,7 @@ func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
 	if err := acc.GenerateAesKey(aesKey, miner.ID.ToPubKey(), pw.wallet.CryptKey()); err != nil {
 		return nil, fmt.Errorf("[SetupAesConn] error aeskey")
 	}
-	return account.NewAesConn(conn, pw, aesKey[:], iv)
+	return account.NewAesConn(conn, pw.accBook, aesKey[:], iv)
 }
 
 func (pw *PacketWallet) WalletAddr() (string, string) {

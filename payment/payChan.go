@@ -188,8 +188,8 @@ func (mpc *micPayChan) microPay() {
 		return
 	}
 
-	if ack.RechargeRes.NextAction == core.PayResultSuccess {
-		if err := mpc.accBook.setNewReceipt(ack.RechargeRes); err != nil {
+	if ack.Receipt.NextAction == core.PayResultSuccess {
+		if err := mpc.accBook.setNewReceipt(check.Recharge.Usage); err != nil {
 			fmt.Println(err)
 			return
 		}

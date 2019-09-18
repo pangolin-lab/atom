@@ -59,7 +59,6 @@ type PacketWallet struct {
 	wallet   account.Wallet
 	pool     *ethereum.PoolDetail
 	errCh    chan error
-
 	*Chanel
 }
 
@@ -82,7 +81,7 @@ func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
 		fmt.Println("[PPP] InitProtocol initWallet err:", err)
 		sw = &SafeWallet{}
 	}
-
+	//TODO::sync all packet balance from ethereum block chain contract
 	pw := &PacketWallet{
 		sWallet:  sw,
 		database: db,
@@ -132,7 +131,7 @@ func (pw *PacketWallet) CloseChannel() {
 	pw.conn.Close()
 
 	if pw.Chanel != nil {
-		pw.SynAccountBook()
+		pw.synAccountBook()
 	}
 
 	pw.Chanel = nil

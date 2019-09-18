@@ -72,11 +72,11 @@ func (ac *AccBook) createPayment(w account.Wallet) *core.PayChanReq {
 	ac.RLock()
 	defer ac.RUnlock()
 
-	recharge := &core.MicroPay{
-		Recipient: ac.receipt,
+	recharge := &core.PacketRecharge{
+		Payee:     ac.receipt,
 		Usage:     ac.Counter,
 		Contract:  ethereum.Conf.MicroPaySys,
-		UnSettled: ac.UnSettle,
+		UnClaimed: ac.UnSettle,
 		Balance:   ac.Balance,
 	}
 
@@ -89,11 +89,10 @@ func (ac *AccBook) createPayment(w account.Wallet) *core.PayChanReq {
 	return req
 }
 
-func (ac *AccBook) setNewReceipt(receipt *core.MicroReceipt) error {
+func (ac *AccBook) setNewReceipt(n int) error {
 	ac.Lock()
 	defer ac.Unlock()
 
-	n := receipt.Recharged
 	ac.Counter -= n
 	ac.UnSettle += int64(n)
 	data, err := json.Marshal(ac.BookItem)
