@@ -22,18 +22,31 @@ const (
 	DBMicPayChan    = "_DB_MICRO_PAY_CHANNEL_"
 )
 
+type DataSyncCallBack interface {
+	FreshWallet(info *WalletInfo)
+}
+
+type WalletInfo struct {
+	MainAddr   string
+	SubAddr    string
+	EthBalance int64
+	LinBalance int64
+	MyChannel  []common.Address
+}
+
 type BlockChainDataService struct {
 	sync.RWMutex
 	*leveldb.DB
+	callBack DataSyncCallBack
 
 	marketDataVersion uint32
-	poolsOfMyChannel  []common.Address
-	poolsInMarket     []common.Address
+	WalletData        *WalletInfo
+	PoolsInMarket     []common.Address
 	poolDetails       map[string]*ethereum.PoolDetail
 	channelDetails    map[string]*ethereum.PayChannel
 }
 
-func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataService, error) {
+func InitBlockDataCache(dataPath, mainAddr, subAddr string, cb DataSyncCallBack) (*BlockChainDataService, error) {
 	opts := opt.Options{
 		Strict:      opt.DefaultStrict,
 		Compression: opt.NoCompression,
@@ -56,17 +69,24 @@ func InitBlockDataCache(dataPath, mainAddr string) (*BlockChainDataService, erro
 
 	bcd := &BlockChainDataService{
 		DB:                db,
+		callBack:          cb,
 		marketDataVersion: dataVersion,
 		poolDetails:       cachedDetail,
-		poolsOfMyChannel:  make([]common.Address, 0),
-		poolsInMarket:     make([]common.Address, 0),
+		PoolsInMarket:     make([]common.Address, 0),
 		channelDetails:    make(map[string]*ethereum.PayChannel),
 	}
 
-	go bcd.loadPacketMarket()
+	bcd.loadPacketMarket()
 
 	if mainAddr != "" {
-		go bcd.loadSubPools(mainAddr)
+
+		bcd.WalletData = &WalletInfo{
+			MainAddr:  mainAddr,
+			SubAddr:   subAddr,
+			MyChannel: make([]common.Address, 0),
+		}
+
+		bcd.loadWalletData()
 	}
 	fmt.Println("[InitBlockDataCache] init success......")
 	return bcd, nil
@@ -78,7 +98,7 @@ func (bcd *BlockChainDataService) loadPacketMarket() {
 		bcd.syncPacketMarket()
 		return
 	}
-	bcd.poolsInMarket = addresses
+	bcd.PoolsInMarket = addresses
 	fmt.Println("[dataService] loadPacketMarket success......")
 	go bcd.syncPacketMarket()
 }
@@ -100,40 +120,10 @@ func (bcd *BlockChainDataService) syncPacketMarket() {
 		fmt.Println("[DataService] ethereum save pool address in market err:", err)
 		return
 	}
-	bcd.poolsInMarket = addresses
+	bcd.PoolsInMarket = addresses
 	bcd.marketDataVersion = newVer
 	_ = bcd.Put(MarketDataVersion, utils.UintToByte(newVer), nil)
 	fmt.Println("[dataService] syncPacketMarket success......")
-}
-
-func (bcd *BlockChainDataService) loadSubPools(addr string) {
-	key := fmt.Sprintf("%s%s", DBKeySubPoolArr, addr)
-	pools := make([]common.Address, 0)
-	if err := utils.GetObj(bcd.DB, []byte(key), pools); err != nil || len(pools) == 0 {
-		bcd.SyncSubPools(addr)
-		return
-	}
-
-	bcd.Lock()
-	defer bcd.Unlock()
-	bcd.poolsOfMyChannel = pools
-}
-
-func (bcd *BlockChainDataService) SyncSubPools(addr string) {
-	poolArr, err := ethereum.MySubPools(addr)
-	if err != nil {
-		fmt.Println("[DataService] ethereum MySubPools err:", err)
-		return
-	}
-
-	key := fmt.Sprintf("%s%s", DBKeySubPoolArr, addr)
-	if err := utils.SaveObj(bcd.DB, []byte(key), poolArr); err != nil {
-		fmt.Println("[DataService] SyncSubPools err:", err)
-	}
-
-	bcd.Lock()
-	defer bcd.Unlock()
-	bcd.poolsOfMyChannel = poolArr
 }
 
 func (bcd *BlockChainDataService) LoadPoolDetails(poolAddr string) (*ethereum.PoolDetail, error) {
@@ -163,11 +153,44 @@ func (bcd *BlockChainDataService) synDetailsCache(addr string, d *ethereum.PoolD
 	}
 }
 
-func (bcd *BlockChainDataService) PoolsInMarket() []common.Address {
-	bcd.RLock()
-	defer bcd.RUnlock()
+func (bcd *BlockChainDataService) loadWalletData() {
+	if bcd.WalletData == nil && bcd.WalletData.MainAddr == "" {
+		return
+	}
 
-	bcd.syncPacketMarket()
+	key := fmt.Sprintf("%s%s", DBKeySubPoolArr, bcd.WalletData.MainAddr)
+	w := &WalletInfo{}
+	if err := utils.GetObj(bcd.DB, []byte(key), w); err != nil {
+		bcd.SyncWalletData()
+		return
+	}
+	go bcd.SyncWalletData()
 
-	return bcd.poolsInMarket
+	bcd.Lock()
+	defer bcd.Unlock()
+	bcd.WalletData = w
+}
+
+func (bcd *BlockChainDataService) SyncWalletData() {
+	if bcd.WalletData == nil && bcd.WalletData.MainAddr == "" {
+		return
+	}
+	var addr = bcd.WalletData.MainAddr
+	poolArr, err := ethereum.MySubPools(addr)
+	if err != nil {
+		fmt.Println("[DataService] ethereum MySubPools err:", err)
+		return
+	}
+	eth, token := ethereum.TokenBalance(addr)
+
+	bcd.Lock()
+	defer bcd.Unlock()
+	bcd.WalletData.MyChannel = poolArr
+	bcd.WalletData.EthBalance = eth
+	bcd.WalletData.LinBalance = token
+
+	key := fmt.Sprintf("%s%s", DBKeySubPoolArr, addr)
+	if err := utils.SaveObj(bcd.DB, []byte(key), bcd.WalletData); err != nil {
+		fmt.Println("[DataService] wallet info save err:", err)
+	}
 }

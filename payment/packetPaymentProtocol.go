@@ -16,18 +16,20 @@ import (
 	"time"
 )
 
+const (
+	RechargeThreadHold = 1 << 12 //4M
+	AccBookKeyJoin     = "@"
+)
+
+type SystemActionCallBack interface {
+}
+
 type PacketPaymentProtocol interface {
 	WalletAddr() (string, string)
 	OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error
 	SetupAesConn(string) (account.CryptConn, error)
 	IsPayChannelOpen(poolAddr string) bool
 }
-
-const (
-	RechargeThreadHold = 1 << 12 //4M
-	AccBookKeyJoin     = "@"
-)
-
 type SafeWallet struct {
 	MainAddr  string
 	SubAddr   string
@@ -60,10 +62,11 @@ type PacketWallet struct {
 	wallet   account.Wallet
 	pool     *ethereum.PoolDetail
 	errCh    chan error
+	callBack SystemActionCallBack
 	*Chanel
 }
 
-func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
+func InitProtocol(wPath, rPath string, cb SystemActionCallBack) (PacketPaymentProtocol, error) {
 
 	opts := opt.Options{
 		Strict:      opt.DefaultStrict,
@@ -87,6 +90,7 @@ func InitProtocol(wPath, rPath string) (PacketPaymentProtocol, error) {
 	pw := &PacketWallet{
 		sWallet:  sw,
 		database: db,
+		callBack: cb,
 	}
 
 	fmt.Println("[InitProtocol] packet payment protocol success......")

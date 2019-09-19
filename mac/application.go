@@ -1,5 +1,18 @@
 package main
 
+/*
+typedef void (*BlockChainDataSyncNotifier) (int, char*);
+typedef void (*SystemActionCallBack) (int, char*);
+void test(){
+}
+void bridge_data_func(BlockChainDataSyncNotifier f , int t,  char* v){
+	f(t, v);
+}
+
+void bridge_sys_func(SystemActionCallBack f, int t, char* v){
+	f(t, v);
+}
+*/
 import "C"
 import (
 	"fmt"
@@ -27,11 +40,12 @@ const (
 )
 
 type MacApp struct {
-	proxy   *proxy.VpnProxy
 	ppp     payment.PacketPaymentProtocol
 	dataSrv *payment.BlockChainDataService
 	service *proxy.VpnProxy
 	err     chan error
+	sysImp  C.SystemActionCallBack
+	dataImp C.BlockChainDataSyncNotifier
 }
 
 var _appInstance = &MacApp{
@@ -59,8 +73,12 @@ func initEthereumConf(tokenAddr, payChanAddr, apiUrl string) {
 }
 
 //export initApp
-func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string) (int, *C.char) {
+func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
+	si C.SystemActionCallBack, di C.BlockChainDataSyncNotifier) (int, *C.char) {
+
 	initEthereumConf(tokenAddr, payChanAddr, apiUrl)
+	_appInstance.sysImp = si
+	_appInstance.dataImp = di
 
 	if err := utils.TouchDir(baseDir); err != nil {
 		errStr := fmt.Sprintf("touch dir(%s) err:%s", baseDir, err.Error())
@@ -69,16 +87,16 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string) (int, *C.char) {
 	walletPath := filepath.Join(baseDir, string(filepath.Separator), WalletFile)
 	receiptPath := filepath.Join(baseDir, string(filepath.Separator), ReceiptDataBase)
 
-	protocol, err := payment.InitProtocol(walletPath, receiptPath)
+	protocol, err := payment.InitProtocol(walletPath, receiptPath, _appInstance)
 	if err != nil {
 		return ErrInitProtocol, C.CString(err.Error())
 	}
 
 	_appInstance.ppp = protocol
 	cachePath := filepath.Join(baseDir, string(filepath.Separator), BlockDataBase)
-	addr, _ := _appInstance.ppp.WalletAddr()
+	addr, subAddr := _appInstance.ppp.WalletAddr()
 
-	cc, err := payment.InitBlockDataCache(cachePath, addr)
+	cc, err := payment.InitBlockDataCache(cachePath, addr, subAddr, _appInstance)
 	if err != nil {
 		return ErrInitDataCache, C.CString(err.Error())
 	}
@@ -116,4 +134,10 @@ func startService(srvAddr, auth, minerPoolAddr string) (int, *C.char) {
 //export stopService
 func stopService() {
 	_appInstance.err <- fmt.Errorf("stopped by user")
+}
+
+func (app *MacApp) FreshWallet(info *payment.WalletInfo) {
+	str := ""
+	//app.dataImp(1, C.CString(str))
+	C.bridge_data_func(app.dataImp, 1, C.CString(str))
 }

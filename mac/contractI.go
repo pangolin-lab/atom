@@ -81,7 +81,7 @@ func PoolDetails(addr string) *C.char {
 
 //export PoolListWithDetails
 func PoolListWithDetails() *C.char {
-	addrArr := _appInstance.dataSrv.PoolsInMarket()
+	addrArr := _appInstance.dataSrv.PoolsInMarket
 
 	poolArr := make([]*ethereum.PoolDetail, 0)
 	for _, addr := range addrArr {

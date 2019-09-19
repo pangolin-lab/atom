@@ -70,7 +70,7 @@ func tokenConn() (*ethclient.Client, *generated.PPNToken, error) {
 	return conn, token, err
 }
 
-func TokenBalance(address string) (float64, float64) {
+func TokenBalance(address string) (int64, int64) {
 	conn, err := connect()
 	if err != nil {
 		fmt.Print(err)
@@ -82,8 +82,8 @@ func TokenBalance(address string) (float64, float64) {
 		fmt.Print(err)
 		return 0, 0
 	}
-
-	return ConvertByDecimal(tokenB), ConvertByDecimal(ethB)
+	return ethB.Int64(), tokenB.Int64()
+	//return ConvertByDecimal(tokenB), ConvertByDecimal(ethB)
 }
 
 func PoolAddressList() []common.Address {
