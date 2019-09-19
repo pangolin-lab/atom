@@ -11,9 +11,9 @@ import (
 )
 
 const(
-	RootCfgName=".protonapcinit"
-	APCfgName="apc.json"
-	APCfgDefaultRootDir = ".protonapc"
+	RootCfgName				=".protonapcinit"
+	APCfgName				="apc.json"
+	APCfgDefaultRootDir 	= ".protonapc"
 )
 
 var (
@@ -82,7 +82,7 @@ func InitAPConfig(hdir string) error  {
 	hdir = path.Clean(hdir)
 	if path.IsAbs(hdir){
 		if len(hdir) == 1 && hdir=="/"{
-			return errors.New("Please choose another path, system root path is not recommend")
+			return errors.New("Please choose another path, system root path is not recommended")
 		}
 	}else{
 		hdir = path.Join(curhome,hdir)
