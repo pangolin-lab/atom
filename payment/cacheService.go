@@ -18,12 +18,18 @@ var (
 )
 
 const (
-	DBKeySubPoolArr = "_DB_SUB_POOL_Arr_"
+	DBKeySubPoolArr = "_DB_SUB_POOL_ARR_"
 	DBMicPayChan    = "_DB_MICRO_PAY_CHANNEL_"
+	DBKeyWalletInfo = "_DB_WALLET_INFO_"
+
+	_ = iota
+	DataSyncWalletInfo
+	DataSyncSubscribedPools
 )
 
 type DataSyncCallBack interface {
-	FreshWallet(info *WalletInfo)
+	DataSyncedSuccess(typ int)
+	DataSyncedFailed(err error)
 }
 
 type WalletInfo struct {
@@ -31,7 +37,6 @@ type WalletInfo struct {
 	SubAddr    string
 	EthBalance int64
 	LinBalance int64
-	MyChannel  []common.Address
 }
 
 type BlockChainDataService struct {
@@ -41,9 +46,12 @@ type BlockChainDataService struct {
 
 	marketDataVersion uint32
 	WalletData        *WalletInfo
-	PoolsInMarket     []common.Address
-	poolDetails       map[string]*ethereum.PoolDetail
-	channelDetails    map[string]*ethereum.PayChannel
+
+	PoolsInMarket    []common.Address
+	MySubscribedPool []common.Address
+
+	poolDetails    map[string]*ethereum.PoolDetail
+	channelDetails map[string]*ethereum.PayChannel
 }
 
 func InitBlockDataCache(dataPath, mainAddr, subAddr string, cb DataSyncCallBack) (*BlockChainDataService, error) {
@@ -73,20 +81,33 @@ func InitBlockDataCache(dataPath, mainAddr, subAddr string, cb DataSyncCallBack)
 		marketDataVersion: dataVersion,
 		poolDetails:       cachedDetail,
 		PoolsInMarket:     make([]common.Address, 0),
+		MySubscribedPool:  make([]common.Address, 0),
 		channelDetails:    make(map[string]*ethereum.PayChannel),
 	}
 
-	bcd.loadPacketMarket()
+	go bcd.loadPacketMarket()
 
 	if mainAddr != "" {
-
-		bcd.WalletData = &WalletInfo{
-			MainAddr:  mainAddr,
-			SubAddr:   subAddr,
-			MyChannel: make([]common.Address, 0),
+		key := fmt.Sprintf("%s%s", DBKeyWalletInfo, mainAddr)
+		w := &WalletInfo{
+			MainAddr: mainAddr,
+			SubAddr:  subAddr,
 		}
 
-		bcd.loadWalletData()
+		if err := utils.GetObj(bcd.DB, []byte(key), w); err != nil {
+			fmt.Println("[InitBlockDataCache]  load cached wallet data warning:", err)
+		}
+
+		bcd.WalletData = w
+		go bcd.SyncWalletData()
+
+		key = fmt.Sprintf("%s%s", DBKeySubPoolArr, mainAddr)
+		pools := make([]common.Address, 0)
+		if err := utils.GetObj(bcd.DB, []byte(key), pools); err != nil {
+			fmt.Println("[InitBlockDataCache]  load cached subscribed pool warning:", err)
+		}
+		bcd.MySubscribedPool = pools
+		go bcd.SyncSubscribedPool()
 	}
 	fmt.Println("[InitBlockDataCache] init success......")
 	return bcd, nil
@@ -153,25 +174,26 @@ func (bcd *BlockChainDataService) synDetailsCache(addr string, d *ethereum.PoolD
 	}
 }
 
-func (bcd *BlockChainDataService) loadWalletData() {
+func (bcd *BlockChainDataService) SyncWalletData() {
 	if bcd.WalletData == nil && bcd.WalletData.MainAddr == "" {
 		return
 	}
+	var addr = bcd.WalletData.MainAddr
 
-	key := fmt.Sprintf("%s%s", DBKeySubPoolArr, bcd.WalletData.MainAddr)
-	w := &WalletInfo{}
-	if err := utils.GetObj(bcd.DB, []byte(key), w); err != nil {
-		bcd.SyncWalletData()
-		return
-	}
-	go bcd.SyncWalletData()
-
+	eth, token := ethereum.TokenBalance(addr)
 	bcd.Lock()
 	defer bcd.Unlock()
-	bcd.WalletData = w
+	bcd.WalletData.EthBalance = eth
+	bcd.WalletData.LinBalance = token
+
+	key := fmt.Sprintf("%s%s", DBKeyWalletInfo, addr)
+	if err := utils.SaveObj(bcd.DB, []byte(key), bcd.WalletData); err != nil {
+		fmt.Println("[DataService] wallet info save err:", err)
+	}
+	bcd.callBack.DataSyncedSuccess(DataSyncWalletInfo)
 }
 
-func (bcd *BlockChainDataService) SyncWalletData() {
+func (bcd *BlockChainDataService) SyncSubscribedPool() {
 	if bcd.WalletData == nil && bcd.WalletData.MainAddr == "" {
 		return
 	}
@@ -181,16 +203,14 @@ func (bcd *BlockChainDataService) SyncWalletData() {
 		fmt.Println("[DataService] ethereum MySubPools err:", err)
 		return
 	}
-	eth, token := ethereum.TokenBalance(addr)
 
 	bcd.Lock()
 	defer bcd.Unlock()
-	bcd.WalletData.MyChannel = poolArr
-	bcd.WalletData.EthBalance = eth
-	bcd.WalletData.LinBalance = token
-
+	bcd.MySubscribedPool = poolArr
 	key := fmt.Sprintf("%s%s", DBKeySubPoolArr, addr)
-	if err := utils.SaveObj(bcd.DB, []byte(key), bcd.WalletData); err != nil {
+	if err := utils.SaveObj(bcd.DB, []byte(key), poolArr); err != nil {
 		fmt.Println("[DataService] wallet info save err:", err)
 	}
+
+	bcd.callBack.DataSyncedSuccess(DataSyncSubscribedPools)
 }

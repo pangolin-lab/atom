@@ -1,17 +1,7 @@
 package main
 
 /*
-typedef void (*BlockChainDataSyncNotifier) (int, char*);
-typedef void (*SystemActionCallBack) (int, char*);
-void test(){
-}
-void bridge_data_func(BlockChainDataSyncNotifier f , int t,  char* v){
-	f(t, v);
-}
-
-void bridge_sys_func(SystemActionCallBack f, int t, char* v){
-	f(t, v);
-}
+#include "callback.h"
 */
 import "C"
 import (
@@ -134,10 +124,4 @@ func startService(srvAddr, auth, minerPoolAddr string) (int, *C.char) {
 //export stopService
 func stopService() {
 	_appInstance.err <- fmt.Errorf("stopped by user")
-}
-
-func (app *MacApp) FreshWallet(info *payment.WalletInfo) {
-	str := ""
-	//app.dataImp(1, C.CString(str))
-	C.bridge_data_func(app.dataImp, 1, C.CString(str))
 }
