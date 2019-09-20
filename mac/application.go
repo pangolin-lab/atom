@@ -29,10 +29,23 @@ const (
 )
 
 type appConf struct {
-	baseDir    string
-	walletDir  string
-	receiptDir string
+	baseDir     string
+	walletPath  string
+	receiptPath string
 }
+
+func (ac appConf) String() string {
+
+	str := fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++"+
+		"\n base dir:%s"+
+		"\n wallet path:%s"+
+		"\n receipt path:%s"+
+		"\n++++++++++++++++++++++++++++++++++++++++++++++++++++",
+		ac.baseDir, ac.walletPath, ac.receiptPath)
+
+	return str
+}
+
 type MacApp struct {
 	conf     appConf
 	protocol payment.PacketPaymentProtocol
@@ -83,8 +96,9 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 	walletPath := filepath.Join(baseDir, string(filepath.Separator), WalletFile)
 	receiptPath := filepath.Join(baseDir, string(filepath.Separator), ReceiptDataBase)
 	_appInstance.conf.baseDir = baseDir
-	_appInstance.conf.receiptDir = receiptPath
-	_appInstance.conf.walletDir = walletPath
+	_appInstance.conf.receiptPath = receiptPath
+	_appInstance.conf.walletPath = walletPath
+	fmt.Println(_appInstance.conf.String())
 
 	protocol, err := payment.InitProtocol(walletPath, receiptPath, _appInstance)
 	if err != nil {

@@ -81,15 +81,15 @@ func (ac *Accountant) cacheAccBook(db *leveldb.DB) {
 
 func (ac *Accountant) String() string {
 	str := fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++"+
-		"+main address:\t%s"+
-		"+sub address:\t%s"+
-		"+CipherTxt:\t%s"+
-		"+eth:\t%d"+
-		"+token:\t%d"+
-		"+Counter:\t%d"+
-		"+InRecharge:\t%d"+
-		"+Nonce:\t%d"+
-		"+UnClaimed:\t%d"+
+		"\n+main address:\t%s"+
+		"\n+sub address:\t%s"+
+		"\n+CipherTxt:\t%s"+
+		"\n+eth:\t%d"+
+		"\n+token:\t%d"+
+		"\n+Counter:\t%d"+
+		"\n+InRecharge:\t%d"+
+		"\n+Nonce:\t%d"+
+		"\n+UnClaimed:\t%d"+
 		"\n++++++++++++++++++++++++++++++++++++++++++++++++++++",
 		ac.MainAddr,
 		ac.SubAddr,

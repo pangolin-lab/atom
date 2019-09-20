@@ -73,7 +73,7 @@ func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
 	if err := ab.loadAccBook(db); err != nil {
 		return nil, err
 	}
-	fmt.Println("[InitProtocol] wallet initialization success......", ab.String())
+	fmt.Println("[InitProtocol] accountant initialization success......", ab.String())
 	return ab, nil
 }
 

@@ -72,7 +72,7 @@ func NewWallet(auth string) (bool, *C.char) {
 	}
 	_appInstance.protocol.Finish()
 
-	if err := ioutil.WriteFile(_appInstance.conf.walletDir, wJson, 0644); err != nil {
+	if err := ioutil.WriteFile(_appInstance.conf.walletPath, wJson, 0644); err != nil {
 		return false, C.CString(err.Error())
 	}
 	return true, nil
