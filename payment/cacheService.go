@@ -144,3 +144,7 @@ func (bcd *BlockChainDataService) SyncSubscribedPool(addr string) {
 
 	bcd.callBack.SubPoolDataSynced()
 }
+
+func (bcd *BlockChainDataService) Finalized() {
+	bcd.Close()
+}

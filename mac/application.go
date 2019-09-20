@@ -32,6 +32,7 @@ type appConf struct {
 	baseDir     string
 	walletPath  string
 	receiptPath string
+	cachePath   string
 }
 
 func (ac appConf) String() string {
@@ -95,18 +96,20 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 
 	walletPath := filepath.Join(baseDir, string(filepath.Separator), WalletFile)
 	receiptPath := filepath.Join(baseDir, string(filepath.Separator), ReceiptDataBase)
+	cachePath := filepath.Join(baseDir, string(filepath.Separator), BlockDataBase)
+
 	_appInstance.conf.baseDir = baseDir
 	_appInstance.conf.receiptPath = receiptPath
 	_appInstance.conf.walletPath = walletPath
+	_appInstance.conf.cachePath = cachePath
 	fmt.Println(_appInstance.conf.String())
 
 	protocol, err := payment.InitProtocol(walletPath, receiptPath, _appInstance)
 	if err != nil {
 		return ErrInitProtocol, C.CString(err.Error())
 	}
-
 	_appInstance.protocol = protocol
-	cachePath := filepath.Join(baseDir, string(filepath.Separator), BlockDataBase)
+
 	ab := _appInstance.protocol.SyncWalletData()
 	cc, err := payment.InitBlockDataCache(cachePath, ab.MainAddr, _appInstance)
 	if err != nil {

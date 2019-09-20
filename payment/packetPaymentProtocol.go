@@ -28,11 +28,12 @@ type SystemActionCallBack interface {
 
 type PacketPaymentProtocol interface {
 	OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error
-	SetupAesConn(string) (account.CryptConn, error)
+	SetupAesConn(target string) (account.CryptConn, error)
 	IsPayChannelOpen(poolAddr string) bool
-	Finish()
+	Finalized()
 	SyncWalletData() *Accountant
 	Wallet(auth string) (account.Wallet, error)
+	NewWallet(auth, wp string) (account.Wallet, error)
 }
 
 type PacketWallet struct {

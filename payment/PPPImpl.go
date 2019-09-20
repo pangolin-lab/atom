@@ -12,6 +12,7 @@ import (
 	"github.com/pangolink/go-node/service/rpcMsg"
 	"github.com/pangolink/miner-pool/account"
 	"io"
+	"io/ioutil"
 )
 
 func (pw *PacketWallet) IsPayChannelOpen(poolAddr string) bool {
@@ -79,8 +80,13 @@ func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
 	return account.NewAesConn(conn, pw.accBook, aesKey[:], iv)
 }
 
-func (pw *PacketWallet) Finish() {
-	//TODO::
+func (pw *PacketWallet) Finalized() {
+
+	pw.database.Close()
+	pw.errCh <- fmt.Errorf("finished by manual")
+	if pw.payChan != nil {
+		pw.payChan.conn.Close()
+	}
 }
 
 func (pw *PacketWallet) SyncWalletData() *Accountant {
@@ -96,4 +102,22 @@ func (pw *PacketWallet) Wallet(auth string) (account.Wallet, error) {
 		return nil, err
 	}
 	return pw.wallet, nil
+}
+
+func (pw *PacketWallet) NewWallet(auth, wp string) (account.Wallet, error) {
+	w, err := account.NewWallet()
+	if err != nil {
+		return nil, err
+	}
+
+	wJson, err := w.EncryptWallet(auth)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ioutil.WriteFile(wp, wJson, 0644); err != nil {
+		return nil, err
+	}
+
+	return w, nil
 }

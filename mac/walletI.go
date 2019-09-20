@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolink/miner-pool/account"
-	"io/ioutil"
 )
 
 //export WalletVerify
@@ -61,19 +60,14 @@ func SyncWalletInfo() *C.char {
 //export NewWallet
 func NewWallet(auth string) (bool, *C.char) {
 
-	w, err := account.NewWallet()
-	if err != nil {
-		return false, C.CString(err.Error())
+	_, e := _appInstance.protocol.NewWallet(auth, _appInstance.conf.walletPath)
+	if e != nil {
+		return false, C.CString(e.Error())
 	}
 
-	wJson, err := w.EncryptWallet(auth)
-	if err != nil {
-		return false, C.CString(err.Error())
+	if e := _appInstance.ReInitApp(); e != nil {
+		return false, C.CString(e.Error())
 	}
-	_appInstance.protocol.Finish()
 
-	if err := ioutil.WriteFile(_appInstance.conf.walletPath, wJson, 0644); err != nil {
-		return false, C.CString(err.Error())
-	}
 	return true, nil
 }
