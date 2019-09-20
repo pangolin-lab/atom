@@ -116,18 +116,18 @@ func InitBlockDataCache(dataPath, mainAddr, subAddr string, cb DataSyncCallBack)
 func (bcd *BlockChainDataService) loadPacketMarket() {
 	addresses := make([]common.Address, 0)
 	if err := utils.GetObj(bcd.DB, PoolAddressInMarket, addresses); err != nil {
-		bcd.syncPacketMarket()
+		bcd.SyncPacketMarket()
 		return
 	}
 	bcd.PoolsInMarket = addresses
 	fmt.Println("[dataService] loadPacketMarket success......")
-	go bcd.syncPacketMarket()
+	go bcd.SyncPacketMarket()
 }
 
-func (bcd *BlockChainDataService) syncPacketMarket() {
+func (bcd *BlockChainDataService) SyncPacketMarket() {
 	newVer := ethereum.MarketDataVersion()
 	if bcd.marketDataVersion == newVer {
-		fmt.Println("[DataService-syncPacketMarket]  no need to sync packet market data")
+		fmt.Println("[DataService-SyncPacketMarket]  no need to sync packet market data")
 		return
 	}
 
@@ -144,7 +144,7 @@ func (bcd *BlockChainDataService) syncPacketMarket() {
 	bcd.PoolsInMarket = addresses
 	bcd.marketDataVersion = newVer
 	_ = bcd.Put(MarketDataVersion, utils.UintToByte(newVer), nil)
-	fmt.Println("[dataService] syncPacketMarket success......")
+	fmt.Println("[dataService] SyncPacketMarket success......")
 }
 
 func (bcd *BlockChainDataService) LoadPoolDetails(poolAddr string) (*ethereum.PoolDetail, error) {

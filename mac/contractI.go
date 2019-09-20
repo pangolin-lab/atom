@@ -79,10 +79,9 @@ func PoolDetails(addr string) *C.char {
 	return C.CString(string(buf))
 }
 
-//export PoolListWithDetails
-func PoolListWithDetails() *C.char {
+//export PoolInfosInMarket
+func PoolInfosInMarket() *C.char {
 	addrArr := _appInstance.dataSrv.PoolsInMarket
-
 	poolArr := make([]*ethereum.PoolDetail, 0)
 	for _, addr := range addrArr {
 		p, e := _appInstance.dataSrv.LoadPoolDetails(addr.String())
@@ -101,4 +100,10 @@ func PoolListWithDetails() *C.char {
 	}
 
 	return C.CString(string(jsonStr))
+}
+
+//export SyncPacketMarket
+func SyncPacketMarket() *C.char {
+	_appInstance.dataSrv.SyncPacketMarket()
+	return PoolInfosInMarket()
 }
