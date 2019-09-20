@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pangolin-lab/atom/ethereum"
-	"github.com/pangolink/miner-pool/account"
 )
 
 //export MyChannelWithDetails
@@ -27,8 +26,8 @@ func MyChannelWithDetails(addr string) *C.char {
 }
 
 //export BuyPacket
-func BuyPacket(userAddr, poolAddr, passPhrase, cipher string, tokenNo float64) (*C.char, *C.char) {
-	w, e := account.DecryptWallet([]byte(cipher), passPhrase)
+func BuyPacket(userAddr, poolAddr, auth string, tokenNo float64) (*C.char, *C.char) {
+	w, e := _appInstance.protocol.Wallet(auth)
 	if e != nil {
 		return C.CString(""), C.CString(e.Error())
 	}
@@ -82,6 +81,8 @@ func PoolDetails(addr string) *C.char {
 //export PoolInfosInMarket
 func PoolInfosInMarket() *C.char {
 	addrArr := _appInstance.dataSrv.PoolsInMarket
+	go _appInstance.dataSrv.SyncPacketMarket()
+
 	poolArr := make([]*ethereum.PoolDetail, 0)
 	for _, addr := range addrArr {
 		p, e := _appInstance.dataSrv.LoadPoolDetails(addr.String())
@@ -100,10 +101,4 @@ func PoolInfosInMarket() *C.char {
 	}
 
 	return C.CString(string(jsonStr))
-}
-
-//export SyncPacketMarket
-func SyncPacketMarket() *C.char {
-	_appInstance.dataSrv.SyncPacketMarket()
-	return PoolInfosInMarket()
 }

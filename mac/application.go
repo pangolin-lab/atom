@@ -34,13 +34,13 @@ type appConf struct {
 	receiptDir string
 }
 type MacApp struct {
-	conf    appConf
-	ppp     payment.PacketPaymentProtocol
-	dataSrv *payment.BlockChainDataService
-	service *proxy.VpnProxy
-	err     chan error
-	sysImp  C.SystemActionCallBack
-	dataImp C.BlockChainDataSyncNotifier
+	conf     appConf
+	protocol payment.PacketPaymentProtocol
+	dataSrv  *payment.BlockChainDataService
+	service  *proxy.VpnProxy
+	err      chan error
+	sysImp   C.SystemActionCallBack
+	dataImp  C.BlockChainDataSyncNotifier
 }
 
 var _appInstance = &MacApp{
@@ -91,11 +91,10 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 		return ErrInitProtocol, C.CString(err.Error())
 	}
 
-	_appInstance.ppp = protocol
+	_appInstance.protocol = protocol
 	cachePath := filepath.Join(baseDir, string(filepath.Separator), BlockDataBase)
-	addr := _appInstance.ppp.CurrentWallet()
-
-	cc, err := payment.InitBlockDataCache(cachePath, addr, _appInstance)
+	ab := _appInstance.protocol.SyncWalletData()
+	cc, err := payment.InitBlockDataCache(cachePath, ab.MainAddr, _appInstance)
 	if err != nil {
 		return ErrInitDataCache, C.CString(err.Error())
 	}
@@ -112,19 +111,19 @@ func startService(srvAddr, auth, minerPoolAddr string) (int, *C.char) {
 	}
 	_appInstance.service = srv
 
-	if !_appInstance.ppp.IsPayChannelOpen(minerPoolAddr) {
+	if !_appInstance.protocol.IsPayChannelOpen(minerPoolAddr) {
 
 		pool, err := _appInstance.dataSrv.LoadPoolDetails(minerPoolAddr)
 		if err != nil {
 			return ErrNoSuchPool, C.CString(err.Error())
 		}
 
-		if err := _appInstance.ppp.OpenPayChannel(_appInstance.err, pool, auth); err != nil {
+		if err := _appInstance.protocol.OpenPayChannel(_appInstance.err, pool, auth); err != nil {
 			return ErrOpenPayChannel, C.CString(err.Error())
 		}
 	}
 
-	go srv.Accepting(_appInstance.err, proxy.Socks5Target, _appInstance.ppp)
+	go srv.Accepting(_appInstance.err, proxy.Socks5Target, _appInstance.protocol)
 	ret := <-_appInstance.err
 
 	return ErrVpnServiceExit, C.CString(ret.Error())

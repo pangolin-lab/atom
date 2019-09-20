@@ -79,14 +79,21 @@ func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
 	return account.NewAesConn(conn, pw.accBook, aesKey[:], iv)
 }
 
-func (pw *PacketWallet) CurrentWallet() string {
-	return pw.accBook.MainAddr
-}
-
 func (pw *PacketWallet) Finish() {
 	//TODO::
 }
 
-func (pw *PacketWallet) AccountBook() *Accountant {
+func (pw *PacketWallet) SyncWalletData() *Accountant {
+	go pw.accBook.synBalance(pw.database, pw.callBack)
 	return pw.accBook
+}
+
+func (pw *PacketWallet) Wallet(auth string) (account.Wallet, error) {
+	if pw.wallet != nil && pw.wallet.IsOpen() {
+		return pw.wallet, nil
+	}
+	if err := pw.openWallet(auth); err != nil {
+		return nil, err
+	}
+	return pw.wallet, nil
 }

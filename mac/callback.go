@@ -14,8 +14,13 @@ void bridge_sys_func(SystemActionCallBack f, int t, char* v){
 import "C"
 
 func (app *MacApp) SubPoolDataSynced() {
-	C.bridge_data_func(app.dataImp, C.SubPoolDataSynced, nil)
+	C.bridge_data_func(app.dataImp, C.SubPoolSynced, nil)
 }
+
+func (app *MacApp) MarketPoolDataSynced() {
+	C.bridge_data_func(app.dataImp, C.MarketPoolSynced, nil)
+}
+
 func (app *MacApp) DataSyncedFailed(err error) {
 	C.bridge_data_func(app.dataImp, -1, C.CString(err.Error()))
 }

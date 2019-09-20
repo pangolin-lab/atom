@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	MarketDataVersion   = []byte("_DB_MARKET_DATA_VERSION_")
 	PoolAddressInMarket = []byte("_DB_Pool_Address_In_Market_")
 	PoolDetailsCached   = []byte("_DB_Pool_Details_Information_Cached_")
 )
@@ -25,6 +24,7 @@ const (
 
 type DataSyncCallBack interface {
 	SubPoolDataSynced()
+	MarketPoolDataSynced()
 	DataSyncedFailed(err error)
 }
 
@@ -32,8 +32,6 @@ type BlockChainDataService struct {
 	sync.RWMutex
 	*leveldb.DB
 	callBack DataSyncCallBack
-
-	marketDataVersion uint32
 
 	PoolsInMarket    []common.Address
 	MySubscribedPool []common.Address
@@ -55,25 +53,21 @@ func InitBlockDataCache(dataPath, mainAddr string, cb DataSyncCallBack) (*BlockC
 	}
 	fmt.Println("[InitBlockDataCache] open block chain cached database success......")
 
-	dataVersion := uint32(0)
-	if data, err := db.Get(MarketDataVersion, nil); err == nil {
-		dataVersion = utils.ByteToUint(data)
-	}
-
 	cachedDetail := make(map[string]*ethereum.PoolDetail)
 	_ = utils.GetObj(db, PoolDetailsCached, cachedDetail)
 
-	bcd := &BlockChainDataService{
-		DB:                db,
-		callBack:          cb,
-		marketDataVersion: dataVersion,
-		poolDetails:       cachedDetail,
-		PoolsInMarket:     make([]common.Address, 0),
-		MySubscribedPool:  make([]common.Address, 0),
-		channelDetails:    make(map[string]*ethereum.PayChannel),
-	}
+	addresses := make([]common.Address, 0)
+	_ = utils.GetObj(db, PoolAddressInMarket, addresses)
 
-	go bcd.loadPacketMarket()
+	bcd := &BlockChainDataService{
+		DB:               db,
+		callBack:         cb,
+		poolDetails:      cachedDetail,
+		PoolsInMarket:    addresses,
+		MySubscribedPool: make([]common.Address, 0),
+		channelDetails:   make(map[string]*ethereum.PayChannel),
+	}
+	go bcd.SyncPacketMarket()
 
 	if mainAddr != "" {
 		key := fmt.Sprintf("%s%s", DBKeySubPoolArr, mainAddr)
@@ -88,24 +82,7 @@ func InitBlockDataCache(dataPath, mainAddr string, cb DataSyncCallBack) (*BlockC
 	return bcd, nil
 }
 
-func (bcd *BlockChainDataService) loadPacketMarket() {
-	addresses := make([]common.Address, 0)
-	if err := utils.GetObj(bcd.DB, PoolAddressInMarket, addresses); err != nil {
-		bcd.SyncPacketMarket()
-		return
-	}
-	bcd.PoolsInMarket = addresses
-	fmt.Println("[dataService] loadPacketMarket success......")
-	go bcd.SyncPacketMarket()
-}
-
 func (bcd *BlockChainDataService) SyncPacketMarket() {
-	newVer := ethereum.MarketDataVersion()
-	if bcd.marketDataVersion == newVer {
-		fmt.Println("[DataService-SyncPacketMarket]  no need to sync packet market data")
-		return
-	}
-
 	addresses := ethereum.PoolAddressList()
 	if addresses == nil {
 		fmt.Println("[DataService] ethereum PoolAddressList no data found:")
@@ -117,9 +94,8 @@ func (bcd *BlockChainDataService) SyncPacketMarket() {
 		return
 	}
 	bcd.PoolsInMarket = addresses
-	bcd.marketDataVersion = newVer
-	_ = bcd.Put(MarketDataVersion, utils.UintToByte(newVer), nil)
 	fmt.Println("[dataService] SyncPacketMarket success......")
+	bcd.callBack.MarketPoolDataSynced()
 }
 
 func (bcd *BlockChainDataService) LoadPoolDetails(poolAddr string) (*ethereum.PoolDetail, error) {
@@ -143,7 +119,6 @@ func (bcd *BlockChainDataService) synDetailsCache(addr string, d *ethereum.PoolD
 	bcd.Lock()
 	defer bcd.Unlock()
 	bcd.poolDetails[addr] = d
-
 	if err := utils.SaveObj(bcd.DB, PoolDetailsCached, bcd.poolDetails); err != nil {
 		fmt.Println("[DataService]  synDetailsCache err:", err)
 	}

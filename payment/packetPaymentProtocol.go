@@ -27,12 +27,12 @@ type SystemActionCallBack interface {
 }
 
 type PacketPaymentProtocol interface {
-	CurrentWallet() string
 	OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error
 	SetupAesConn(string) (account.CryptConn, error)
 	IsPayChannelOpen(poolAddr string) bool
 	Finish()
-	AccountBook() *Accountant
+	SyncWalletData() *Accountant
+	Wallet(auth string) (account.Wallet, error)
 }
 
 type PacketWallet struct {
@@ -67,7 +67,7 @@ func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
 		signal:    make(chan struct{}),
 		MainAddr:  mAddr,
 		SubAddr:   sAddr,
-		cipherTxt: data,
+		CipherTxt: data,
 	}
 
 	if err := ab.loadAccBook(db); err != nil {
@@ -156,11 +156,11 @@ func (pw *PacketWallet) CloseChannel() {
 }
 
 func (pw *PacketWallet) openWallet(auth string) error {
-	if pw.accBook.cipherTxt == nil {
+	if pw.accBook.CipherTxt == nil {
 		return fmt.Errorf("wallet data not found")
 	}
 
-	w, err := account.DecryptWallet(pw.accBook.cipherTxt, auth)
+	w, err := account.DecryptWallet(pw.accBook.CipherTxt, auth)
 	if err != nil {
 		return err
 	}

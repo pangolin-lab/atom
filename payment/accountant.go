@@ -24,7 +24,7 @@ type Accountant struct {
 	signal    chan struct{}
 	MainAddr  string `json:"mainAddress"`
 	SubAddr   string `json:"subAddress"`
-	cipherTxt []byte
+	CipherTxt []byte `json:"cipher"`
 
 	*accountBook
 }
@@ -83,7 +83,7 @@ func (ac *Accountant) String() string {
 	str := fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++"+
 		"+main address:\t%s"+
 		"+sub address:\t%s"+
-		"+cipherTxt:\t%s"+
+		"+CipherTxt:\t%s"+
 		"+eth:\t%d"+
 		"+token:\t%d"+
 		"+Counter:\t%d"+
@@ -93,7 +93,7 @@ func (ac *Accountant) String() string {
 		"\n++++++++++++++++++++++++++++++++++++++++++++++++++++",
 		ac.MainAddr,
 		ac.SubAddr,
-		ac.cipherTxt,
+		ac.CipherTxt,
 		ac.EthBalance,
 		ac.LinBalance,
 		ac.Counter,

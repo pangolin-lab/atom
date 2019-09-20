@@ -9,7 +9,8 @@
 
         enum CallBackActionType{
             BalanceSynced,
-            SubPoolDataSynced,
+            SubPoolSynced,
+            MarketPoolSynced,
         };
 
 #endif
