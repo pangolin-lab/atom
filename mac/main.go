@@ -110,9 +110,9 @@ func test20() {
 }
 
 func test19() {
-	w := wa.NewWallet()
-	if w == nil {
-		panic("err new wallet")
+	w, e := wa.NewWallet()
+	if e != nil {
+		panic(e)
 	}
 
 	j, e := w.EncryptWallet("123")
@@ -166,7 +166,7 @@ func test15() {
 }
 
 func test14() {
-	w := wa.NewWallet()
+	w, e := wa.NewWallet()
 	j, e := w.EncryptWallet("123")
 	if e != nil {
 		panic(e)

@@ -15,7 +15,6 @@ import (
 
 const (
 	Success = iota
-	ErrOpenWallet
 	ErrCreateDir
 	ErrInitProtocol
 	ErrInitDataCache
@@ -29,7 +28,13 @@ const (
 	BlockDataBase   = "blockData"
 )
 
+type appConf struct {
+	baseDir    string
+	walletDir  string
+	receiptDir string
+}
 type MacApp struct {
+	conf    appConf
 	ppp     payment.PacketPaymentProtocol
 	dataSrv *payment.BlockChainDataService
 	service *proxy.VpnProxy
@@ -74,8 +79,12 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 		errStr := fmt.Sprintf("touch dir(%s) err:%s", baseDir, err.Error())
 		return ErrCreateDir, C.CString(errStr)
 	}
+
 	walletPath := filepath.Join(baseDir, string(filepath.Separator), WalletFile)
 	receiptPath := filepath.Join(baseDir, string(filepath.Separator), ReceiptDataBase)
+	_appInstance.conf.baseDir = baseDir
+	_appInstance.conf.receiptDir = receiptPath
+	_appInstance.conf.walletDir = walletPath
 
 	protocol, err := payment.InitProtocol(walletPath, receiptPath, _appInstance)
 	if err != nil {
@@ -84,9 +93,9 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 
 	_appInstance.ppp = protocol
 	cachePath := filepath.Join(baseDir, string(filepath.Separator), BlockDataBase)
-	addr, subAddr := _appInstance.ppp.WalletAddr()
+	addr := _appInstance.ppp.CurrentWallet()
 
-	cc, err := payment.InitBlockDataCache(cachePath, addr, subAddr, _appInstance)
+	cc, err := payment.InitBlockDataCache(cachePath, addr, _appInstance)
 	if err != nil {
 		return ErrInitDataCache, C.CString(err.Error())
 	}

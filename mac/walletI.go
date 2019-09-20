@@ -2,26 +2,12 @@ package main
 
 import "C"
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolink/miner-pool/account"
+	"io/ioutil"
 )
-
-//export NewWallet
-func NewWallet(password string) *C.char {
-	w := account.NewWallet()
-	if w == nil {
-		fmt.Print("Create new Wallet failed")
-		return nil
-	}
-
-	wJson, err := w.EncryptWallet(password)
-	if err != nil {
-		fmt.Print(err)
-		return nil
-	}
-	return C.CString(string(wJson))
-}
 
 //export WalletVerify
 func WalletVerify(cipher, auth string) bool {
@@ -61,7 +47,35 @@ func TransferLinToken(cipher, auth, target string, sum float64) (*C.char, *C.cha
 }
 
 //export WalletBalance
-func WalletBalance(address string) (float64, float64) {
-	//return ethereum.TokenBalance(address)
-	return 0, 0
+func WalletBalance() *C.char {
+	wi := _appInstance.ppp.AccountBook()
+	if wi == nil {
+		return nil
+	}
+	data, err := json.Marshal(wi)
+	if err != nil {
+		_appInstance.DataSyncedFailed(err)
+		return nil
+	}
+	return C.CString(string(data))
+}
+
+//export NewWallet
+func NewWallet(auth string) (bool, *C.char) {
+
+	w, err := account.NewWallet()
+	if err != nil {
+		return false, C.CString(err.Error())
+	}
+
+	wJson, err := w.EncryptWallet(auth)
+	if err != nil {
+		return false, C.CString(err.Error())
+	}
+	_appInstance.ppp.Finish()
+
+	if err := ioutil.WriteFile(_appInstance.conf.walletDir, wJson, 0644); err != nil {
+		return false, C.CString(err.Error())
+	}
+	return true, nil
 }

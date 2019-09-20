@@ -2,6 +2,7 @@ package payment
 
 import (
 	"fmt"
+	"github.com/btcsuite/goleveldb/leveldb"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/utils"
 	"github.com/pangolink/go-node/network"
@@ -10,32 +11,110 @@ import (
 	"sync"
 )
 
-const (
-	receiptDBKey = "_receipt_local_cached_key_"
-)
+type accountBook struct {
+	EthBalance int64 `json:"eth"`
+	LinBalance int64 `json:"token"`
+	Counter    int   `json:"counter"`
+	InRecharge int   `json:"charging"`
+	Nonce      int   `json:"nonce"`
+	UnClaimed  int64 `json:"unclaimed"`
+}
+type Accountant struct {
+	sync.RWMutex
+	signal    chan struct{}
+	MainAddr  string `json:"mainAddress"`
+	SubAddr   string `json:"subAddress"`
+	cipherTxt []byte
 
-/************************************************************************************
-*Chanel*
-************************************************************************************/
-type Chanel struct {
-	conn    *network.JsonConn
-	miner   *utils.PeerID
-	accBook *accountBook
+	*accountBook
 }
 
-func (ch *Chanel) recharge(payee, payer string, w account.Wallet) error {
+type payChannel struct {
+	pool  *ethereum.PoolDetail
+	conn  *network.JsonConn
+	miner *utils.PeerID
+}
 
-	req, err := ch.accBook.createRechargeReq(payee, payer, ch.miner.ID.String(), w)
+func (ac *Accountant) cacheKey() []byte {
+	return []byte(fmt.Sprintf("%s%s%s", AccBookDataBaseKey, ac.MainAddr, ac.SubAddr))
+}
+
+func (ac *Accountant) loadAccBook(db *leveldb.DB) error {
+	ac.Lock()
+	defer ac.Unlock()
+
+	key := ac.cacheKey()
+	ok, err := db.Has(key, nil)
+	if err != nil {
+		return err
+	}
+	ac.accountBook = &accountBook{}
+	if !ok {
+		return nil
+	}
+
+	return utils.GetObj(db, key, ac.accountBook)
+}
+
+func (ac *Accountant) synBalance(db *leveldb.DB, cb SystemActionCallBack) {
+	if ac.MainAddr == "" {
+		return
+	}
+
+	ac.Lock()
+	ac.LinBalance, ac.EthBalance = ethereum.TokenBalance(ac.MainAddr)
+	ac.Unlock()
+
+	ac.cacheAccBook(db)
+	if cb != nil {
+		cb.WalletBalanceSynced()
+	}
+}
+
+func (ac *Accountant) cacheAccBook(db *leveldb.DB) {
+	ac.RLock()
+	defer ac.RUnlock()
+	if err := utils.SaveObj(db, ac.cacheKey(), ac.accountBook); err != nil {
+		fmt.Println("[PacketWallet-synBalance]  save cached err:", err)
+	}
+}
+
+func (ac *Accountant) String() string {
+	str := fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++"+
+		"+main address:\t%s"+
+		"+sub address:\t%s"+
+		"+cipherTxt:\t%s"+
+		"+eth:\t%d"+
+		"+token:\t%d"+
+		"+Counter:\t%d"+
+		"+InRecharge:\t%d"+
+		"+Nonce:\t%d"+
+		"+UnClaimed:\t%d"+
+		"\n++++++++++++++++++++++++++++++++++++++++++++++++++++",
+		ac.MainAddr,
+		ac.SubAddr,
+		ac.cipherTxt,
+		ac.EthBalance,
+		ac.LinBalance,
+		ac.Counter,
+		ac.InRecharge,
+		ac.Nonce,
+		ac.UnClaimed)
+	return str
+}
+
+func (pw *PacketWallet) recharge(payee, payer string, w account.Wallet) error {
+	req, err := pw.accBook.createRechargeReq(payee, payer, pw.payChan.miner.ID.String(), w)
 	if err != nil {
 		return err
 	}
 
-	if err := ch.conn.WriteJsonMsg(req); err != nil {
+	if err := pw.payChan.conn.WriteJsonMsg(req); err != nil {
 		return err
 	}
 
 	ack := &core.PayChanAck{}
-	if err := ch.conn.ReadJsonMsg(ack); err != nil {
+	if err := pw.payChan.conn.ReadJsonMsg(ack); err != nil {
 		return err
 	}
 	if !ack.Success {
@@ -46,31 +125,12 @@ func (ch *Chanel) recharge(payee, payer string, w account.Wallet) error {
 		//TODO:: reload data from ethereum contract and recharge again
 		return nil
 	}
-	//
-	//if req.Recharge.Usage != ack.Receipt.Recharged{
-	//	return fmt.Errorf("[PPP-recharge] Cheating miner pool[%s], usage(%d-%d) not same",
-	//		payee, req.Recharge.Usage, ack.Receipt.Recharged)
-	//}
 
-	ch.accBook.refresh(req.Recharge)
+	pw.accBook.refresh(req.Recharge)
 	return nil
 }
 
-/************************************************************************************
-*accountBook*
-************************************************************************************/
-
-type accountBook struct {
-	sync.RWMutex
-	signal     chan struct{}
-	Counter    int
-	InRecharge int
-	Nonce      int
-	UnClaimed  int64
-	Balance    int64
-}
-
-func (ac *accountBook) ReadCount(n int) {
+func (ac *Accountant) ReadCount(n int) {
 	ac.Lock()
 	defer ac.Unlock()
 
@@ -82,7 +142,7 @@ func (ac *accountBook) ReadCount(n int) {
 	}
 }
 
-func (ac *accountBook) createRechargeReq(payee, payer, miner string, w account.Wallet) (*core.PayChanReq, error) {
+func (ac *Accountant) createRechargeReq(payee, payer, miner string, w account.Wallet) (*core.PayChanReq, error) {
 	ac.RLock()
 	defer ac.RUnlock()
 
@@ -95,7 +155,7 @@ func (ac *accountBook) createRechargeReq(payee, payer, miner string, w account.W
 			Usage:     ac.InRecharge,
 			Contract:  ethereum.Conf.MicroPaySys,
 			UnClaimed: ac.UnClaimed,
-			Balance:   ac.Balance,
+			Balance:   0, //TODO::
 			Nonce:     ac.Nonce,
 		},
 	}
@@ -109,7 +169,7 @@ func (ac *accountBook) createRechargeReq(payee, payer, miner string, w account.W
 	return req, nil
 }
 
-func (ac *accountBook) refresh(req *core.PacketRecharge) {
+func (ac *Accountant) refresh(req *core.PacketRecharge) {
 	ac.Lock()
 	defer ac.Unlock()
 
@@ -117,26 +177,11 @@ func (ac *accountBook) refresh(req *core.PacketRecharge) {
 	ac.UnClaimed += int64(req.Usage)
 }
 
-func (ac *accountBook) WriteCount(n int) {
+func (ac *Accountant) WriteCount(n int) {
 	//Nothing to do
 }
 
-/************************************************************************************
-*PacketWallet*
-************************************************************************************/
-
-func (pw *PacketWallet) synAccountBook() {
-	ab := pw.accBook
-	ab.RLock()
-	defer ab.RUnlock()
-
-	key := fmt.Sprintf("%s%s%s", pw.sWallet.MainAddr, receiptDBKey, pw.pool.MainAddr)
-	if err := utils.SaveObj(pw.database, []byte(key), ab); err != nil {
-		fmt.Println("[PacketWallet-synAccountBook]  save cached err:", err)
-	}
-}
-
-func (pw *PacketWallet) createChan(pool *ethereum.PoolDetail) (*Chanel, error) {
+func (pw *PacketWallet) createChan(pool *ethereum.PoolDetail) (*payChannel, error) {
 
 	conn, err := pw.connectToMiner(pool.Seeds)
 	if err != nil {
@@ -153,15 +198,10 @@ func (pw *PacketWallet) createChan(pool *ethereum.PoolDetail) (*Chanel, error) {
 		return nil, err
 	}
 
-	accBook, err := pw.checkAccBook(pool.MainAddr, bootInfo.Sig, bootInfo.LatestReceipt)
-	if err != nil {
-		return nil, err
-	}
-
-	c := &Chanel{
-		miner:   miner,
-		conn:    conn,
-		accBook: accBook,
+	c := &payChannel{
+		miner: miner,
+		conn:  conn,
+		pool:  pool,
 	}
 	return c, nil
 }
@@ -173,13 +213,13 @@ func (pw *PacketWallet) monitor() {
 	for {
 		select {
 		case <-pw.accBook.signal:
-			if err := pw.Chanel.recharge(pw.sWallet.MainAddr, pw.pool.MainAddr, pw.wallet); err != nil {
+			if err := pw.recharge(pw.accBook.MainAddr, pw.payChan.pool.MainAddr, pw.wallet); err != nil {
 				pw.errCh <- err
 				fmt.Println("[PPP] Count error:", err)
 				return
 			}
 
-			pw.synAccountBook()
+			pw.accBook.cacheAccBook(pw.database)
 		case err := <-pw.errCh:
 			fmt.Println("[PPP] monitor exit:", err)
 			return
@@ -187,21 +227,15 @@ func (pw *PacketWallet) monitor() {
 	}
 }
 
-func (pw *PacketWallet) checkAccBook(poolAddr string, sig []byte, receipt *core.LatestReceipt) (*accountBook, error) {
-
-	key := fmt.Sprintf("%s%s%s", receipt.UserAddr, receiptDBKey, poolAddr)
-	if pw.sWallet.MainAddr != receipt.UserAddr || poolAddr != receipt.PoolAddr {
-		return nil, fmt.Errorf("[PacketWallet-checkAccBook]  this[%s] is not my receipt", key)
+func (pw *PacketWallet) checkAccBook(poolAddr string, sig []byte, receipt *core.LatestReceipt) (*Accountant, error) {
+	if pw.accBook.MainAddr != receipt.UserAddr || poolAddr != receipt.PoolAddr {
+		return nil, fmt.Errorf("[PacketWallet-checkAccBook] is not my receipt")
 	}
 
-	accBook := &accountBook{signal: make(chan struct{})}
-	if err := utils.GetObj(pw.database, []byte(key), accBook); err != nil {
-		fmt.Println("[PacketWallet-checkAccBook]  no cached receipt", err)
-	}
+	accBook := pw.accBook
 
 	if accBook.Nonce == receipt.Nonce &&
-		accBook.UnClaimed == receipt.UnClaimed &&
-		accBook.Balance == receipt.Balance {
+		accBook.UnClaimed == receipt.UnClaimed {
 
 		return accBook, nil
 	}
@@ -212,7 +246,5 @@ func (pw *PacketWallet) checkAccBook(poolAddr string, sig []byte, receipt *core.
 
 	accBook.Nonce = receipt.Nonce
 	accBook.UnClaimed = receipt.UnClaimed
-	accBook.Balance = receipt.Balance
-
 	return accBook, nil
 }

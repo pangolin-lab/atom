@@ -19,24 +19,40 @@ import (
 const (
 	RechargeThreadHold = 1 << 12 //4M
 	AccBookKeyJoin     = "@"
+	AccBookDataBaseKey = "_acc_book_database_key_"
 )
 
 type SystemActionCallBack interface {
+	WalletBalanceSynced()
 }
 
 type PacketPaymentProtocol interface {
-	WalletAddr() (string, string)
+	CurrentWallet() string
 	OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error
 	SetupAesConn(string) (account.CryptConn, error)
 	IsPayChannelOpen(poolAddr string) bool
-}
-type SafeWallet struct {
-	MainAddr  string
-	SubAddr   string
-	cipherTxt []byte
+	Finish()
+	AccountBook() *Accountant
 }
 
-func initWallet(wPath string) (*SafeWallet, error) {
+type PacketWallet struct {
+	database *leveldb.DB
+	errCh    chan error
+	callBack SystemActionCallBack
+
+	accBook *Accountant
+	wallet  account.Wallet
+	payChan *payChannel
+}
+
+func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
+
+	if _, ok := utils.FileExists(wPath); !ok {
+		return &Accountant{
+			signal: make(chan struct{}),
+		}, nil
+	}
+
 	data, err := ioutil.ReadFile(wPath)
 	if err != nil {
 		return nil, err
@@ -47,23 +63,18 @@ func initWallet(wPath string) (*SafeWallet, error) {
 		return nil, err
 	}
 
-	sw := &SafeWallet{
+	ab := &Accountant{
+		signal:    make(chan struct{}),
 		MainAddr:  mAddr,
 		SubAddr:   sAddr,
 		cipherTxt: data,
 	}
-	fmt.Println("[InitProtocol] wallet initialization success......")
-	return sw, nil
-}
 
-type PacketWallet struct {
-	sWallet  *SafeWallet
-	database *leveldb.DB
-	wallet   account.Wallet
-	pool     *ethereum.PoolDetail
-	errCh    chan error
-	callBack SystemActionCallBack
-	*Chanel
+	if err := ab.loadAccBook(db); err != nil {
+		return nil, err
+	}
+	fmt.Println("[InitProtocol] wallet initialization success......", ab.String())
+	return ab, nil
 }
 
 func InitProtocol(wPath, rPath string, cb SystemActionCallBack) (PacketPaymentProtocol, error) {
@@ -80,18 +91,18 @@ func InitProtocol(wPath, rPath string, cb SystemActionCallBack) (PacketPaymentPr
 	}
 	fmt.Println("[InitProtocol] open ppp database success......")
 
-	sw, err := initWallet(wPath)
+	ab, err := initAcc(wPath, db)
 	if err != nil {
-		fmt.Println("[InitProtocol]  empty wallet warning:", err)
-		sw = &SafeWallet{}
+		return nil, err
 	}
 
-	//TODO::sync all packet balance from ethereum block chain contract
 	pw := &PacketWallet{
-		sWallet:  sw,
 		database: db,
+		errCh:    make(chan error, 10),
 		callBack: cb,
+		accBook:  ab,
 	}
+	go ab.synBalance(db, cb)
 
 	fmt.Println("[InitProtocol] packet payment protocol success......")
 	return pw, nil
@@ -115,8 +126,8 @@ func (pw *PacketWallet) handshake(conn *network.JsonConn) (*core.ChanCreateAck, 
 	req := &core.PayChanReq{
 		MsgType: core.CreateReq,
 		CreateReq: &core.ChanCreateReq{
-			MainAddr: pw.sWallet.MainAddr,
-			SubAddr:  pw.sWallet.SubAddr,
+			MainAddr: pw.accBook.MainAddr,
+			SubAddr:  pw.accBook.SubAddr,
 		},
 	}
 	req.Sig = pw.wallet.SignSub(req)
@@ -136,21 +147,20 @@ func (pw *PacketWallet) handshake(conn *network.JsonConn) (*core.ChanCreateAck, 
 }
 
 func (pw *PacketWallet) CloseChannel() {
-	pw.conn.Close()
 
-	if pw.Chanel != nil {
-		pw.synAccountBook()
+	if pw.payChan != nil {
+		pw.accBook.cacheAccBook(pw.database)
+		pw.payChan.conn.Close()
 	}
-
-	pw.Chanel = nil
+	pw.payChan = nil
 }
 
 func (pw *PacketWallet) openWallet(auth string) error {
-	if pw.sWallet.cipherTxt == nil {
+	if pw.accBook.cipherTxt == nil {
 		return fmt.Errorf("wallet data not found")
 	}
 
-	w, err := account.DecryptWallet(pw.sWallet.cipherTxt, auth)
+	w, err := account.DecryptWallet(pw.accBook.cipherTxt, auth)
 	if err != nil {
 		return err
 	}
@@ -195,7 +205,7 @@ func (pw *PacketWallet) randomMiner(minerIDs []string) (*utils.PeerID, error) {
 }
 
 func (pw *PacketWallet) isChanOpen() bool {
-	return pw.Chanel != nil
+	return pw.payChan != nil
 }
 
 func (pw *PacketWallet) isWalletOpen() bool {
@@ -208,11 +218,11 @@ func (pw *PacketWallet) tryReopen() error {
 		return fmt.Errorf("wallet has closed")
 	}
 
-	c, err := pw.createChan(pw.pool)
+	c, err := pw.createChan(pw.payChan.pool)
 	if err != nil {
 		return err
 	}
-	pw.Chanel = c
+	pw.payChan = c
 	go pw.monitor()
 	return nil
 }

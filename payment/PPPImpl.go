@@ -1,5 +1,6 @@
 package payment
 
+import "C"
 import (
 	"crypto/aes"
 	"crypto/rand"
@@ -14,11 +15,10 @@ import (
 )
 
 func (pw *PacketWallet) IsPayChannelOpen(poolAddr string) bool {
-	return pw.isChanOpen() && pw.isWalletOpen() && pw.pool.MainAddr == poolAddr
+	return pw.isChanOpen() && pw.isWalletOpen() && pw.payChan.pool.MainAddr == poolAddr
 }
 
 func (pw *PacketWallet) OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error {
-	pw.pool = pool
 	pw.errCh = errCh
 
 	if pw.wallet == nil || !pw.wallet.IsOpen() {
@@ -35,7 +35,7 @@ func (pw *PacketWallet) OpenPayChannel(errCh chan error, pool *ethereum.PoolDeta
 	if err != nil {
 		return err
 	}
-	pw.Chanel = c
+	pw.payChan = c
 	go pw.monitor()
 	return nil
 }
@@ -48,7 +48,7 @@ func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
 		}
 	}
 
-	miner := pw.miner
+	miner := pw.payChan.miner
 
 	conn, err := utils.GetSavedConn(miner.NetAddr)
 	if err != nil {
@@ -63,7 +63,7 @@ func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
 	req := rpcMsg.AesConnSetup{
 		IV:          iv[:],
 		Target:      target,
-		UserSubAddr: pw.sWallet.SubAddr,
+		UserSubAddr: pw.accBook.SubAddr,
 	}
 
 	req.Sig = pw.wallet.SignSub(req)
@@ -79,6 +79,14 @@ func (pw *PacketWallet) SetupAesConn(target string) (account.CryptConn, error) {
 	return account.NewAesConn(conn, pw.accBook, aesKey[:], iv)
 }
 
-func (pw *PacketWallet) WalletAddr() (string, string) {
-	return pw.sWallet.MainAddr, pw.sWallet.SubAddr
+func (pw *PacketWallet) CurrentWallet() string {
+	return pw.accBook.MainAddr
+}
+
+func (pw *PacketWallet) Finish() {
+	//TODO::
+}
+
+func (pw *PacketWallet) AccountBook() *Accountant {
+	return pw.accBook
 }
