@@ -70,19 +70,19 @@ func tokenConn() (*ethclient.Client, *generated.PPNToken, error) {
 	return conn, token, err
 }
 
-func TokenBalance(address string) (*big.Int, *big.Int) {
+func TokenBalance(address string) (*big.Int, *big.Int, *big.Int) {
 	conn, err := connect()
 	if err != nil {
 		fmt.Print(err)
-		return nil, nil
+		return nil, nil, nil
 	}
 
-	tokenB, ethB, err := conn.TokenBalance(nil, common.HexToAddress(address))
+	tokenB, ethB, approved, err := conn.TokenBalance(nil, common.HexToAddress(address))
 	if err != nil {
 		fmt.Print(err)
-		return nil, nil
+		return nil, nil, nil
 	}
-	return ethB, tokenB
+	return ethB, tokenB, approved
 	//return ConvertByDecimal(tokenB), ConvertByDecimal(ethB)
 }
 
@@ -179,24 +179,6 @@ func MySubPools(addr string) ([]common.Address, error) {
 	return conn.AllMySubPools(nil, common.HexToAddress(addr))
 }
 
-func ChannelDetails(user, pool common.Address) (*PayChannel, error) {
-	conn, err := connect()
-	if err != nil {
-		fmt.Println("[Atom]: connect err:", err.Error())
-		return nil, err
-	}
-
-	detail, err := conn.MicroPaymentChannels(nil, user, pool)
-	ch := &PayChannel{
-		MainAddr:      detail.MainAddr.String(),
-		RemindTokens:  ConvertByDecimal(detail.RemindTokens),
-		RemindPackets: detail.RemindPackets.Int64(),
-		Expiration:    detail.Expiration.Int64(),
-	}
-
-	return ch, nil
-}
-
 func MyChannelWithDetails(addr string) ([]PayChannel, error) {
 	conn, err := connect()
 	if err != nil {
@@ -231,57 +213,59 @@ func MyChannelWithDetails(addr string) ([]PayChannel, error) {
 	return poolArr, nil
 }
 
-//TODO::refactor this logic
-func BuyPacket(userAddr, poolAddr string, tokenNo float64, key *ecdsa.PrivateKey) (string, error) {
-	client, conn, err := tokenConn()
+func ApproveToSpend(tokenNo *big.Int, key *ecdsa.PrivateKey) (string, error) {
+	_, conn, err := tokenConn()
 	if err != nil {
 		fmt.Println("[BuyPacket]: tokenConn err:", err.Error())
 		return "", err
 	}
-	uAddr := common.HexToAddress(userAddr)
-	pAddr := common.HexToAddress(poolAddr)
-	tn := ConvertByFloat(tokenNo)
-	a := QueryApproved(uAddr)
-
 	transactOpts := bind.NewKeyedTransactor(key)
-	gasPrice, err := client.SuggestGasPrice(context.Background())
+	tx, err := conn.Approve(transactOpts, common.HexToAddress(Conf.MicroPaySys), tokenNo)
 	if err != nil {
-		fmt.Println("[BuyPacket]: SuggestGasPrice err:", err.Error())
+		fmt.Println("[BuyPacket]: Approve err:", err.Error())
 		return "", err
 	}
-	transactOpts.GasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
-	if a == nil || a.Cmp(tn) < 0 {
-		tx, err := conn.Approve(transactOpts, common.HexToAddress(Conf.MicroPaySys), tn)
-		if err != nil {
-			fmt.Println("[BuyPacket]: Approve err:", err.Error())
-			return "", err
-		}
+	return tx.Hash().String(), nil
+}
 
-		fmt.Println("[BuyPacket]: Approve success:", tx.Hash().Hex())
+type ProcessNotice func(info string)
 
-		for {
-			receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-			if err != nil {
-				<-time.After(time.Second)
-				fmt.Println("[BuyPacket]: TransactionReceipt unfinished:", err.Error())
-				continue
-			}
-			if receipt.Status != 1 {
-				return "", fmt.Errorf("approve token balance failed")
-			} else {
-				fmt.Println("[BuyPacket]: approve success:", receipt.BlockHash.Hex())
-				break
-			}
-		}
-	}
-
-	mConn, err := connect()
+func WaitTxResult(tx string, notice ProcessNotice) error {
+	conn, err := ethclient.Dial(Conf.EthApiUrl)
 	if err != nil {
 		fmt.Println("[BuyPacket]: connect err:", err.Error())
+		return err
+	}
+
+	for {
+		receipt, err := conn.TransactionReceipt(context.Background(), common.HexToHash(tx))
+		if err != nil {
+			<-time.After(time.Second)
+			fmt.Println("[BuyPacket]: TransactionReceipt unfinished:", err.Error())
+			notice("transaction is in processing")
+			continue
+		}
+		if receipt.Status != 1 {
+			return fmt.Errorf("approve token balance failed")
+		} else {
+			fmt.Println("[BuyPacket]: approve success:", receipt.BlockHash.Hex())
+			return nil
+		}
+	}
+}
+
+func BuyPacket(userAddr, poolAddr string, tokenNo *big.Int, key *ecdsa.PrivateKey) (string, error) {
+	uAddr := common.HexToAddress(userAddr)
+	pAddr := common.HexToAddress(poolAddr)
+
+	conn, err := connect()
+	if err != nil {
+		fmt.Println("[BuyPacket]: BuyPacket err:", err.Error())
 		return "", err
 	}
 
-	tx, err := mConn.BuyPacket(transactOpts, uAddr, tn, pAddr)
+	transactOpts := bind.NewKeyedTransactor(key)
+	tx, err := conn.BuyPacket(transactOpts, uAddr, tokenNo, pAddr)
 	if err != nil {
 		fmt.Println("[BuyPacket]: BuyPacket err:", err.Error())
 		return "", err

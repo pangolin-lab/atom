@@ -15,6 +15,7 @@ import (
 type accountBook struct {
 	EthBalance *big.Int `json:"eth"`
 	LinBalance *big.Int `json:"token"`
+	Approved   *big.Int `json:"approved"`
 	Counter    int      `json:"counter"`
 	InRecharge int      `json:"charging"`
 	Nonce      int      `json:"nonce"`
@@ -63,7 +64,7 @@ func (ac *Accountant) synBalance(db *leveldb.DB, cb SystemActionCallBack) {
 	}
 
 	ac.Lock()
-	ac.EthBalance, ac.LinBalance = ethereum.TokenBalance(ac.MainAddr)
+	ac.EthBalance, ac.LinBalance, ac.Approved = ethereum.TokenBalance(ac.MainAddr)
 	ac.Unlock()
 
 	ac.cacheAccBook(db)
@@ -88,6 +89,7 @@ func (ac *Accountant) String() string {
 		"\n+CipherTxt:\t%s"+
 		"\n+eth:\t%d"+
 		"\n+token:\t%d"+
+		"\n+approved:\t%d"+
 		"\n+Counter:\t%d"+
 		"\n+InRecharge:\t%d"+
 		"\n+Nonce:\t%d"+
@@ -98,6 +100,7 @@ func (ac *Accountant) String() string {
 		ac.CipherTxt,
 		ac.EthBalance,
 		ac.LinBalance,
+		ac.Approved,
 		ac.Counter,
 		ac.InRecharge,
 		ac.Nonce,

@@ -30,6 +30,10 @@ func (app *MacApp) WalletBalanceSynced() {
 	C.bridge_sys_func(app.sysImp, C.BalanceSynced, nil)
 }
 
+func (app *MacApp) NotifyApproveToSystem(tx string) {
+	C.bridge_sys_func(app.sysImp, C.ApproveToSpendCoin, C.CString(tx))
+}
+
 func (app *MacApp) ReInitApp() error {
 
 	conf := app.conf

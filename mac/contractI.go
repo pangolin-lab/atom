@@ -29,10 +29,26 @@ func MyChannelWithDetails(addr string) *C.char {
 func BuyPacket(userAddr, poolAddr, auth string, tokenNo float64) (*C.char, *C.char) {
 	w, e := _appInstance.protocol.Wallet(auth)
 	if e != nil {
-		return C.CString(""), C.CString(e.Error())
+		return nil, C.CString(e.Error())
 	}
 
-	tx, e := ethereum.BuyPacket(userAddr, poolAddr, tokenNo, w.SignKey())
+	tn := ethereum.ConvertByFloat(tokenNo)
+
+	approveTx, err := ethereum.ApproveToSpend(tn, w.SignKey())
+	if err != nil {
+		return nil, C.CString(e.Error())
+	}
+
+	_appInstance.NotifyApproveToSystem(approveTx)
+	pn := func(info string) {
+		_appInstance.NotifyApproveToSystem(info)
+	}
+
+	if err := ethereum.WaitTxResult(approveTx, pn); err != nil {
+		return nil, C.CString(e.Error())
+	}
+
+	tx, e := ethereum.BuyPacket(userAddr, poolAddr, tn, w.SignKey())
 	if e != nil {
 		return C.CString(""), C.CString(e.Error())
 	}
