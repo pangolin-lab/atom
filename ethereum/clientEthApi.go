@@ -70,19 +70,19 @@ func tokenConn() (*ethclient.Client, *generated.PPNToken, error) {
 	return conn, token, err
 }
 
-func TokenBalance(address string) (int64, int64) {
+func TokenBalance(address string) (*big.Int, *big.Int) {
 	conn, err := connect()
 	if err != nil {
 		fmt.Print(err)
-		return 0, 0
+		return nil, nil
 	}
 
 	tokenB, ethB, err := conn.TokenBalance(nil, common.HexToAddress(address))
 	if err != nil {
 		fmt.Print(err)
-		return 0, 0
+		return nil, nil
 	}
-	return ethB.Int64(), tokenB.Int64()
+	return ethB, tokenB
 	//return ConvertByDecimal(tokenB), ConvertByDecimal(ethB)
 }
 

@@ -8,16 +8,17 @@ import (
 	"github.com/pangolink/go-node/network"
 	"github.com/pangolink/miner-pool/account"
 	"github.com/pangolink/miner-pool/core"
+	"math/big"
 	"sync"
 )
 
 type accountBook struct {
-	EthBalance int64 `json:"eth"`
-	LinBalance int64 `json:"token"`
-	Counter    int   `json:"counter"`
-	InRecharge int   `json:"charging"`
-	Nonce      int   `json:"nonce"`
-	UnClaimed  int64 `json:"unclaimed"`
+	EthBalance *big.Int `json:"eth"`
+	LinBalance *big.Int `json:"token"`
+	Counter    int      `json:"counter"`
+	InRecharge int      `json:"charging"`
+	Nonce      int      `json:"nonce"`
+	UnClaimed  int64    `json:"unclaimed"`
 }
 type Accountant struct {
 	sync.RWMutex
@@ -62,10 +63,11 @@ func (ac *Accountant) synBalance(db *leveldb.DB, cb SystemActionCallBack) {
 	}
 
 	ac.Lock()
-	ac.LinBalance, ac.EthBalance = ethereum.TokenBalance(ac.MainAddr)
+	ac.EthBalance, ac.LinBalance = ethereum.TokenBalance(ac.MainAddr)
 	ac.Unlock()
 
 	ac.cacheAccBook(db)
+	fmt.Println("sync balance success:", ac.String())
 	if cb != nil {
 		cb.WalletBalanceSynced()
 	}

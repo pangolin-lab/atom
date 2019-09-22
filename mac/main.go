@@ -39,6 +39,11 @@ var proxyConfTest = &pipeProxy.ProxyConfig{
 }
 
 func main() {
+	eth, lin := ethereum.TokenBalance("0x639e22cd0de8c30a8d1c5b20e32511cf13b1edcf")
+	fmt.Printf("\n\neth=%d lin=%d (%s \t %s)\n\n", eth, lin, eth.String(), lin.String())
+}
+
+func test21() {
 	key := []byte("1234567890asdfgh")
 	data := []byte("abc hello world!")
 	data2 := []byte("this is the second")
