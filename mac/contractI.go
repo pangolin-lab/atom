@@ -25,6 +25,26 @@ func MyChannelWithDetails(addr string) *C.char {
 	return C.CString(string(b))
 }
 
+//export AuthorizeTokenSpend
+func AuthorizeTokenSpend(auth string, tokenNo float64) (*C.char, *C.char) {
+	w, e := _appInstance.protocol.Wallet(auth)
+	if e != nil {
+		return nil, C.CString(e.Error())
+	}
+	tn := ethereum.ConvertByFloat(tokenNo)
+	tx, err := ethereum.ApproveToSpend(tn, w.SignKey())
+	if err != nil {
+		return nil, C.CString(e.Error())
+	}
+
+	return C.CString(tx), nil
+}
+
+//export TxProcessStatus
+func TxProcessStatus(tx string) bool {
+	return ethereum.TxStatus(common.HexToHash(tx))
+}
+
 //export BuyPacket
 func BuyPacket(userAddr, poolAddr, auth string, tokenNo float64) (*C.char, *C.char) {
 	w, e := _appInstance.protocol.Wallet(auth)
@@ -33,37 +53,17 @@ func BuyPacket(userAddr, poolAddr, auth string, tokenNo float64) (*C.char, *C.ch
 	}
 
 	tn := ethereum.ConvertByFloat(tokenNo)
-
-	approveTx, err := ethereum.ApproveToSpend(tn, w.SignKey())
-	if err != nil {
-		return nil, C.CString(e.Error())
-	}
-
-	_appInstance.NotifyApproveToSystem(approveTx)
-	pn := func(info string) {
-		_appInstance.NotifyApproveToSystem(info)
-	}
-
-	if err := ethereum.WaitTxResult(approveTx, pn); err != nil {
-		return nil, C.CString(e.Error())
-	}
-
 	tx, e := ethereum.BuyPacket(userAddr, poolAddr, tn, w.SignKey())
 	if e != nil {
-		return C.CString(""), C.CString(e.Error())
+		return nil, C.CString(e.Error())
 	}
 	fmt.Println(tx)
-	return C.CString(tx), C.CString("")
+	return C.CString(tx), nil
 }
 
 //export QueryApproved
 func QueryApproved(address string) float64 {
-
 	no := ethereum.QueryApproved(common.HexToAddress(address))
-	if no == nil {
-		return 0.0
-	}
-
 	return ethereum.ConvertByDecimal(no)
 }
 
@@ -73,7 +73,6 @@ func QueryMicroPayPrice() int64 {
 	if p == nil {
 		return -1
 	}
-
 	return p.Int64()
 }
 
