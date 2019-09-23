@@ -22,7 +22,6 @@ func TokenBalance(address string) (*big.Int, *big.Int, *big.Int) {
 		return nil, nil, nil
 	}
 	return ethB, tokenB, approved
-	//return ConvertByDecimal(tokenB), ConvertByDecimal(ethB)
 }
 
 func PoolAddressList() []common.Address {
@@ -58,7 +57,7 @@ func PoolDetails(addr common.Address) (*PoolDetail, error) {
 	details := &PoolDetail{
 		MainAddr:     d.MainAddr.String(),
 		Payer:        d.Payer.String(),
-		GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
+		GuaranteedNo: d.GuaranteedNo,
 		ShortName:    d.ShortName,
 		DetailInfos:  d.DetailInfos,
 		Seeds:        d.Seeds,
@@ -88,7 +87,7 @@ func PoolListWithDetails() string {
 		details := PoolDetail{
 			MainAddr:     d.MainAddr.String(),
 			Payer:        d.Payer.String(),
-			GuaranteedNo: ConvertByDecimal(d.GuaranteedNo),
+			GuaranteedNo: d.GuaranteedNo,
 			ShortName:    d.ShortName,
 			DetailInfos:  d.DetailInfos,
 			Seeds:        d.Seeds,

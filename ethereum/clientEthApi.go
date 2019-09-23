@@ -14,7 +14,7 @@ var Conf = com.TestNet
 type PoolDetail struct {
 	MainAddr     string
 	Payer        string
-	GuaranteedNo float64
+	GuaranteedNo *big.Int
 	ShortName    string
 	DetailInfos  string
 	Seeds        string
