@@ -98,6 +98,20 @@ func (bcd *BlockChainDataService) SyncPacketMarket() {
 	bcd.callBack.MarketPoolDataSynced()
 }
 
+func (bcd *BlockChainDataService) LoadDetailsOfArr(addrArr []common.Address) []*ethereum.PoolDetail {
+	poolArr := make([]*ethereum.PoolDetail, 0)
+	for _, addr := range addrArr {
+		p, e := bcd.LoadPoolDetails(addr.String())
+		if e != nil {
+			fmt.Println(e)
+			continue
+		}
+
+		poolArr = append(poolArr, p)
+	}
+	return poolArr
+}
+
 func (bcd *BlockChainDataService) LoadPoolDetails(poolAddr string) (*ethereum.PoolDetail, error) {
 	bcd.RLock()
 	if details, ok := bcd.poolDetails[poolAddr]; ok {

@@ -10,19 +10,24 @@ import (
 )
 
 //export MyChannelWithDetails
-func MyChannelWithDetails(addr string) *C.char {
-	poolArr, err := ethereum.MyChannelWithDetails(addr)
+func MyChannelWithDetails() *C.char {
+	addrArr := _appInstance.dataSrv.MySubscribedPool
+	if len(addrArr) == 0 {
+		return nil
+	}
+	poolArr := _appInstance.dataSrv.LoadDetailsOfArr(addrArr)
+	jsonStr, err := json.Marshal(poolArr)
 	if err != nil {
-		fmt.Println("[MyChannelWithDetails]: marshal pool with details arrays err:", err.Error())
-		return C.CString("")
+		fmt.Println(err)
+		return nil
 	}
 
-	b, err := json.Marshal(poolArr)
-	if err != nil {
-		fmt.Println("[MyChannelWithDetails]: marshal pool with details arrays err:", err.Error())
-		return C.CString("")
-	}
-	return C.CString(string(b))
+	return C.CString(string(jsonStr))
+}
+
+//export  SyncChannelWithDetails
+func SyncChannelWithDetails(address string) {
+	go _appInstance.dataSrv.SyncSubscribedPool(address)
 }
 
 //export AuthorizeTokenSpend
@@ -96,23 +101,15 @@ func PoolDetails(addr string) *C.char {
 //export PoolInfosInMarket
 func PoolInfosInMarket() *C.char {
 	addrArr := _appInstance.dataSrv.PoolsInMarket
-	poolArr := make([]*ethereum.PoolDetail, 0)
-	for _, addr := range addrArr {
-		p, e := _appInstance.dataSrv.LoadPoolDetails(addr.String())
-		if e != nil {
-			fmt.Println(e)
-			continue
-		}
-
-		poolArr = append(poolArr, p)
+	if len(addrArr) == 0 {
+		return nil
 	}
-
+	poolArr := _appInstance.dataSrv.LoadDetailsOfArr(addrArr)
 	jsonStr, err := json.Marshal(poolArr)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
-
 	return C.CString(string(jsonStr))
 }
 

@@ -21,6 +21,7 @@ type accountBook struct {
 	Nonce      int      `json:"nonce"`
 	UnClaimed  int64    `json:"unclaimed"`
 }
+
 type Accountant struct {
 	sync.RWMutex
 	signal    chan struct{}
