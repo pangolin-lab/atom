@@ -56,11 +56,13 @@ func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
 
 	data, err := ioutil.ReadFile(wPath)
 	if err != nil {
+		fmt.Println("ioutil read file err:", err)
 		return nil, err
 	}
 
 	mAddr, sAddr, err := account.ParseWalletAddr(data)
 	if err != nil {
+		fmt.Println("ParseWalletAddr err:", err)
 		return nil, err
 	}
 
@@ -72,6 +74,7 @@ func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
 	}
 
 	if err := ab.loadAccBook(db); err != nil {
+		fmt.Println("loadAccBook err:", err)
 		return nil, err
 	}
 	fmt.Println("[InitProtocol] accountant initialization success......", ab.String())
@@ -88,12 +91,14 @@ func InitProtocol(wPath, rPath string, cb SystemActionCallBack) (PacketPaymentPr
 
 	db, err := leveldb.OpenFile(rPath, &opts)
 	if err != nil {
+		fmt.Println("leveldb open failed:", err)
 		return nil, err
 	}
 	fmt.Println("[InitProtocol] open ppp database success......")
 
 	ab, err := initAcc(wPath, db)
 	if err != nil {
+		fmt.Println("initAcc failed:", err)
 		return nil, err
 	}
 

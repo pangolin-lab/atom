@@ -54,10 +54,8 @@ func InitBlockDataCache(dataPath, mainAddr string, cb DataSyncCallBack) (*BlockC
 	_ = utils.GetObj(db, ChannelDetailsCached, channels)
 
 	bcd := &BlockChainDataService{
-		DB:       db,
-		callBack: cb,
-
-		poolVer:        ethereum.MarketDataVersion(),
+		DB:             db,
+		callBack:       cb,
 		PoolDetails:    pools,
 		ChannelDetails: channels,
 	}
@@ -65,7 +63,6 @@ func InitBlockDataCache(dataPath, mainAddr string, cb DataSyncCallBack) (*BlockC
 	go bcd.SyncPacketMarket()
 
 	if mainAddr != "" {
-		bcd.channelVer = ethereum.MyChannelVersion(mainAddr)
 		go bcd.SyncMyChannelDetails(mainAddr)
 	}
 	fmt.Println("[InitBlockDataCache] init success......")
@@ -74,7 +71,7 @@ func InitBlockDataCache(dataPath, mainAddr string, cb DataSyncCallBack) (*BlockC
 
 func (bcd *BlockChainDataService) SyncPacketMarket() {
 	newVer := ethereum.MarketDataVersion()
-	if bcd.poolVer == newVer && newVer != 0 {
+	if bcd.poolVer == newVer {
 		fmt.Println("[DataService] ethereum no market data changed:")
 		return
 	}

@@ -185,12 +185,12 @@ func MarketDataVersion() uint32 {
 func MyChannelVersion(address string) uint32 {
 	conn, err := connect()
 	if err != nil {
-		fmt.Println("[TransferLinToken]: connect err:", err.Error())
+		fmt.Println("[MyChannelVersion]: connect err:", err.Error())
 		return 0
 	}
 	ver, err := conn.ChannelVersion(nil, common.HexToAddress(address)) //
 	if err != nil {
-		fmt.Println("[TransferLinToken]: MinerPoolVersion err:", err.Error())
+		fmt.Println("[MyChannelVersion]: MyChannelVersion err:", err.Error())
 		return 0
 	}
 	fmt.Println("[MyChannelVersion] my sub channel data version:", ver)
