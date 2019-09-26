@@ -20,7 +20,7 @@ type PoolDetail struct {
 	Seeds        string
 }
 
-type PayChannel struct {
+type ChannelDetail struct {
 	MainAddr      string
 	RemindTokens  float64
 	RemindPackets int64

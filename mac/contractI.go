@@ -9,25 +9,23 @@ import (
 	"github.com/pangolin-lab/atom/ethereum"
 )
 
-//export MyChannelWithDetails
-func MyChannelWithDetails() *C.char {
-	addrArr := _appInstance.dataSrv.MySubscribedPool
+//export LoadMyChannels
+func LoadMyChannels() *C.char {
+	addrArr := _appInstance.dataSrv.ChannelDetails
 	if len(addrArr) == 0 {
 		return nil
 	}
-	poolArr := _appInstance.dataSrv.LoadDetailsOfArr(addrArr)
-	jsonStr, err := json.Marshal(poolArr)
+	jsonStr, err := json.Marshal(addrArr)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
-
 	return C.CString(string(jsonStr))
 }
 
-//export  SyncChannelWithDetails
-func SyncChannelWithDetails(address string) {
-	go _appInstance.dataSrv.SyncSubscribedPool(address)
+//export  SyncMyChannels
+func SyncMyChannels(address string) {
+	go _appInstance.dataSrv.SyncMyChannelDetails(address)
 }
 
 //export AuthorizeTokenSpend
@@ -83,12 +81,10 @@ func QueryMicroPayPrice() int64 {
 
 //export PoolDetails
 func PoolDetails(addr string) *C.char {
-	pool, err := _appInstance.dataSrv.LoadPoolDetails(addr)
-	if err != nil {
-		fmt.Print(err)
+	pool, ok := _appInstance.dataSrv.PoolDetails[addr]
+	if !ok {
 		return nil
 	}
-
 	buf, err := json.Marshal(pool)
 	if err != nil {
 		fmt.Print(err)
@@ -100,12 +96,8 @@ func PoolDetails(addr string) *C.char {
 
 //export PoolInfosInMarket
 func PoolInfosInMarket() *C.char {
-	addrArr := _appInstance.dataSrv.PoolsInMarket
-	if len(addrArr) == 0 {
-		return nil
-	}
-	poolArr := _appInstance.dataSrv.LoadDetailsOfArr(addrArr)
-	jsonStr, err := json.Marshal(poolArr)
+	addrMap := _appInstance.dataSrv.PoolDetails
+	jsonStr, err := json.Marshal(addrMap)
 	if err != nil {
 		fmt.Println(err)
 		return nil

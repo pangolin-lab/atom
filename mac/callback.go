@@ -14,7 +14,7 @@ void bridge_sys_func(SystemActionCallBack f, int t, char* v){
 import "C"
 import "github.com/pangolin-lab/atom/payment"
 
-func (app *MacApp) SubPoolDataSynced() {
+func (app *MacApp) ChannelInfoSynced() {
 	C.bridge_data_func(app.dataImp, C.SubPoolSynced, nil)
 }
 

@@ -130,9 +130,9 @@ func startService(srvAddr, auth, minerPoolAddr string) (int, *C.char) {
 
 	if !_appInstance.protocol.IsPayChannelOpen(minerPoolAddr) {
 
-		pool, err := _appInstance.dataSrv.LoadPoolDetails(minerPoolAddr)
-		if err != nil {
-			return ErrNoSuchPool, C.CString(err.Error())
+		pool, ok := _appInstance.dataSrv.PoolDetails[minerPoolAddr]
+		if !ok {
+			return ErrNoSuchPool, C.CString("No such miner pool")
 		}
 
 		if err := _appInstance.protocol.OpenPayChannel(_appInstance.err, pool, auth); err != nil {

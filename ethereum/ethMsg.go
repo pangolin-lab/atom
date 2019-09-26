@@ -116,38 +116,24 @@ func MySubPools(addr string) ([]common.Address, error) {
 	return conn.AllMySubPools(nil, common.HexToAddress(addr))
 }
 
-func MyChannelWithDetails(addr string) ([]PayChannel, error) {
+func GetChanDetails(myAddr common.Address, poolAddr common.Address) (*ChannelDetail, error) {
 	conn, err := connect()
 	if err != nil {
 		fmt.Println("[Atom]: connect err:", err.Error())
 		return nil, err
 	}
-
-	myAddr := common.HexToAddress(addr)
-	arr, err := conn.AllMySubPools(nil, myAddr)
+	detail, err := conn.MicroPaymentChannels(nil, myAddr, poolAddr)
 	if err != nil {
-		fmt.Println("[MyChannelWithDetails]: AllMySubPools err:", err.Error())
+		fmt.Println("[MyChannelWithDetails]: MicroPaymentChannels err:", err.Error())
 		return nil, err
 	}
-
-	poolArr := make([]PayChannel, 0)
-	for i := 0; i < len(arr); i++ {
-		poolAddr := arr[i]
-		detail, err := conn.MicroPaymentChannels(nil, myAddr, poolAddr)
-		if err != nil {
-			fmt.Println("[MyChannelWithDetails]: MicroPaymentChannels err:", err.Error())
-			continue
-		}
-
-		d := PayChannel{
-			MainAddr:      poolAddr.String(),
-			RemindTokens:  ConvertByDecimal(detail.RemindTokens),
-			RemindPackets: detail.RemindPackets.Int64(),
-			Expiration:    detail.Expiration.Int64(),
-		}
-		poolArr = append(poolArr, d)
+	d := &ChannelDetail{
+		MainAddr:      poolAddr.String(),
+		RemindTokens:  ConvertByDecimal(detail.RemindTokens),
+		RemindPackets: detail.RemindPackets.Int64(),
+		Expiration:    detail.Expiration.Int64(),
 	}
-	return poolArr, nil
+	return d, nil
 }
 
 func QueryApproved(address common.Address) *big.Int {
@@ -184,15 +170,30 @@ func QueryMicroPayPrice() *big.Int {
 func MarketDataVersion() uint32 {
 	conn, err := connect()
 	if err != nil {
-		fmt.Println("[TransferLinToken]: connect err:", err.Error())
+		fmt.Println("[MarketDataVersion]: connect err:", err.Error())
 		return 0
 	}
 	ver, err := conn.MinerPoolVersion(nil)
 	if err != nil {
+		fmt.Println("[MarketDataVersion]: MinerPoolVersion err:", err.Error())
+		return 0
+	}
+	fmt.Println("[MarketDataVersion] packet market data version:", ver)
+	return ver
+}
+
+func MyChannelVersion(address string) uint32 {
+	conn, err := connect()
+	if err != nil {
+		fmt.Println("[TransferLinToken]: connect err:", err.Error())
+		return 0
+	}
+	ver, err := conn.ChannelVersion(nil, common.HexToAddress(address)) //
+	if err != nil {
 		fmt.Println("[TransferLinToken]: MinerPoolVersion err:", err.Error())
 		return 0
 	}
-
+	fmt.Println("[MyChannelVersion] my sub channel data version:", ver)
 	return ver
 }
 
