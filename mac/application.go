@@ -51,10 +51,11 @@ type MacApp struct {
 	conf     appConf
 	protocol payment.PacketPaymentProtocol
 	dataSrv  *payment.BlockChainDataService
-	service  *proxy.VpnProxy
-	err      chan error
-	sysImp   C.SystemActionCallBack
-	dataImp  C.BlockChainDataSyncNotifier
+
+	service *proxy.VpnProxy
+	err     chan error
+	sysImp  C.SystemActionCallBack
+	dataImp C.BlockChainDataSyncNotifier
 }
 
 var _appInstance = &MacApp{
@@ -115,17 +116,23 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 		return ErrInitDataCache, C.CString(err.Error())
 	}
 	_appInstance.dataSrv = cc
+
 	return Success, nil
 }
 
-//export syncAppDataFromBlockChain
-func syncAppDataFromBlockChain() {
+//export asyncAppDataFromBlockChain
+func asyncAppDataFromBlockChain() {
 	_appInstance.protocol.SyncWalletBalance()
 	_appInstance.dataSrv.SyncPacketMarket()
 	ab := _appInstance.protocol.AccBookInfo()
 	if ab.MainAddr != "" {
 		_appInstance.dataSrv.SyncMyChannelDetails(ab.MainAddr)
 	}
+}
+
+//export  SysPacketPrice
+func SysPacketPrice() int64 {
+	return _appInstance.dataSrv.PacketPrice.Int64()
 }
 
 //export startService

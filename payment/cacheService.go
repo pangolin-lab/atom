@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/utils"
+	"math/big"
 	"sync"
 )
 
@@ -28,6 +29,7 @@ type BlockChainDataService struct {
 	*leveldb.DB
 	callBack DataSyncCallBack
 
+	PacketPrice    *big.Int
 	poolVer        uint32
 	channelVer     uint32
 	PoolDetails    map[string]*ethereum.PoolDetail
@@ -53,11 +55,14 @@ func InitBlockDataCache(dataPath string, cb DataSyncCallBack) (*BlockChainDataSe
 	channels := make(map[string]*ethereum.ChannelDetail)
 	_ = utils.GetObj(db, ChannelDetailsCached, channels)
 
+	pp := ethereum.QueryMicroPayPrice()
+
 	bcd := &BlockChainDataService{
 		DB:             db,
 		callBack:       cb,
 		PoolDetails:    pools,
 		ChannelDetails: channels,
+		PacketPrice:    pp,
 	}
 
 	fmt.Println("[InitBlockDataCache] init success......")
@@ -93,6 +98,7 @@ func (bcd *BlockChainDataService) SyncPacketMarket() {
 	_ = utils.SaveObj(bcd.DB, PoolDetailsCached, bcd.PoolDetails)
 	fmt.Println("[dataService] SyncPacketMarket success......")
 	bcd.callBack.MarketPoolDataSynced()
+	bcd.poolVer = newVer
 }
 
 func (bcd *BlockChainDataService) SyncMyChannelDetails(addr string) {
@@ -123,6 +129,7 @@ func (bcd *BlockChainDataService) SyncMyChannelDetails(addr string) {
 	_ = utils.SaveObj(bcd.DB, ChannelDetailsCached, bcd.ChannelDetails)
 	fmt.Println("[dataService] SyncMyChannelDetails success......")
 	bcd.callBack.ChannelInfoSynced()
+	bcd.channelVer = newVer
 }
 
 func (bcd *BlockChainDataService) Finalized() {

@@ -23,8 +23,8 @@ func LoadMyChannels() *C.char {
 	return C.CString(string(jsonStr))
 }
 
-//export  SyncMyChannels
-func SyncMyChannels(address string) {
+//export  AsyncMyChannels
+func AsyncMyChannels(address string) {
 	go _appInstance.dataSrv.SyncMyChannelDetails(address)
 }
 
