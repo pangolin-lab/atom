@@ -50,6 +50,7 @@ type PacketWallet struct {
 func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
 
 	if _, ok := utils.FileExists(wPath); !ok {
+		fmt.Println("[initAcc]  FileExists doesn't exit:", wPath)
 		return &Accountant{
 			signal: make(chan struct{}),
 		}, nil
@@ -57,13 +58,13 @@ func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
 
 	data, err := ioutil.ReadFile(wPath)
 	if err != nil {
-		fmt.Println("ioutil read file err:", err)
+		fmt.Println("[initAcc]  ioutil read file err:", err)
 		return nil, err
 	}
 
 	mAddr, sAddr, err := account.ParseWalletAddr(data)
 	if err != nil {
-		fmt.Println("ParseWalletAddr err:", err)
+		fmt.Println("[initAcc]  ParseWalletAddr err:", err)
 		return nil, err
 	}
 
@@ -75,10 +76,10 @@ func initAcc(wPath string, db *leveldb.DB) (*Accountant, error) {
 	}
 
 	if err := ab.loadAccBook(db); err != nil {
-		fmt.Println("loadAccBook err:", err)
+		fmt.Println("[initAcc] loadAccBook err:", err)
 		return nil, err
 	}
-	fmt.Println("[InitProtocol] accountant initialization success......", ab.String())
+	fmt.Println("[initAcc] accountant initialization success......", ab.String())
 	return ab, nil
 }
 
@@ -102,7 +103,6 @@ func InitProtocol(wPath, rPath string, cb SystemActionCallBack) (PacketPaymentPr
 		fmt.Println("initAcc failed:", err)
 		return nil, err
 	}
-
 	pw := &PacketWallet{
 		database: db,
 		errCh:    make(chan error, 10),

@@ -83,11 +83,8 @@ func (ac *Accountant) cacheAccBook(db *leveldb.DB) {
 	}
 }
 
-func (ac *Accountant) String() string {
+func (ab *accountBook) String() string {
 	str := fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++"+
-		"\n+main address:\t%s"+
-		"\n+sub address:\t%s"+
-		"\n+CipherTxt:\t%s"+
 		"\n+eth:\t%d"+
 		"\n+token:\t%d"+
 		"\n+approved:\t%d"+
@@ -96,16 +93,28 @@ func (ac *Accountant) String() string {
 		"\n+Nonce:\t%d"+
 		"\n+UnClaimed:\t%d"+
 		"\n++++++++++++++++++++++++++++++++++++++++++++++++++++",
+		ab.EthBalance,
+		ab.LinBalance,
+		ab.Approved,
+		ab.Counter,
+		ab.InRecharge,
+		ab.Nonce,
+		ab.UnClaimed)
+	return str
+}
+func (ac *Accountant) String() string {
+	str := fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++"+
+		"\n+main address:\t%s"+
+		"\n+sub address:\t%s"+
+		"\n+CipherTxt:\t%s"+
+		"\n++++++++++++++++++++++++++++++++++++++++++++++++++++",
 		ac.MainAddr,
 		ac.SubAddr,
-		ac.CipherTxt,
-		ac.EthBalance,
-		ac.LinBalance,
-		ac.Approved,
-		ac.Counter,
-		ac.InRecharge,
-		ac.Nonce,
-		ac.UnClaimed)
+		ac.CipherTxt)
+
+	if ac.accountBook != nil {
+		str += ac.accountBook.String()
+	}
 	return str
 }
 

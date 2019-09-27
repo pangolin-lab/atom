@@ -104,13 +104,13 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 	_appInstance.conf.cachePath = cachePath
 	fmt.Println(_appInstance.conf.String())
 
-	protocol, err := payment.InitProtocol(walletPath, receiptPath, _appInstance)
+	pp, err := payment.InitProtocol(walletPath, receiptPath, _appInstance)
 	if err != nil {
 		return ErrInitProtocol, C.CString(err.Error())
 	}
-	_appInstance.protocol = protocol
+	_appInstance.protocol = pp
 
-	ab := _appInstance.protocol.AccBookInfo()
+	ab := pp.AccBookInfo()
 	cc, err := payment.InitBlockDataCache(cachePath, ab.MainAddr, _appInstance)
 	if err != nil {
 		return ErrInitDataCache, C.CString(err.Error())
