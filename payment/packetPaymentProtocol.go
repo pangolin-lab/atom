@@ -31,7 +31,8 @@ type PacketPaymentProtocol interface {
 	SetupAesConn(target string) (account.CryptConn, error)
 	IsPayChannelOpen(poolAddr string) bool
 	Finalized()
-	SyncWalletData() *Accountant
+	AccBookInfo() *Accountant
+	SyncWalletBalance()
 	Wallet(auth string) (account.Wallet, error)
 	NewWallet(auth, wp string) (account.Wallet, error)
 }

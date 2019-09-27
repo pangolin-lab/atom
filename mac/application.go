@@ -110,7 +110,7 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 	}
 	_appInstance.protocol = protocol
 
-	ab := _appInstance.protocol.SyncWalletData()
+	ab := _appInstance.protocol.AccBookInfo()
 	cc, err := payment.InitBlockDataCache(cachePath, ab.MainAddr, _appInstance)
 	if err != nil {
 		return ErrInitDataCache, C.CString(err.Error())

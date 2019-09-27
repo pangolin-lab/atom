@@ -69,7 +69,7 @@ func (ac *Accountant) synBalance(db *leveldb.DB, cb SystemActionCallBack) {
 	ac.Unlock()
 
 	ac.cacheAccBook(db)
-	fmt.Println("sync balance success:", ac.String())
+	fmt.Println("[payment]sync balance success:", ac.String())
 	if cb != nil {
 		cb.WalletBalanceSynced()
 	}
@@ -79,7 +79,7 @@ func (ac *Accountant) cacheAccBook(db *leveldb.DB) {
 	ac.RLock()
 	defer ac.RUnlock()
 	if err := utils.SaveObj(db, ac.cacheKey(), ac.accountBook); err != nil {
-		fmt.Println("[PacketWallet-synBalance]  save cached err:", err)
+		fmt.Println("[payment]  save cached err:", err)
 	}
 }
 

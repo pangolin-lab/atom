@@ -22,9 +22,8 @@ type PoolDetail struct {
 
 type ChannelDetail struct {
 	MainAddr      string
-	RemindTokens  float64
-	RemindPackets int64
-	Expiration    int64
+	RemindPackets *big.Int
+	Expiration    *big.Int
 }
 
 func ConvertByDecimal(val *big.Int) float64 {

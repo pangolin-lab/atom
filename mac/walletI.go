@@ -45,12 +45,17 @@ func TransferLinToken(auth, target string, sum float64) (*C.char, *C.char) {
 }
 
 //export SyncWalletInfo
-func SyncWalletInfo() *C.char {
-	wi := _appInstance.protocol.SyncWalletData()
-	if wi == nil {
+func SyncWalletInfo() {
+	_appInstance.protocol.SyncWalletBalance()
+}
+
+//export LoadWalletInfo
+func LoadWalletInfo() *C.char {
+	abi := _appInstance.protocol.AccBookInfo()
+	if abi == nil {
 		return nil
 	}
-	data, err := json.Marshal(wi)
+	data, err := json.Marshal(abi)
 	if err != nil {
 		return nil
 	}

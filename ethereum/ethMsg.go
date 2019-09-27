@@ -129,9 +129,8 @@ func GetChanDetails(myAddr common.Address, poolAddr common.Address) (*ChannelDet
 	}
 	d := &ChannelDetail{
 		MainAddr:      poolAddr.String(),
-		RemindTokens:  ConvertByDecimal(detail.RemindTokens),
-		RemindPackets: detail.RemindPackets.Int64(),
-		Expiration:    detail.Expiration.Int64(),
+		RemindPackets: detail.RemindPackets,
+		Expiration:    detail.Expiration,
 	}
 	return d, nil
 }

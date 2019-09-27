@@ -42,7 +42,7 @@ func (app *MacApp) ReInitApp() error {
 	}
 	app.protocol = p
 
-	ab := app.protocol.SyncWalletData()
+	ab := app.protocol.AccBookInfo()
 	d, e := payment.InitBlockDataCache(conf.cachePath, ab.MainAddr, app)
 	if e != nil {
 		p.Finalized()
