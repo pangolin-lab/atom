@@ -41,9 +41,7 @@ func (app *MacApp) ReInitApp() error {
 		return e
 	}
 	app.protocol = p
-
-	ab := app.protocol.AccBookInfo()
-	d, e := payment.InitBlockDataCache(conf.cachePath, ab.MainAddr, app)
+	d, e := payment.InitBlockDataCache(conf.cachePath, app)
 	if e != nil {
 		p.Finalized()
 		return e

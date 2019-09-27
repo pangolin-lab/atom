@@ -110,14 +110,22 @@ func initApp(tokenAddr, payChanAddr, apiUrl, baseDir string,
 	}
 	_appInstance.protocol = pp
 
-	ab := pp.AccBookInfo()
-	cc, err := payment.InitBlockDataCache(cachePath, ab.MainAddr, _appInstance)
+	cc, err := payment.InitBlockDataCache(cachePath, _appInstance)
 	if err != nil {
 		return ErrInitDataCache, C.CString(err.Error())
 	}
 	_appInstance.dataSrv = cc
-
 	return Success, nil
+}
+
+//export syncAppDataFromBlockChain
+func syncAppDataFromBlockChain() {
+	_appInstance.protocol.SyncWalletBalance()
+	_appInstance.dataSrv.SyncPacketMarket()
+	ab := _appInstance.protocol.AccBookInfo()
+	if ab.MainAddr != "" {
+		_appInstance.dataSrv.SyncMyChannelDetails(ab.MainAddr)
+	}
 }
 
 //export startService

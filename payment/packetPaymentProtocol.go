@@ -109,8 +109,6 @@ func InitProtocol(wPath, rPath string, cb SystemActionCallBack) (PacketPaymentPr
 		callBack: cb,
 		accBook:  ab,
 	}
-	go ab.synBalance(db, cb)
-
 	fmt.Println("[InitProtocol] packet payment protocol success......")
 	return pw, nil
 }

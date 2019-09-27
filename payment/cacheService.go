@@ -34,7 +34,7 @@ type BlockChainDataService struct {
 	ChannelDetails map[string]*ethereum.ChannelDetail
 }
 
-func InitBlockDataCache(dataPath, mainAddr string, cb DataSyncCallBack) (*BlockChainDataService, error) {
+func InitBlockDataCache(dataPath string, cb DataSyncCallBack) (*BlockChainDataService, error) {
 	opts := opt.Options{
 		Strict:      opt.DefaultStrict,
 		Compression: opt.NoCompression,
@@ -60,11 +60,6 @@ func InitBlockDataCache(dataPath, mainAddr string, cb DataSyncCallBack) (*BlockC
 		ChannelDetails: channels,
 	}
 
-	go bcd.SyncPacketMarket()
-
-	if mainAddr != "" {
-		go bcd.SyncMyChannelDetails(mainAddr)
-	}
 	fmt.Println("[InitBlockDataCache] init success......")
 	return bcd, nil
 }

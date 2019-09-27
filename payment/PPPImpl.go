@@ -94,7 +94,7 @@ func (pw *PacketWallet) AccBookInfo() *Accountant {
 }
 
 func (pw *PacketWallet) SyncWalletBalance() {
-	go pw.accBook.synBalance(pw.database, pw.callBack)
+	pw.accBook.synBalance(pw.database, pw.callBack)
 }
 
 func (pw *PacketWallet) Wallet(auth string) (account.Wallet, error) {

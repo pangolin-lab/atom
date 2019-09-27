@@ -46,7 +46,7 @@ func TransferLinToken(auth, target string, sum float64) (*C.char, *C.char) {
 
 //export SyncWalletInfo
 func SyncWalletInfo() {
-	_appInstance.protocol.SyncWalletBalance()
+	go _appInstance.protocol.SyncWalletBalance()
 }
 
 //export LoadWalletInfo
