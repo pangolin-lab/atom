@@ -142,6 +142,7 @@ func startService(srvAddr, auth, minerPoolAddr string) (int, *C.char) {
 		return ErrInitVpnService, C.CString(err.Error())
 	}
 	_appInstance.service = srv
+	defer srv.Close()
 
 	if !_appInstance.protocol.IsPayChannelOpen(minerPoolAddr) {
 

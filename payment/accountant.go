@@ -2,6 +2,7 @@ package payment
 
 import (
 	"fmt"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/btcsuite/goleveldb/leveldb"
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/utils"
@@ -197,8 +198,8 @@ func (ac *Accountant) WriteCount(n int) {
 }
 
 func (pw *PacketWallet) createChan(pool *ethereum.PoolDetail) (*payChannel, error) {
-
-	conn, err := pw.connectToMiner(pool.Seeds)
+	nodeID := base58.Decode(pool.Seeds)
+	conn, err := pw.connectToMiner(string(nodeID))
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package ethereum
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	com "github.com/pangolink/miner-pool/common"
@@ -15,9 +16,9 @@ type PoolDetail struct {
 	MainAddr     string
 	Payer        string
 	GuaranteedNo *big.Int
+	Seeds        string
 	ShortName    string
 	DetailInfos  string
-	Seeds        string
 }
 
 type ChannelDetail struct {
@@ -63,4 +64,21 @@ func tokenConn() (*ethclient.Client, *generated.PPNToken, error) {
 	}
 	token, err := generated.NewPPNToken(common.HexToAddress(Conf.Token), conn)
 	return conn, token, err
+}
+
+func (p *PoolDetail) String() string {
+	return fmt.Sprintf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++"+
+		"\nMainAddr:\t%s"+
+		"\nPayer:\t%s"+
+		"\nGuaranteedNo:\t%d"+
+		"\nShortName:\t%s"+
+		"\nSeeds:\t%s"+
+		"\nDetailInfos:\t%s"+
+		"\n++++++++++++++++++++++++++++++++++++++++++++++++++++",
+		p.MainAddr,
+		p.Payer,
+		p.GuaranteedNo,
+		p.ShortName,
+		p.Seeds,
+		p.DetailInfos)
 }

@@ -259,7 +259,7 @@ func test10() {
 	fmt.Println(publicsuffix.EffectiveTLDPlusOne("1-apple.com.tw"))
 }
 func test9() {
-	tt, err := base64.StdEncoding.DecodeString("")
+	tt, err := base64.StdEncoding.DecodeString("3B6W28u8Y98nKywW5x9PSy2WKGdqAc7NdkKaT72ZgsXqwrC8Aqc1P6ut81pjos5j414z4RZ7Ex5Bv")
 	if err != nil {
 		panic(err)
 	}

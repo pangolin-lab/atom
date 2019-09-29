@@ -21,7 +21,7 @@ func (pw *PacketWallet) IsPayChannelOpen(poolAddr string) bool {
 
 func (pw *PacketWallet) OpenPayChannel(errCh chan error, pool *ethereum.PoolDetail, auth string) error {
 	pw.errCh = errCh
-
+	fmt.Println(pool.String())
 	if pw.wallet == nil || !pw.wallet.IsOpen() {
 		if err := pw.openWallet(auth); err != nil {
 			return err
