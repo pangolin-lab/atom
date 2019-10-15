@@ -7,7 +7,7 @@ import (
 	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
-	"github.com/proton-lab/proton-node/account"
+	"github.com/pangolink/pangolin-node/account"
 )
 
 var proxyConf *pipeProxy.ProxyConfig = nil

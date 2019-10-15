@@ -2,9 +2,9 @@ package wallet
 
 import (
 	"fmt"
-	"github.com/proton-lab/proton-node/account"
-	"github.com/proton-lab/proton-node/network"
-	"github.com/proton-lab/proton-node/service/rpcMsg"
+	"github.com/pangolink/pangolin-node/account"
+	"github.com/pangolink/pangolin-node/network"
+	"github.com/pangolink/pangolin-node/service/rpcMsg"
 	"net"
 	"strings"
 	"syscall"
