@@ -16,14 +16,14 @@ import (
 	"strings"
 )
 
-func freeManager() (*ethclient.Client, *ethInterface.PangolinManager, error) {
+func freeManager() (*ethclient.Client, *ethInterface.HopManager, error) {
 	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
 	if err != nil {
 		fmt.Printf("\nDial up infura failed:%s", err)
 		return nil, nil, err
 	}
 
-	manager, err := ethInterface.NewPangolinManager(common.HexToAddress(ethInterface.ManagerContractAddress), conn)
+	manager, err := ethInterface.NewHopManager(common.HexToAddress(ethInterface.ManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
@@ -33,7 +33,7 @@ func freeManager() (*ethclient.Client, *ethInterface.PangolinManager, error) {
 	return conn, manager, nil
 }
 
-func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterface.PangolinManager, *bind.TransactOpts, error) {
+func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterface.HopManager, *bind.TransactOpts, error) {
 
 	conn, err := ethclient.Dial(ethInterface.EthereNetworkAPI)
 	if err != nil {
@@ -41,7 +41,7 @@ func payableManager(cipherKey, password string) (*ethclient.Client, *ethInterfac
 		return nil, nil, nil, err
 	}
 
-	manager, err := ethInterface.NewPangolinManager(common.HexToAddress(ethInterface.ManagerContractAddress), conn)
+	manager, err := ethInterface.NewHopManager(common.HexToAddress(ethInterface.ManagerContractAddress), conn)
 	if err != nil {
 		fmt.Printf("\nCreate Proton Manager err:%s", err)
 		conn.Close()
