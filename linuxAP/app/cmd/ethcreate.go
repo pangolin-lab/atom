@@ -18,28 +18,34 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/proton-lab/autom/ethereum"
 )
 
-// unbindCmd represents the unbind command
-var unbindCmd = &cobra.Command{
-	Use:   "unbind",
-	Short: "unbind the relationship of ethereum address and "+ProgramName+" address",
-	Long: "unbind the relationship of ethereum address and "+ProgramName+" address",
+// createCmd represents the create command
+var ethcreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "create eth account",
+	Long: `create eth account`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("unbind called")
+		fmt.Println("create called")
+
+		key:=ethereum.CreateEthAccount2("112233","/Users/rickey/.protonapc/ethaccount")
+
+		fmt.Println("key ====>:",key)
+
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(unbindCmd)
+	ethCmd.AddCommand(ethcreateCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// unbindCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// unbindCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -6,6 +6,8 @@ import (
 	"github.com/proton-lab/autom/ethereum"
 )
 
+
+
 //Create Proton Account
 func LibCreateAccount(password string) (address,cipherTxt string) {
 
@@ -19,44 +21,54 @@ func LibCreateAccount(password string) (address,cipherTxt string) {
 	return
 }
 
+//Verify Proton Account
+func LibVerifyProtonAddress(address string) bool {
+	return account.ID(address).IsValid()
+}
+
+
 //Create Eth Account
-func LibCreateEthAccount(saveDir,password string) string  {
-	return ethereum.CreateEthAccount2(password,saveDir)
+func LibCreateEthAccount(password,dir string) string  {
+
+	return ethereum.CreateEthAccount2(password,dir)
 }
 
 //Import Eth Account
-func LibImportEthAccount(accFile,saveDir,password string) string  {
-	return ethereum.ImportEthAccount(accFile,saveDir,password)
+func LibImportEthAccount(accFile,dir,password string) string  {
+	return ethereum.ImportEthAccount(accFile,dir,password)
 }
+
+
 
 //VerifyEthAccount
 func LibVerifyEthAccount(ciperTxt,passphrase string) bool {
 	return ethereum.VerifyEthAccount(ciperTxt,passphrase)
 }
 
-//Load Eth Account By Proton Account
-func LibLoadEthAcctByProtonAcct(protonAcct string) string  {
-	return ethereum.BoundEth(protonAcct)
+//Load Eth Account By Proton Address
+func LibLoadEthAcctByProtonAcct(protonAddr string) string  {
+	return ethereum.BoundEth(protonAddr)
 }
 
-//Test and Get Balance of the Eth account
-func LibGetEthAcctBalance(ethAcct string) (float64,int)  {
+//Test and Get Balance of the Eth address
+func LibGetEthAcctBalance(ethAddr string) (float64,int)  {
 
-	ethB,no:=ethereum.BasicBalance(ethAcct)
+	ethB,no:=ethereum.BasicBalance(ethAddr)
 	if ethB == nil{
 		return  0,0
 	}
 
 	return ethereum.ConvertByDecimal(ethB),no
+
 }
 
 //Bind Proton Account
-func LibBindProtonAccount(protonAcct,cipherTxt,password string) (string,error)  {
-	return ethereum.Bind(protonAcct,cipherTxt,password)
+func LibBindProtonAccount(protonAddr,cipherTxt,password string) (string,error)  {
+	return ethereum.Bind(protonAddr,cipherTxt,password)
 }
 
 //UnBind Proton Account
-func LibUnbindProtonAccount(protonAcct,cipherTxt,password string) (string,error)  {
-	return ethereum.Unbind(protonAcct,cipherTxt,password)
+func LibUnbindProtonAccount(protonAddr,cipherTxt,password string) (string,error)  {
+	return ethereum.Unbind(protonAddr,cipherTxt,password)
 }
 

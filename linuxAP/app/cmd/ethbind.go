@@ -20,26 +20,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// bindCmd represents the bind command
-var bindCmd = &cobra.Command{
+// ethbindCmd represents the ethbind command
+var ethbindCmd = &cobra.Command{
 	Use:   "bind",
-	Short: "bind "+ProgramName+" account to a ethereum account",
-	Long: "bind "+ProgramName+" account to a ethereum account",
+	Short: "bind proton address to eth",
+	Long: `bind proton address to eth`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("bind called")
+		fmt.Println("ethbind called")
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(bindCmd)
+	ethCmd.AddCommand(ethbindCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// bindCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// ethbindCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// bindCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// ethbindCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

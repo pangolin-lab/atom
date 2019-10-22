@@ -30,6 +30,7 @@ type APConfig struct {
 	EthereumAddr string		`json:"ethereumaddr"`
 	LogDir       string     `json:"logdir"`
 	ClientPubKey map[string]string `json:"clientpubkey"`
+	EthAccountSaveDir string	`json:"ethaccountsavedir"`
 }
 
 func newAPConfig() *APConfig  {
@@ -112,12 +113,16 @@ func (apc *APConfig)DefaultInit() *APConfig {
 	apc.CmdAddr = "127.0.0.1:50200"
 	apc.LogDir = "log"
 	apc.ClientPubKey = make(map[string]string,0)
+	apc.EthAccountSaveDir = "ethacctdir"
 	//apc.ClientPubKey["abc"]="11223"
 
 
 
 	if !tools.FileExists(apc.GetLogDir()){
 		os.MkdirAll(apc.GetLogDir(),0755)
+	}
+	if !tools.FileExists(apc.GetEthAccountDir()) {
+		os.MkdirAll(apc.GetEthAccountDir(),0755)
 	}
 
 	return apc
@@ -130,6 +135,15 @@ func (apc *APConfig)GetLogDir() string  {
 
 	return path.Join(homedir,apc.LogDir)
 }
+
+func (apc *APConfig)GetEthAccountDir() string  {
+	if apc.EthAccountSaveDir[0] == '/'{
+		return apc.EthAccountSaveDir
+	}
+
+	return path.Join(homedir,apc.EthAccountSaveDir)
+}
+
 
 func (apc *APConfig)Save() error {
 
