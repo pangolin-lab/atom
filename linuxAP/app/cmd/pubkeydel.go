@@ -15,28 +15,27 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"fmt"
 	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
 )
-
 
 // delCmd represents the del command
 var pubkeyDelCmd = &cobra.Command{
 	Use:   "del",
-	Short: "delete a remote "+ProgramName+" pubkey",
-	Long: "delete a remote "+ProgramName+" pubkey",
+	Short: "delete a remote " + ProgramName + " pubkey",
+	Long:  "delete a remote " + ProgramName + " pubkey",
 	Run: func(cmd *cobra.Command, args []string) {
-		key:=""
-		if len(args)>0{
+		key := ""
+		if len(args) > 0 {
 			key = args[0]
 		}
-		if key == "" && pubkeyname == ""{
+		if key == "" && pubkeyname == "" {
 			fmt.Println("key or pubkeyname must set")
 			return
 		}
 
-		PubKeySendCmdReq(remoteaddr,common.CMD_PUBKEY_DEL,key,pubkeyname)
+		PubKeySendCmdReq(remoteaddr, common.CMD_PUBKEY_DEL, key, pubkeyname)
 	},
 }
 
@@ -52,6 +51,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// delCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 
 }

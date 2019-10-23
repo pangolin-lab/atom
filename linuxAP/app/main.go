@@ -19,12 +19,10 @@ import (
 )
 
 var (
-	Version string
-	Build string
+	Version   string
+	Build     string
 	BuildTime string
-
 )
-
 
 func main() {
 	cmd.Version = Version

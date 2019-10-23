@@ -6,36 +6,35 @@ import (
 	"github.com/proton-lab/autom/linuxAP/app/common"
 	"time"
 
-	"github.com/proton-lab/autom/linuxAP/config"
 	"encoding/json"
+	"github.com/proton-lab/autom/linuxAP/config"
 )
 
 type CmdDefaultServer struct {
 	Stop func()
 }
 
-func (cds *CmdDefaultServer)DefaultCmdDo(ctx context.Context,
-			request *cmdpb.DefaultRequest) (*cmdpb.DefaultResp, error){
-	if request.Reqid == common.CMD_STOP{
+func (cds *CmdDefaultServer) DefaultCmdDo(ctx context.Context,
+	request *cmdpb.DefaultRequest) (*cmdpb.DefaultResp, error) {
+	if request.Reqid == common.CMD_STOP {
 		return cds.stop()
 	}
 
-	if request.Reqid == common.CMD_CONFIG_SHOW{
+	if request.Reqid == common.CMD_CONFIG_SHOW {
 		return cds.configShow()
 	}
 
-	resp:=&cmdpb.DefaultResp{}
+	resp := &cmdpb.DefaultResp{}
 
 	resp.Message = "no cmd found"
 
-	return resp,nil
+	return resp, nil
 }
 
-
-func (cds *CmdDefaultServer)stop()(*cmdpb.DefaultResp, error){
+func (cds *CmdDefaultServer) stop() (*cmdpb.DefaultResp, error) {
 
 	go func() {
-		time.Sleep(time.Second*2)
+		time.Sleep(time.Second * 2)
 		cds.Stop()
 	}()
 	resp := &cmdpb.DefaultResp{}
@@ -44,19 +43,19 @@ func (cds *CmdDefaultServer)stop()(*cmdpb.DefaultResp, error){
 }
 
 func encapResp(msg string) *cmdpb.DefaultResp {
-	resp:=&cmdpb.DefaultResp{}
+	resp := &cmdpb.DefaultResp{}
 	resp.Message = msg
 
 	return resp
 }
 
-func (cds *CmdDefaultServer)configShow()(*cmdpb.DefaultResp, error)  {
-	cfg:=config.GetAPConfigInst()
+func (cds *CmdDefaultServer) configShow() (*cmdpb.DefaultResp, error) {
+	cfg := config.GetAPConfigInst()
 
-	bapc,err := json.MarshalIndent(*cfg,"","\t")
-	if err!=nil{
-		return encapResp("Internal error"),nil
+	bapc, err := json.MarshalIndent(*cfg, "", "\t")
+	if err != nil {
+		return encapResp("Internal error"), nil
 	}
 
-	return encapResp(string(bapc)),nil
+	return encapResp(string(bapc)), nil
 }

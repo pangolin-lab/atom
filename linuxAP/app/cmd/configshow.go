@@ -15,17 +15,17 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"log"
 	"github.com/proton-lab/autom/linuxAP/app/cmdclient"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
+	"log"
 )
 
 // showCmd represents the show command
 var configShowCmd = &cobra.Command{
 	Use:   "show",
-	Short: "show "+ProgramName+" config",
-	Long: "show "+ProgramName+" config",
+	Short: "show " + ProgramName + " config",
+	Long:  "show " + ProgramName + " config",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if remoteaddr == "" {
@@ -34,7 +34,7 @@ var configShowCmd = &cobra.Command{
 				return
 			}
 		}
-		cmdclient.DefaultCmdSend(remoteaddr,common.CMD_CONFIG_SHOW)
+		cmdclient.DefaultCmdSend(remoteaddr, common.CMD_CONFIG_SHOW)
 	},
 }
 

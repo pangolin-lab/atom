@@ -15,28 +15,27 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"fmt"
 	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
 )
-
 
 // addCmd represents the add command
 var pubkeyAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "add a remote "+ProgramName+" pubkey",
-	Long: "add a remote "+ProgramName+" pubkey",
+	Short: "add a remote " + ProgramName + " pubkey",
+	Long:  "add a remote " + ProgramName + " pubkey",
 	Run: func(cmd *cobra.Command, args []string) {
-		key:=""
-		if len(args)>0{
+		key := ""
+		if len(args) > 0 {
 			key = args[0]
 		}
-		if pubkeyname == "" || key==""{
+		if pubkeyname == "" || key == "" {
 			fmt.Println("pubkeyname and key must be set")
 			return
 		}
 
-		PubKeySendCmdReq(remoteaddr,common.CMD_PUBKEY_ADD,key,pubkeyname)
+		PubKeySendCmdReq(remoteaddr, common.CMD_PUBKEY_ADD, key, pubkeyname)
 
 	},
 }
@@ -53,6 +52,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 
 }

@@ -24,7 +24,7 @@ import (
 var ethCmd = &cobra.Command{
 	Use:   "eth",
 	Short: "show eth address",
-	Long: `show eth address`,
+	Long:  `show eth address`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("eth called")
 	},

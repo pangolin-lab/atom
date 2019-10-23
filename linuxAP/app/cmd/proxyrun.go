@@ -23,8 +23,8 @@ import (
 // runCmd represents the run command
 var proxyRunCmd = &cobra.Command{
 	Use:   "run",
-	Short: "run "+ProgramName+" proxy",
-	Long: "run "+ProgramName+" proxy",
+	Short: "run " + ProgramName + " proxy",
+	Long:  "run " + ProgramName + " proxy",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("run called")
 	},

@@ -24,7 +24,7 @@ import (
 var ethbindCmd = &cobra.Command{
 	Use:   "bind",
 	Short: "bind proton address to eth",
-	Long: `bind proton address to eth`,
+	Long:  `bind proton address to eth`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("ethbind called")
 	},

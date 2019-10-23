@@ -23,8 +23,8 @@ import (
 // resetCmd represents the reset command
 var resetCmd = &cobra.Command{
 	Use:   "reset",
-	Short: "factory reset "+ProgramName,
-	Long: "factory reset "+ProgramName,
+	Short: "factory reset " + ProgramName,
+	Long:  "factory reset " + ProgramName,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("reset called")
 	},

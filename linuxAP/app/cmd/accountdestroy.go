@@ -15,8 +15,8 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
 	"log"
 )
 
@@ -24,23 +24,22 @@ import (
 var accountdestroyCmd = &cobra.Command{
 	Use:   "destroy",
 	Short: "destroy account",
-	Long: `destroy account`,
+	Long:  `destroy account`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if remoteaddr == "" || remoteaddr == "127.0.0.1"{
-			if _,err:=common.IsLinuxAPProcessStarted();err!=nil{
+		if remoteaddr == "" || remoteaddr == "127.0.0.1" {
+			if _, err := common.IsLinuxAPProcessStarted(); err != nil {
 				log.Println(err)
 				return
 			}
 		}
 
-		password,err:=inputpassword()
-		if err!=nil{
+		password, err := inputpassword()
+		if err != nil {
 			log.Println(err)
 			return
 		}
 
-
-		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_DESTROY,password)
+		AccountSendCmdReq(remoteaddr, common.CMD_ACCOUNT_DESTROY, password)
 
 	},
 }

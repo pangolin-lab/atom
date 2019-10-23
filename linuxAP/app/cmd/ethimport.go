@@ -24,7 +24,7 @@ import (
 var ethimportCmd = &cobra.Command{
 	Use:   "import",
 	Short: "import eth account",
-	Long: `import eth account`,
+	Long:  `import eth account`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("import called")
 	},

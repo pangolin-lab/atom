@@ -23,7 +23,7 @@ import (
 var proxystopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "stop proxy",
-	Long: `stop proxy`,
+	Long:  `stop proxy`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("proxystop called")
 	},

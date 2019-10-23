@@ -17,21 +17,21 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"github.com/proton-lab/autom/ethereum"
+	"github.com/spf13/cobra"
 )
 
 // createCmd represents the create command
 var ethcreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create eth account",
-	Long: `create eth account`,
+	Long:  `create eth account`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("create called")
 
-		key:=ethereum.CreateEthAccount2("112233","/Users/rickey/.protonapc/ethaccount")
+		key := ethereum.CreateEthAccount2("112233", "/Users/rickey/.protonapc/ethaccount")
 
-		fmt.Println("key ====>:",key)
+		fmt.Println("key ====>:", key)
 
 	},
 }

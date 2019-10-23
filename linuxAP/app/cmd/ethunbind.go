@@ -24,7 +24,7 @@ import (
 var ethunbindCmd = &cobra.Command{
 	Use:   "unbind",
 	Short: "unbind proton account from eth account",
-	Long: `unbind proton account from eth account`,
+	Long:  `unbind proton account from eth account`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("ethunbind called")
 	},

@@ -15,25 +15,24 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/proton-lab/autom/linuxAP/config"
-	"log"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"github.com/howeyc/gopass"
-	"os"
-	"github.com/proton-lab/autom/linuxAP/golib"
 	"fmt"
+	"github.com/howeyc/gopass"
 	"github.com/pkg/errors"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/proton-lab/autom/linuxAP/config"
+	"github.com/proton-lab/autom/linuxAP/golib"
+	"github.com/spf13/cobra"
+	"log"
+	"os"
 )
-
 
 var offlineFlag bool
 
 // createCmd represents the create command
 var acctCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "create a "+ProgramName+" account",
-	Long: "create a "+ProgramName+" account",
+	Short: "create a " + ProgramName + " account",
+	Long:  "create a " + ProgramName + " account",
 	Run: func(cmd *cobra.Command, args []string) {
 		var password string
 		var err error
@@ -49,14 +48,14 @@ var acctCreateCmd = &cobra.Command{
 					return
 				}
 
-			}else{
+			} else {
 				if ok, _ := common.AccountIsCreated(); ok {
 					log.Println("Account was created. If you want recreate account, Please reset it first.")
 					return
 				}
 			}
 
-			if password,err = inputpassword();err!=nil{
+			if password, err = inputpassword(); err != nil {
 				log.Println(err)
 				return
 			}
@@ -71,20 +70,20 @@ var acctCreateCmd = &cobra.Command{
 					fmt.Println("Proton Address:", cfg.ProtonAddr)
 					fmt.Println("CiperText     :", cfg.CiperText)
 					fmt.Println("Create successfully")
-				}else{
+				} else {
 					fmt.Println("Internal error\r\n,Account create failed")
 				}
 
 				return
 			}
-		}else{
-			if password,err = inputpassword();err!=nil{
+		} else {
+			if password, err = inputpassword(); err != nil {
 				log.Println(err)
 				return
 			}
 		}
 
-		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_CREATE,password)
+		AccountSendCmdReq(remoteaddr, common.CMD_ACCOUNT_CREATE, password)
 
 	},
 }
@@ -101,19 +100,18 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	acctCreateCmd.Flags().BoolVarP(&offlineFlag,"offline","o",false,"offline create account")
+	acctCreateCmd.Flags().BoolVarP(&offlineFlag, "offline", "o", false, "offline create account")
 }
 
-func inputpassword() (password string,err error) {
+func inputpassword() (password string, err error) {
 	passwd, err := gopass.GetPasswdPrompt("Please Enter Account Password:", true, os.Stdin, os.Stdout)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
-	if len(passwd) <1{
-		return "",errors.New("Please input valid password")
+	if len(passwd) < 1 {
+		return "", errors.New("Please input valid password")
 	}
 
-
-	return string(passwd),nil
+	return string(passwd), nil
 }

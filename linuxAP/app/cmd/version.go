@@ -27,12 +27,12 @@ var ProgramName = "protonap"
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "show "+ProgramName+" version",
-	Long: "show "+ProgramName+" version",
+	Short: "show " + ProgramName + " version",
+	Long:  "show " + ProgramName + " version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Version  :",Version)
-		fmt.Println("Build    :",Build)
-		fmt.Println("BuildTime:",BuildTime)
+		fmt.Println("Version  :", Version)
+		fmt.Println("Build    :", Build)
+		fmt.Println("BuildTime:", BuildTime)
 	},
 }
 

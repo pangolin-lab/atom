@@ -15,30 +15,28 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"fmt"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"log"
-	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
 	"github.com/proton-lab/autom/linuxAP/app/cmdclient"
+	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
+	"log"
 )
-
-
 
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use:   "account",
-	Short: "show "+ProgramName+" account",
-	Long: "show "+ProgramName+" account",
+	Short: "show " + ProgramName + " account",
+	Long:  "show " + ProgramName + " account",
 	Run: func(cmd *cobra.Command, args []string) {
-		if remoteaddr == "" || remoteaddr == "127.0.0.1"{
-			if _,err:=common.IsLinuxAPProcessStarted();err!=nil{
+		if remoteaddr == "" || remoteaddr == "127.0.0.1" {
+			if _, err := common.IsLinuxAPProcessStarted(); err != nil {
 				log.Println(err)
 				return
 			}
 		}
 
-		AccountSendCmdReq(remoteaddr,common.CMD_ACCOUNT_SHOW,"")
+		AccountSendCmdReq(remoteaddr, common.CMD_ACCOUNT_SHOW, "")
 
 	},
 }
@@ -58,29 +56,29 @@ func init() {
 
 }
 
-func AccountSendCmdReq(remoteaddr string,op int32,password string)  {
-	if remoteaddr == "" || remoteaddr == "127.0.0.1"{
-		if _,err:=common.IsLinuxAPProcessStarted();err!=nil{
+func AccountSendCmdReq(remoteaddr string, op int32, password string) {
+	if remoteaddr == "" || remoteaddr == "127.0.0.1" {
+		if _, err := common.IsLinuxAPProcessStarted(); err != nil {
 			log.Println(err)
 			return
 		}
 	}
 
-	request:=&cmdpb.AccountReq{Op:op,Password:password}
-	cc:=cmdclient.NewCmdClient(remoteaddr)
+	request := &cmdpb.AccountReq{Op: op, Password: password}
+	cc := cmdclient.NewCmdClient(remoteaddr)
 
 	cc.DialToCmdServer()
 	defer cc.Close()
 
-	client:=cmdpb.NewAccountSrvClient(cc.GetRpcClientConn())
-	ctx:=cc.GetRpcCnxt()
+	client := cmdpb.NewAccountSrvClient(cc.GetRpcClientConn())
+	ctx := cc.GetRpcCnxt()
 
-	if resp,err:=client.AccountCmdDo(*ctx,request);err!=nil{
+	if resp, err := client.AccountCmdDo(*ctx, request); err != nil {
 		fmt.Println(err)
-	}else{
+	} else {
 		if resp.Address != "" {
-			fmt.Println("Proton Address:",resp.Address)
-			fmt.Println("CiperText     :",resp.CiperTxt)
+			fmt.Println("Proton Address:", resp.Address)
+			fmt.Println("CiperText     :", resp.CiperTxt)
 		}
 
 		fmt.Println(resp.Resp)

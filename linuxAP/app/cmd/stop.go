@@ -15,28 +15,29 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"log"
 	"github.com/proton-lab/autom/linuxAP/app/cmdclient"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
+	"log"
 )
 
 var sign string
+
 // stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "stop "+ProgramName,
-	Long: "stop "+ProgramName,
+	Short: "stop " + ProgramName,
+	Long:  "stop " + ProgramName,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if remoteaddr =="" {
+		if remoteaddr == "" {
 			if _, err := common.IsLinuxAPProcessStarted(); err != nil {
 				log.Println(err)
 				return
 			}
 		}
 
-		cmdclient.DefaultCmdSend(remoteaddr,common.CMD_STOP)
+		cmdclient.DefaultCmdSend(remoteaddr, common.CMD_STOP)
 	},
 }
 

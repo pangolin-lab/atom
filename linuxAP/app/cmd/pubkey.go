@@ -15,27 +15,27 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"log"
+	"fmt"
 	"github.com/proton-lab/autom/linuxAP/app/cmdclient"
 	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
-	"fmt"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
+	"log"
 )
 
-
 var pubkeyname string
+
 // pubkeyCmd represents the pubkey command
 var pubkeyCmd = &cobra.Command{
 	Use:   "pubkey",
-	Short: "show "+ProgramName+" remote login pubkeys",
-	Long: "show "+ProgramName+" remote login pubkeys",
+	Short: "show " + ProgramName + " remote login pubkeys",
+	Long:  "show " + ProgramName + " remote login pubkeys",
 	Run: func(cmd *cobra.Command, args []string) {
 		var key string
-		if len(args)>0{
-			key=args[0]
+		if len(args) > 0 {
+			key = args[0]
 		}
-		PubKeySendCmdReq(remoteaddr,common.CMD_PUBKEY_SHOW,key,pubkeyname)
+		PubKeySendCmdReq(remoteaddr, common.CMD_PUBKEY_SHOW, key, pubkeyname)
 	},
 }
 
@@ -52,31 +52,31 @@ func init() {
 	// is called directly, e.g.:
 	// pubkeyCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	pubkeyCmd.PersistentFlags().StringVarP(&pubkeyname,"name","n","","label for pubkey")
+	pubkeyCmd.PersistentFlags().StringVarP(&pubkeyname, "name", "n", "", "label for pubkey")
 
 }
 
-func PubKeySendCmdReq(addr string,op int32,key,name string)  {
-	if addr == "" || addr == "127.0.0.1"{
+func PubKeySendCmdReq(addr string, op int32, key, name string) {
+	if addr == "" || addr == "127.0.0.1" {
 		if _, err := common.IsLinuxAPProcessStarted(); err != nil {
 			log.Println(err)
 			return
 		}
 	}
 
-	request:=&cmdpb.PubKeyReq{Key:key,Name:name,Op:op}
+	request := &cmdpb.PubKeyReq{Key: key, Name: name, Op: op}
 
-	cc:=cmdclient.NewCmdClient(addr)
+	cc := cmdclient.NewCmdClient(addr)
 
 	cc.DialToCmdServer()
 	defer cc.Close()
 
-	client:=cmdpb.NewPubkeyClient(cc.GetRpcClientConn())
+	client := cmdpb.NewPubkeyClient(cc.GetRpcClientConn())
 
-	ctx:=cc.GetRpcCnxt()
-	if resp,err:=client.PubkeyDo(*ctx,request);err!=nil{
+	ctx := cc.GetRpcCnxt()
+	if resp, err := client.PubkeyDo(*ctx, request); err != nil {
 		fmt.Println(err)
-	}else{
+	} else {
 		fmt.Println(resp.Message)
 	}
 

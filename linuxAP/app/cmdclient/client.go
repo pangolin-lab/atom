@@ -1,18 +1,18 @@
 package cmdclient
 
 import (
-	"google.golang.org/grpc"
-	"golang.org/x/net/context"
-	"github.com/proton-lab/autom/linuxAP/config"
-	"log"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
 	"fmt"
+	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/proton-lab/autom/linuxAP/config"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"log"
 )
 
 type CmdConnection struct {
-	c *grpc.ClientConn
-	ctx context.Context
+	c      *grpc.ClientConn
+	ctx    context.Context
 	cancel context.CancelFunc
 }
 
@@ -21,69 +21,67 @@ type CmdClient struct {
 	conn *CmdConnection
 }
 
-
 var cmdClient *CmdClient
 
-func NewCmdClient(addr string) *CmdClient  {
-	return &CmdClient{addr:addr,}
+func NewCmdClient(addr string) *CmdClient {
+	return &CmdClient{addr: addr}
 }
 
+func (cc *CmdClient) DialToCmdServer() *CmdConnection {
 
-func (cc *CmdClient)DialToCmdServer() *CmdConnection  {
-
-	if cc.addr==""{
-		cfg:=config.GetAPConfigInst()
+	if cc.addr == "" {
+		cfg := config.GetAPConfigInst()
 		cc.addr = cfg.CmdAddr
 	}
 
-	conn,err:=grpc.Dial(cc.addr,grpc.WithInsecure())
-	if err!=nil{
-		log.Fatal("can not connect to rcp server:",err)
+	conn, err := grpc.Dial(cc.addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatal("can not connect to rcp server:", err)
 	}
 
-	ctx,cancel:=context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 
-	cc.conn = &CmdConnection{conn,ctx,cancel}
+	cc.conn = &CmdConnection{conn, ctx, cancel}
 
 	return cc.conn
 
 }
 
-func (cc *CmdClient)Close()  {
+func (cc *CmdClient) Close() {
 	cc.conn.c.Close()
 	cc.conn.cancel()
 }
 
-func DefaultCmdSend(addr string,cmd int32)  {
-	if addr == "" || addr == "127.0.0.1"{
+func DefaultCmdSend(addr string, cmd int32) {
+	if addr == "" || addr == "127.0.0.1" {
 		if _, err := common.IsLinuxAPProcessStarted(); err != nil {
 			log.Println(err)
 			return
 		}
 	}
 
-	request:=&cmdpb.DefaultRequest{}
+	request := &cmdpb.DefaultRequest{}
 	request.Reqid = cmd
 
-	cc:=NewCmdClient(addr)
+	cc := NewCmdClient(addr)
 
 	cc.DialToCmdServer()
 	defer cc.Close()
 
-	client:=cmdpb.NewDefaultcmdsrvClient(cc.conn.c)
+	client := cmdpb.NewDefaultcmdsrvClient(cc.conn.c)
 
-	if resp,err:=client.DefaultCmdDo(cc.conn.ctx,request);err!=nil{
+	if resp, err := client.DefaultCmdDo(cc.conn.ctx, request); err != nil {
 		fmt.Println(err)
-	}else{
+	} else {
 		fmt.Println(resp.Message)
 	}
 
 }
 
-func (cc *CmdClient)GetRpcClientConn() *grpc.ClientConn  {
+func (cc *CmdClient) GetRpcClientConn() *grpc.ClientConn {
 	return cc.conn.c
 }
 
-func (cc *CmdClient)GetRpcCnxt() *context.Context  {
+func (cc *CmdClient) GetRpcCnxt() *context.Context {
 	return &cc.conn.ctx
 }

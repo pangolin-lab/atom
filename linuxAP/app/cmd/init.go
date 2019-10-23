@@ -15,24 +15,23 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"github.com/proton-lab/autom/linuxAP/config"
+	"github.com/spf13/cobra"
 	"log"
 )
-
 
 var initHomeDir string
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "initial "+ProgramName+" runtime environment",
-	Long: "initial "+ProgramName+" runtime environment",
+	Short: "initial " + ProgramName + " runtime environment",
+	Long:  "initial " + ProgramName + " runtime environment",
 	Run: func(cmd *cobra.Command, args []string) {
-		err:=config.InitAPConfig(initHomeDir)
-		if err!=nil{
-			log.Println("Initialization configuration failed:",err)
-		}else {
+		err := config.InitAPConfig(initHomeDir)
+		if err != nil {
+			log.Println("Initialization configuration failed:", err)
+		} else {
 			log.Println("Initialize configuration successful")
 		}
 	},
@@ -51,6 +50,6 @@ func init() {
 	// is called directly, e.g.:
 	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	initCmd.Flags().StringVarP(&initHomeDir,"homedir","d","","set home directory")
+	initCmd.Flags().StringVarP(&initHomeDir, "homedir", "d", "", "set home directory")
 
 }

@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
-	"github.com/proton-lab/autom/linuxAP/app/common"
 	"github.com/proton-lab/autom/linuxAP/app/cmdservice"
+	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/spf13/cobra"
 	"log"
 )
 
@@ -29,23 +29,23 @@ var remoteaddr string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   ProgramName,
-	Short: "start "+ProgramName,
-	Long:  "start "+ProgramName,
+	Short: "start " + ProgramName,
+	Long:  "start " + ProgramName,
 	//Uncomment the following line if your bare application
 	//has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		if b,err:=common.IsLinxAPProcessCanStarted();err!=nil{
+		if b, err := common.IsLinxAPProcessCanStarted(); err != nil {
 			log.Println(err)
 			return
-		}else{
-			if b{
-				log.Println(ProgramName+" begin to start...")
-			}else {
+		} else {
+			if b {
+				log.Println(ProgramName + " begin to start...")
+			} else {
 				return
 			}
 		}
 
-		cmdinst:=cmdservice.GetCmdServerInst()
+		cmdinst := cmdservice.GetCmdServerInst()
 		cmdinst.StartCmdService()
 	},
 }
@@ -65,7 +65,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVarP(&remoteaddr, "addr", "a","", "remote address")
+	rootCmd.PersistentFlags().StringVarP(&remoteaddr, "addr", "a", "", "remote address")
 }
 
 //// initConfig reads in config file and ENV variables if set.
