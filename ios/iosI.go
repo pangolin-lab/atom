@@ -6,7 +6,7 @@ import (
 	"crypto/cipher"
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/proton-lab/autom/pipeProxy"
+	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolink/proton-node/account"
 	"io/ioutil"
 	"net/http"

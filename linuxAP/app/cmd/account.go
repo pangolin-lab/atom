@@ -16,9 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/proton-lab/autom/linuxAP/app/cmdclient"
-	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
-	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmdclient"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmdpb"
+	"github.com/pangolin-lab/atom/linuxAP/app/common"
 	"github.com/spf13/cobra"
 	"log"
 )

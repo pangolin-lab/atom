@@ -3,7 +3,7 @@ package golib
 import (
 	"github.com/pangolink/proton-node/account"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/proton-lab/autom/ethereum"
+	"github.com/pangolin-lab/atom/ethereum"
 )
 
 

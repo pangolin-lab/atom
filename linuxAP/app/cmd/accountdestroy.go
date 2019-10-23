@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/pangolin-lab/atom/linuxAP/app/common"
 	"github.com/spf13/cobra"
 	"log"
 )

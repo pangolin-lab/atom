@@ -15,9 +15,9 @@
 package cmd
 
 import (
-	"github.com/proton-lab/autom/linuxAP/app/cmdservice"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"github.com/proton-lab/autom/linuxAP/config"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmdservice"
+	"github.com/pangolin-lab/atom/linuxAP/app/common"
+	"github.com/pangolin-lab/atom/linuxAP/config"
 	"github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
 	"log"

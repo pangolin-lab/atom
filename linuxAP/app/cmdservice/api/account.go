@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 	"github.com/pangolink/proton-node/account"
-	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
-	"github.com/proton-lab/autom/linuxAP/app/common"
-	"github.com/proton-lab/autom/linuxAP/config"
-	"github.com/proton-lab/autom/linuxAP/golib"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmdpb"
+	"github.com/pangolin-lab/atom/linuxAP/app/common"
+	"github.com/pangolin-lab/atom/linuxAP/config"
+	"github.com/pangolin-lab/atom/linuxAP/golib"
 	"log"
 )
 

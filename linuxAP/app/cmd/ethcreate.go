@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/proton-lab/autom/ethereum"
+	"github.com/pangolin-lab/atom/ethereum"
 	"github.com/spf13/cobra"
 )
 

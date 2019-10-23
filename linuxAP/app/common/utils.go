@@ -3,7 +3,7 @@ package common
 import (
 	"github.com/kprc/nbsnetwork/tools"
 	"github.com/pkg/errors"
-	"github.com/proton-lab/autom/linuxAP/config"
+	"github.com/pangolin-lab/atom/linuxAP/config"
 )
 
 func IsLinxAPProcessCanStarted() (bool, error) {

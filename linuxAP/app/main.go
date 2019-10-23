@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/proton-lab/autom/linuxAP/app/cmd"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmd"
 )
 
 var (

@@ -7,9 +7,9 @@ import (
 	"net"
 
 	"github.com/pkg/errors"
-	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
-	"github.com/proton-lab/autom/linuxAP/app/cmdservice/api"
-	"github.com/proton-lab/autom/linuxAP/config"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmdpb"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmdservice/api"
+	"github.com/pangolin-lab/atom/linuxAP/config"
 	"sync"
 )
 

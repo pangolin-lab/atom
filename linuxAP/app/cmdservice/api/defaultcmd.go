@@ -2,12 +2,12 @@ package api
 
 import (
 	"context"
-	"github.com/proton-lab/autom/linuxAP/app/cmdpb"
-	"github.com/proton-lab/autom/linuxAP/app/common"
+	"github.com/pangolin-lab/atom/linuxAP/app/cmdpb"
+	"github.com/pangolin-lab/atom/linuxAP/app/common"
 	"time"
 
 	"encoding/json"
-	"github.com/proton-lab/autom/linuxAP/config"
+	"github.com/pangolin-lab/atom/linuxAP/config"
 )
 
 type CmdDefaultServer struct {

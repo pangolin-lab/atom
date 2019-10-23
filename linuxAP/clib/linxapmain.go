@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/proton-lab/autom/wallet"
+	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/proton-node/account"
-	"github.com/proton-lab/autom/pipeProxy"
+	"github.com/pangolin-lab/atom/pipeProxy"
 
 )
 

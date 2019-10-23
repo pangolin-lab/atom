@@ -4,9 +4,9 @@ import "C"
 import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/proton-lab/autom/ethereum"
-	"github.com/proton-lab/autom/pipeProxy"
-	"github.com/proton-lab/autom/wallet"
+	"github.com/pangolin-lab/atom/ethereum"
+	"github.com/pangolin-lab/atom/pipeProxy"
+	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/proton-node/account"
 )
 
