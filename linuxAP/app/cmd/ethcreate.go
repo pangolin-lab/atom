@@ -29,9 +29,12 @@ var ethcreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("create called")
 
-		key := ethereum.CreateEthAccount2("112233", "/Users/rickey/.protonapc/ethaccount")
+		//key := ethereum.CreateEthAccount2("112233", "/Users/rickey/.protonapc/ethaccount")
+		//
+		//fmt.Println("key ====>:", key)
 
-		fmt.Println("key ====>:", key)
+		key1 := ethereum.CreateEthAccount("112233","/Users/rickey/.protonapc/ethaccount1")
+		fmt.Println("key1 ==>:",key1)
 
 	},
 }

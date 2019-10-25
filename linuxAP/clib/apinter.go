@@ -4,10 +4,10 @@ import "C"
 import (
 	"fmt"
 	"github.com/pangolin-lab/atom/ethereum"
+	"github.com/pangolin-lab/atom/linuxAP/golib"
 	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/proton-node/account"
-	"github.com/pangolin-lab/atom/linuxAP/golib"
 )
 
 var proxyConf *pipeProxy.ProxyConfig = nil
@@ -16,7 +16,7 @@ var curProxy *pipeProxy.PipeProxy = nil
 //Create Proton Account
 func LibCreateAccount(password string) (*C.char, *C.char) {
 
-	addr,cipherTxt:=golib.LibCreateAccount(password)
+	addr, cipherTxt := golib.LibCreateAccount(password)
 
 	return C.CString(addr), C.CString(cipherTxt)
 }

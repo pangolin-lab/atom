@@ -1,13 +1,12 @@
 package main
 
 import (
+	"github.com/pangolin-lab/atom/pipeProxy"
 	"github.com/pangolin-lab/atom/wallet"
 	"github.com/pangolink/proton-node/account"
-	"github.com/pangolin-lab/atom/pipeProxy"
-
 )
 
-func main()  {
+func main() {
 	var conf = &wallet.WConfig{
 		BCAddr:     "YPEMHxUrqCfZSrBHBye918gqLKcuPJrKhd5RcTCpaUBZoA",
 		Cipher:     "2JQuMmjKxU72551kh6gTn9j7omz9YNcV8pnrrPXfzWqUGnhUZKzD4uHgLgkiLG2Ry46TK84EhkLvKXzf81D88QV9yr3AuF1CutQQu7NiP4H2fX",

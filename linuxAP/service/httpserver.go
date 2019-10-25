@@ -6,9 +6,6 @@ var (
 	httpServer *http.Server
 )
 
-func HttpServer()  {
+func HttpServer() {
 
 }
-
-
-
