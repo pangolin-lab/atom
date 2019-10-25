@@ -2,8 +2,8 @@ package common
 
 import (
 	"github.com/kprc/nbsnetwork/tools"
-	"github.com/pkg/errors"
 	"github.com/pangolin-lab/atom/linuxAP/config"
+	"github.com/pkg/errors"
 )
 
 func IsLinxAPProcessCanStarted() (bool, error) {

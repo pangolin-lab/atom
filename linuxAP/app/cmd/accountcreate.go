@@ -17,10 +17,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/howeyc/gopass"
-	"github.com/pkg/errors"
 	"github.com/pangolin-lab/atom/linuxAP/app/common"
 	"github.com/pangolin-lab/atom/linuxAP/config"
 	"github.com/pangolin-lab/atom/linuxAP/golib"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"log"
 	"os"

@@ -48,7 +48,6 @@ func GetAPConfigInst() *APConfig {
 				log.Fatal("Can't get ap config, caused error:", err)
 			}
 		}
-
 	}
 	return apcfgInst
 }
@@ -111,7 +110,6 @@ func (apc *APConfig) DefaultInit() *APConfig {
 	apc.LogDir = "log"
 	apc.ClientPubKey = make(map[string]string, 0)
 	apc.EthAccountSaveDir = "ethacctdir"
-	//apc.ClientPubKey["abc"]="11223"
 
 	if !tools.FileExists(apc.GetLogDir()) {
 		os.MkdirAll(apc.GetLogDir(), 0755)

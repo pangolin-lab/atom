@@ -6,10 +6,10 @@ import (
 	"log"
 	"net"
 
-	"github.com/pkg/errors"
 	"github.com/pangolin-lab/atom/linuxAP/app/cmdpb"
 	"github.com/pangolin-lab/atom/linuxAP/app/cmdservice/api"
 	"github.com/pangolin-lab/atom/linuxAP/config"
+	"github.com/pkg/errors"
 	"sync"
 )
 
