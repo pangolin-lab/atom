@@ -19,6 +19,7 @@ import (
 	"github.com/pangolin-lab/atom/linuxAP/app/common"
 	"github.com/spf13/cobra"
 	"log"
+	"github.com/pangolin-lab/atom/linuxAP/service"
 )
 
 var sign string
@@ -36,6 +37,8 @@ var stopCmd = &cobra.Command{
 				return
 			}
 		}
+
+		service.StopWebDaemon()
 
 		cmdclient.DefaultCmdSend(remoteaddr, common.CMD_STOP)
 	},

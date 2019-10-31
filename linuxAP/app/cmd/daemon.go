@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"path"
+	"github.com/pangolin-lab/atom/linuxAP/service"
 )
 
 // daemonCmd represents the daemon command
@@ -57,6 +58,8 @@ var daemonCmd = &cobra.Command{
 		defer cntxt.Release()
 
 		log.Println(ProgramName + " daemon begin to start ...")
+
+		go service.StartWebDaemon()
 
 		cmdinst := cmdservice.GetCmdServerInst()
 		cmdinst.StartCmdService()

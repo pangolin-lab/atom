@@ -22,6 +22,7 @@ import (
 	"github.com/pangolin-lab/atom/linuxAP/app/common"
 	"github.com/spf13/cobra"
 	"log"
+	"github.com/pangolin-lab/atom/linuxAP/service"
 )
 
 var remoteaddr string
@@ -44,6 +45,7 @@ var rootCmd = &cobra.Command{
 				return
 			}
 		}
+		go service.StartWebDaemon()
 
 		cmdinst := cmdservice.GetCmdServerInst()
 		cmdinst.StartCmdService()
