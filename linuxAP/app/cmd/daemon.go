@@ -18,11 +18,11 @@ import (
 	"github.com/pangolin-lab/atom/linuxAP/app/cmdservice"
 	"github.com/pangolin-lab/atom/linuxAP/app/common"
 	"github.com/pangolin-lab/atom/linuxAP/config"
+	"github.com/pangolin-lab/atom/linuxAP/service"
 	"github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
 	"log"
 	"path"
-	"github.com/pangolin-lab/atom/linuxAP/service"
 )
 
 // daemonCmd represents the daemon command

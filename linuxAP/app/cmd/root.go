@@ -20,9 +20,9 @@ import (
 
 	"github.com/pangolin-lab/atom/linuxAP/app/cmdservice"
 	"github.com/pangolin-lab/atom/linuxAP/app/common"
+	"github.com/pangolin-lab/atom/linuxAP/service"
 	"github.com/spf13/cobra"
 	"log"
-	"github.com/pangolin-lab/atom/linuxAP/service"
 )
 
 var remoteaddr string
