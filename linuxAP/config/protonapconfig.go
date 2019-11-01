@@ -24,6 +24,7 @@ var (
 
 type APConfig struct {
 	CmdAddr           string            `json:"cmdaddr"`
+	HttpServerPort    int           	`json:"httpserverport"`
 	ProtonAddr        string            `json:"protonaddr"`
 	CiperText         string            `json:"cipertext"`
 	EthereumAddr      string            `json:"ethereumaddr"`
@@ -78,14 +79,14 @@ func InitAPConfig(hdir string) error {
 		hdir = path.Join(curhome, APCfgDefaultRootDir)
 	}
 
-	hdir = path.Clean(hdir)
-	if path.IsAbs(hdir) {
-		if len(hdir) == 1 && hdir == "/" {
-			return errors.New("Please choose another path, system root path is not recommended")
-		}
-	} else {
-		hdir = path.Join(curhome, hdir)
-	}
+	//hdir = path.Clean(hdir)
+	//if path.IsAbs(hdir) {
+	//	if len(hdir) == 1 && hdir == "/" {
+	//		return errors.New("Please choose another path, system root path is not recommended")
+	//	}
+	//} else {
+	//	hdir = path.Join(curhome, hdir)
+	//}
 
 	homedir = hdir
 	//save to $RootCfgName
@@ -110,6 +111,7 @@ func (apc *APConfig) DefaultInit() *APConfig {
 	apc.LogDir = "log"
 	apc.ClientPubKey = make(map[string]string, 0)
 	apc.EthAccountSaveDir = "ethacctdir"
+	apc.HttpServerPort = 50201
 
 	if !tools.FileExists(apc.GetLogDir()) {
 		os.MkdirAll(apc.GetLogDir(), 0755)
@@ -163,9 +165,9 @@ func (apc *APConfig) Load() error {
 		return err
 	}
 	hdir := string(fcnt)
-	if !path.IsAbs(hdir) {
-		return errors.New("proton ap home dir not correct, please init the proton ap program")
-	}
+	//if !path.IsAbs(hdir) {
+	//	return errors.New("proton ap home dir not correct, please init the proton ap program")
+	//}
 	//if tools.FileExists()
 	homedir = hdir
 	cfgfilepath := path.Join(homedir, APCfgName)
